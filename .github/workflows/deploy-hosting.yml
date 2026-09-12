@@ -54,6 +54,33 @@ jobs:
             exit 1
           fi
 
+      # Deploying needs the site to exist, and creating a site is a separate,
+      # one-time operation. Doing it here means nobody has to remember to run
+      # tools/create_hosting_sites.sh before the first deploy. Creating a site
+      # that is already there is a no-op, so this is safe on every run.
+      - name: Make sure the hosting site exists
+        env:
+          KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          PROJECT: my-hospital-2026
+          SITE: my-hospital-2026-dev
+        run: |
+          creds="$RUNNER_TEMP/firebase-key.json"
+          printf '%s' "$KEY" > "$creds"
+          export GOOGLE_APPLICATION_CREDENTIALS="$creds"
+          trap 'rm -f "$creds"' EXIT
+
+          if npx -y firebase-tools hosting:sites:list --project "$PROJECT" | grep -q -- "$SITE"; then
+            echo "$SITE already exists"
+          elif npx -y firebase-tools hosting:sites:create "$SITE" --project "$PROJECT"; then
+            echo "created $SITE"
+          else
+            echo "::error::Could not create the hosting site $SITE in $PROJECT."
+            echo "::error::Site ids are globally unique across all of Firebase, so this one may"
+            echo "::error::be taken by someone else - pick another and change it here and in .firebaserc."
+            echo "::error::The other possibility is that the service account lacks roles/firebasehosting.admin."
+            exit 1
+          fi
+
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
