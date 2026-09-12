@@ -1,0 +1,30 @@
+# Dart / Flutter
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+*.iml
+.idea/
+.vscode/
+pubspec.lock
+
+# Generated localisations are committed on purpose: a student cloning this
+# repository must be able to run the application without first running
+# `flutter gen-l10n` on the vendored package.
+!packages/hospital_core/lib/src/l10n/generated/
+
+# Firebase - never commit real credentials
+lib/firebase_options.dart
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+.firebase/
+*.log
+
+# Local environment
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db

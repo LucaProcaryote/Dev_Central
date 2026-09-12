@@ -1,0 +1,16 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - packages/**
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+  errors:
+    invalid_annotation_target: ignore
+
+linter:
+  rules:
+    - prefer_single_quotes
+    - avoid_print
