@@ -89,11 +89,13 @@ class HospitalSeed {
     for (final bed in beds) {
       final encounter = occupancy[bed.id];
       if (encounter != null) {
-        resolvedBeds.add(bed.copyWith(
-          status: BedStatus.occupied,
-          currentEncounterId: encounter.id,
-          currentPatientId: encounter.patientId,
-        ));
+        resolvedBeds.add(
+          bed.copyWith(
+            status: BedStatus.occupied,
+            currentEncounterId: encounter.id,
+            currentPatientId: encounter.patientId,
+          ),
+        );
       } else if (bed.id.hashCode % 29 == 0) {
         // A few beds are being turned over, so the bed board is not a wall of
         // green and the transfer screen has to skip them.
@@ -105,8 +107,10 @@ class HospitalSeed {
       }
     }
 
-    final prescriptions =
-        buildSeedPrescriptions(reference, encounterIdByPatient);
+    final prescriptions = buildSeedPrescriptions(
+      reference,
+      encounterIdByPatient,
+    );
 
     return HospitalSeed(
       generatedAt: reference,
@@ -179,26 +183,31 @@ List<Dispense> _buildDispenses(DateTime now, List<Prescription> prescriptions) {
     final maxDoses = (hoursActive ~/ intervalHours).clamp(0, 18);
 
     for (var dose = 0; dose < maxDoses; dose++) {
-      final dueAt = prescription.startDate
-          .add(Duration(hours: intervalHours * dose));
+      final dueAt = prescription.startDate.add(
+        Duration(hours: intervalHours * dose),
+      );
       if (dueAt.isAfter(now)) break;
       counter++;
 
       // The most recent dose of each prescription is still waiting to be given.
       final isLatest = dose == maxDoses - 1;
-      dispenses.add(Dispense(
-        id: 'disp-${counter.toString().padLeft(5, '0')}',
-        prescriptionId: prescription.id,
-        patientId: prescription.patientId,
-        quantity: prescription.doseQuantity,
-        status: isLatest ? DispenseStatus.requested : DispenseStatus.dispensed,
-        requestedAt: dueAt,
-        dispensedAt: isLatest ? null : dueAt.add(const Duration(minutes: 12)),
-        dispensedBy: isLatest ? null : 'Marie Lambert',
-        cabinetId: cabinetId,
-        slot: null,
-        lotNumber: isLatest ? null : 'LOT${240000 + (counter * 13) % 5000}',
-      ));
+      dispenses.add(
+        Dispense(
+          id: 'disp-${counter.toString().padLeft(5, '0')}',
+          prescriptionId: prescription.id,
+          patientId: prescription.patientId,
+          quantity: prescription.doseQuantity,
+          status: isLatest
+              ? DispenseStatus.requested
+              : DispenseStatus.dispensed,
+          requestedAt: dueAt,
+          dispensedAt: isLatest ? null : dueAt.add(const Duration(minutes: 12)),
+          dispensedBy: isLatest ? null : 'Marie Lambert',
+          cabinetId: cabinetId,
+          slot: null,
+          lotNumber: isLatest ? null : 'LOT${240000 + (counter * 13) % 5000}',
+        ),
+      );
     }
   }
 

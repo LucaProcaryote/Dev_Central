@@ -20,7 +20,7 @@ import '../hospital_repository.dart';
 /// which the backend banner says plainly.
 class MemoryHospitalRepository extends HospitalRepository {
   MemoryHospitalRepository({HospitalSeed? seed})
-      : _seed = seed ?? HospitalSeed.build();
+    : _seed = seed ?? HospitalSeed.build();
 
   final HospitalSeed _seed;
 
@@ -91,11 +91,13 @@ class MemoryHospitalRepository extends HospitalRepository {
     if (query == null || query.trim().isEmpty) return sorted;
     final needle = query.trim().toLowerCase();
     return sorted
-        .where((p) =>
-            p.familyName.toLowerCase().contains(needle) ||
-            p.givenName.toLowerCase().contains(needle) ||
-            p.mrn.toLowerCase().contains(needle) ||
-            (p.nationalNumber ?? '').toLowerCase().contains(needle))
+        .where(
+          (p) =>
+              p.familyName.toLowerCase().contains(needle) ||
+              p.givenName.toLowerCase().contains(needle) ||
+              p.mrn.toLowerCase().contains(needle) ||
+              (p.nationalNumber ?? '').toLowerCase().contains(needle),
+        )
         .toList();
   }
 
@@ -137,9 +139,11 @@ class MemoryHospitalRepository extends HospitalRepository {
 
   @override
   Future<List<Bed>> listBeds({String? wardId, BedStatus? status}) async => _beds
-      .where((bed) =>
-          (wardId == null || bed.wardId == wardId) &&
-          (status == null || bed.status == status))
+      .where(
+        (bed) =>
+            (wardId == null || bed.wardId == wardId) &&
+            (status == null || bed.status == status),
+      )
       .toList(growable: false);
 
   @override
@@ -184,10 +188,12 @@ class MemoryHospitalRepository extends HospitalRepository {
     bool activeOnly = false,
   }) async {
     final result = _encounters
-        .where((e) =>
-            (patientId == null || e.patientId == patientId) &&
-            (wardId == null || e.wardId == wardId) &&
-            (!activeOnly || e.status.isActive))
+        .where(
+          (e) =>
+              (patientId == null || e.patientId == patientId) &&
+              (wardId == null || e.wardId == wardId) &&
+              (!activeOnly || e.status.isActive),
+        )
         .toList();
     result.sort((a, b) => b.admissionDate.compareTo(a.admissionDate));
     return result;
@@ -222,9 +228,11 @@ class MemoryHospitalRepository extends HospitalRepository {
     int limit = 100,
   }) async {
     final result = _movements
-        .where((m) =>
-            (encounterId == null || m.encounterId == encounterId) &&
-            (patientId == null || m.patientId == patientId))
+        .where(
+          (m) =>
+              (encounterId == null || m.encounterId == encounterId) &&
+              (patientId == null || m.patientId == patientId),
+        )
         .toList();
     result.sort((a, b) => b.occurredAt.compareTo(a.occurredAt));
     return result.take(limit).toList(growable: false);
@@ -245,15 +253,15 @@ class MemoryHospitalRepository extends HospitalRepository {
     int limit = 500,
   }) async {
     final result = _observations
-        .where((o) =>
-            (patientId == null || o.patientId == patientId) &&
-            (encounterId == null || o.encounterId == encounterId) &&
-            (type == null || o.type == type) &&
-            (since == null || o.effectiveDateTime.isAfter(since)))
+        .where(
+          (o) =>
+              (patientId == null || o.patientId == patientId) &&
+              (encounterId == null || o.encounterId == encounterId) &&
+              (type == null || o.type == type) &&
+              (since == null || o.effectiveDateTime.isAfter(since)),
+        )
         .toList();
-    result.sort(
-      (a, b) => b.effectiveDateTime.compareTo(a.effectiveDateTime),
-    );
+    result.sort((a, b) => b.effectiveDateTime.compareTo(a.effectiveDateTime));
     return result.take(limit).toList(growable: false);
   }
 
@@ -284,12 +292,14 @@ class MemoryHospitalRepository extends HospitalRepository {
     }
     final needle = query.trim().toLowerCase();
     return _formulary
-        .where((m) =>
-            m.name.en.toLowerCase().contains(needle) ||
-            m.name.fr.toLowerCase().contains(needle) ||
-            m.name.nl.toLowerCase().contains(needle) ||
-            m.code.toLowerCase().contains(needle) ||
-            m.atcCode.toLowerCase().contains(needle))
+        .where(
+          (m) =>
+              m.name.en.toLowerCase().contains(needle) ||
+              m.name.fr.toLowerCase().contains(needle) ||
+              m.name.nl.toLowerCase().contains(needle) ||
+              m.code.toLowerCase().contains(needle) ||
+              m.atcCode.toLowerCase().contains(needle),
+        )
         .toList(growable: false);
   }
 
@@ -300,10 +310,12 @@ class MemoryHospitalRepository extends HospitalRepository {
     bool activeOnly = false,
   }) async {
     final result = _prescriptions
-        .where((p) =>
-            (patientId == null || p.patientId == patientId) &&
-            (encounterId == null || p.encounterId == encounterId) &&
-            (!activeOnly || p.isActive))
+        .where(
+          (p) =>
+              (patientId == null || p.patientId == patientId) &&
+              (encounterId == null || p.encounterId == encounterId) &&
+              (!activeOnly || p.isActive),
+        )
         .toList();
     result.sort((a, b) => b.startDate.compareTo(a.startDate));
     return result;
@@ -330,11 +342,13 @@ class MemoryHospitalRepository extends HospitalRepository {
     int limit = 200,
   }) async {
     final result = _dispenses
-        .where((d) =>
-            (patientId == null || d.patientId == patientId) &&
-            (prescriptionId == null || d.prescriptionId == prescriptionId) &&
-            (cabinetId == null || d.cabinetId == cabinetId) &&
-            (status == null || d.status == status))
+        .where(
+          (d) =>
+              (patientId == null || d.patientId == patientId) &&
+              (prescriptionId == null || d.prescriptionId == prescriptionId) &&
+              (cabinetId == null || d.cabinetId == cabinetId) &&
+              (status == null || d.status == status),
+        )
         .toList();
     result.sort((a, b) => b.requestedAt.compareTo(a.requestedAt));
     return result.take(limit).toList(growable: false);
@@ -367,13 +381,15 @@ class MemoryHospitalRepository extends HospitalRepository {
   Future<List<StockItem>> listStock({String? cabinetId, String? query}) async {
     final needle = query?.trim().toLowerCase() ?? '';
     final result = _stock
-        .where((s) =>
-            (cabinetId == null || s.cabinetId == cabinetId) &&
-            (needle.isEmpty ||
-                s.medication.name.en.toLowerCase().contains(needle) ||
-                s.medication.name.fr.toLowerCase().contains(needle) ||
-                s.medication.name.nl.toLowerCase().contains(needle) ||
-                s.slot.toLowerCase().contains(needle)))
+        .where(
+          (s) =>
+              (cabinetId == null || s.cabinetId == cabinetId) &&
+              (needle.isEmpty ||
+                  s.medication.name.en.toLowerCase().contains(needle) ||
+                  s.medication.name.fr.toLowerCase().contains(needle) ||
+                  s.medication.name.nl.toLowerCase().contains(needle) ||
+                  s.slot.toLowerCase().contains(needle)),
+        )
         .toList();
     result.sort((a, b) => a.slot.compareTo(b.slot));
     return result;
@@ -423,10 +439,12 @@ class MemoryHospitalRepository extends HospitalRepository {
     NoteType? type,
   }) async {
     final result = _notes
-        .where((n) =>
-            (patientId == null || n.patientId == patientId) &&
-            (encounterId == null || n.encounterId == encounterId) &&
-            (type == null || n.type == type))
+        .where(
+          (n) =>
+              (patientId == null || n.patientId == patientId) &&
+              (encounterId == null || n.encounterId == encounterId) &&
+              (type == null || n.type == type),
+        )
         .toList();
     result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return result;
@@ -473,9 +491,11 @@ class MemoryHospitalRepository extends HospitalRepository {
     int limit = 100,
   }) async {
     final result = _messages
-        .where((m) =>
-            (flowId == null || m.flowId == flowId) &&
-            (status == null || m.status == status))
+        .where(
+          (m) =>
+              (flowId == null || m.flowId == flowId) &&
+              (status == null || m.status == status),
+        )
         .toList();
     result.sort((a, b) => b.receivedAt.compareTo(a.receivedAt));
     return result.take(limit).toList(growable: false);

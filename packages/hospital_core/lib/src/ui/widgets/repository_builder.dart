@@ -100,7 +100,9 @@ class _RepositoryBuilderState<T> extends State<RepositoryBuilder<T>> {
     }
     final data = _data;
     if (data == null) {
-      return _loading ? (widget.loading ?? const LoadingView()) : const SizedBox.shrink();
+      return _loading
+          ? (widget.loading ?? const LoadingView())
+          : const SizedBox.shrink();
     }
     return widget.builder(context, data);
   }

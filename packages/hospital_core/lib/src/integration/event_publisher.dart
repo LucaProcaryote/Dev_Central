@@ -26,7 +26,7 @@ class PublishResult {
 /// happened.
 class EventPublisher {
   EventPublisher({required this.baseUrl, http.Client? client})
-      : _client = client ?? http.Client();
+    : _client = client ?? http.Client();
 
   /// Base URL of the integration engine, e.g. `http://localhost:8084`.
   final String baseUrl;
@@ -46,9 +46,7 @@ class EventPublisher {
       final response = await _client
           .post(
             Uri.parse('$baseUrl/messages'),
-            headers: const <String, String>{
-              'Content-Type': 'application/json',
-            },
+            headers: const <String, String>{'Content-Type': 'application/json'},
             body: jsonEncode(<String, dynamic>{
               'source_app': source.code,
               'message_type': messageType,
@@ -75,29 +73,27 @@ class EventPublisher {
   Future<PublishResult> publishMovement({
     required Movement movement,
     required Encounter encounter,
-  }) =>
-      publish(
-        source: HospitalApp.adt,
-        messageType: 'ADT^${movement.type.hl7EventCode}',
-        patientId: movement.patientId,
-        payload: <String, dynamic>{
-          ...movement.toJson(),
-          'encounter': encounter.toJson(),
-        },
-      );
+  }) => publish(
+    source: HospitalApp.adt,
+    messageType: 'ADT^${movement.type.hl7EventCode}',
+    patientId: movement.patientId,
+    payload: <String, dynamic>{
+      ...movement.toJson(),
+      'encounter': encounter.toJson(),
+    },
+  );
 
   /// Publishes a device reading as a FHIR Observation, which is what the
   /// seeded vitals flow expects to receive.
   Future<PublishResult> publishObservation(
     Observation observation, {
     HospitalApp source = HospitalApp.device,
-  }) =>
-      publish(
-        source: source,
-        messageType: 'Observation',
-        patientId: observation.patientId,
-        payload: observation.toFhir(),
-      );
+  }) => publish(
+    source: source,
+    messageType: 'Observation',
+    patientId: observation.patientId,
+    payload: observation.toFhir(),
+  );
 
   void close() => _client.close();
 }

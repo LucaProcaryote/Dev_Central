@@ -46,7 +46,10 @@ class HospitalStore {
     String sql, [
     Map<String, Object?> values = const <String, Object?>{},
   ]) async {
-    final result = await _connection.execute(Sql.named(sql), parameters: values);
+    final result = await _connection.execute(
+      Sql.named(sql),
+      parameters: values,
+    );
     return result.map((row) {
       final map = row.toColumnMap();
       return map.map((key, value) => MapEntry(key, _normalise(value)));
@@ -96,8 +99,10 @@ class HospitalStore {
 
   Future<List<Map<String, dynamic>>> listPatients({String? query}) async {
     if (query == null || query.trim().isEmpty) {
-      return _rows('SELECT $_patientColumns FROM patients p '
-          'ORDER BY lower(p.family_name), lower(p.given_name)');
+      return _rows(
+        'SELECT $_patientColumns FROM patients p '
+        'ORDER BY lower(p.family_name), lower(p.given_name)',
+      );
     }
     return _rows(
       '''SELECT $_patientColumns FROM patients p
@@ -111,16 +116,16 @@ class HospitalStore {
   }
 
   Future<Map<String, dynamic>?> findPatient(String id) => _one(
-        'SELECT $_patientColumns FROM patients p WHERE p.id = @id',
-        <String, Object?>{'id': id},
-      );
+    'SELECT $_patientColumns FROM patients p WHERE p.id = @id',
+    <String, Object?>{'id': id},
+  );
 
   /// Resolves whatever identifier an inbound message happened to carry.
   Future<Map<String, dynamic>?> resolvePatient(String reference) => _one(
-        '''SELECT $_patientColumns FROM patients p
+    '''SELECT $_patientColumns FROM patients p
             WHERE p.id = @ref OR p.mrn = @ref OR p.national_number = @ref''',
-        <String, Object?>{'ref': reference},
-      );
+    <String, Object?>{'ref': reference},
+  );
 
   Future<Map<String, dynamic>?> savePatient(Map<String, dynamic> body) async {
     await _connection.execute(
@@ -175,22 +180,21 @@ class HospitalStore {
       _rows('SELECT * FROM wards ORDER BY floor, code');
 
   Future<List<Map<String, dynamic>>> listRooms({String? wardId}) => _rows(
-        'SELECT * FROM rooms WHERE (@ward::text IS NULL OR ward_id = @ward) '
-        'ORDER BY number',
-        <String, Object?>{'ward': wardId},
-      );
+    'SELECT * FROM rooms WHERE (@ward::text IS NULL OR ward_id = @ward) '
+    'ORDER BY number',
+    <String, Object?>{'ward': wardId},
+  );
 
   Future<List<Map<String, dynamic>>> listBeds({
     String? wardId,
     String? status,
-  }) =>
-      _rows(
-        '''SELECT * FROM beds
+  }) => _rows(
+    '''SELECT * FROM beds
             WHERE (@ward::text IS NULL OR ward_id = @ward)
               AND (@status::text IS NULL OR status = @status)
             ORDER BY label''',
-        <String, Object?>{'ward': wardId, 'status': status},
-      );
+    <String, Object?>{'ward': wardId, 'status': status},
+  );
 
   Future<Map<String, dynamic>?> findBed(String id) =>
       _one('SELECT * FROM beds WHERE id = @id', <String, Object?>{'id': id});
@@ -224,24 +228,23 @@ class HospitalStore {
     String? patientId,
     String? wardId,
     bool activeOnly = false,
-  }) =>
-      _rows(
-        '''SELECT * FROM encounters
+  }) => _rows(
+    '''SELECT * FROM encounters
             WHERE (@patient::text IS NULL OR patient_id = @patient)
               AND (@ward::text IS NULL OR ward_id = @ward)
               AND (@active = false OR status IN ('in-progress', 'onleave'))
             ORDER BY admission_date DESC''',
-        <String, Object?>{
-          'patient': patientId,
-          'ward': wardId,
-          'active': activeOnly,
-        },
-      );
+    <String, Object?>{
+      'patient': patientId,
+      'ward': wardId,
+      'active': activeOnly,
+    },
+  );
 
   Future<Map<String, dynamic>?> findEncounter(String id) => _one(
-        'SELECT * FROM encounters WHERE id = @id',
-        <String, Object?>{'id': id},
-      );
+    'SELECT * FROM encounters WHERE id = @id',
+    <String, Object?>{'id': id},
+  );
 
   Future<Map<String, dynamic>?> saveEncounter(Map<String, dynamic> body) async {
     await _connection.execute(
@@ -288,19 +291,18 @@ class HospitalStore {
     String? encounterId,
     String? patientId,
     int limit = 100,
-  }) =>
-      _rows(
-        '''SELECT * FROM movements
+  }) => _rows(
+    '''SELECT * FROM movements
             WHERE (@encounter::text IS NULL OR encounter_id = @encounter)
               AND (@patient::text IS NULL OR patient_id = @patient)
             ORDER BY occurred_at DESC
             LIMIT @limit''',
-        <String, Object?>{
-          'encounter': encounterId,
-          'patient': patientId,
-          'limit': limit,
-        },
-      );
+    <String, Object?>{
+      'encounter': encounterId,
+      'patient': patientId,
+      'limit': limit,
+    },
+  );
 
   Future<Map<String, dynamic>?> addMovement(Map<String, dynamic> body) async {
     await _connection.execute(
@@ -325,8 +327,9 @@ class HospitalStore {
         'note': body['note'],
       },
     );
-    return _one('SELECT * FROM movements WHERE id = @id',
-        <String, Object?>{'id': body['id']});
+    return _one('SELECT * FROM movements WHERE id = @id', <String, Object?>{
+      'id': body['id'],
+    });
   }
 
   // ---- Observations --------------------------------------------------------
@@ -337,26 +340,26 @@ class HospitalStore {
     String? type,
     DateTime? since,
     int limit = 500,
-  }) =>
-      _rows(
-        '''SELECT * FROM observations
+  }) => _rows(
+    '''SELECT * FROM observations
             WHERE (@patient::text IS NULL OR patient_id = @patient)
               AND (@encounter::text IS NULL OR encounter_id = @encounter)
               AND (@type::text IS NULL OR type = @type)
               AND (@since::timestamptz IS NULL OR effective_date_time > @since)
             ORDER BY effective_date_time DESC
             LIMIT @limit''',
-        <String, Object?>{
-          'patient': patientId,
-          'encounter': encounterId,
-          'type': type,
-          'since': since,
-          'limit': limit,
-        },
-      );
+    <String, Object?>{
+      'patient': patientId,
+      'encounter': encounterId,
+      'type': type,
+      'since': since,
+      'limit': limit,
+    },
+  );
 
   Future<Map<String, dynamic>?> addObservation(
-      Map<String, dynamic> body) async {
+    Map<String, dynamic> body,
+  ) async {
     await _connection.execute(
       Sql.named('''
         INSERT INTO observations (id, patient_id, encounter_id, type, value,
@@ -379,8 +382,9 @@ class HospitalStore {
         'note': body['note'],
       },
     );
-    return _one('SELECT * FROM observations WHERE id = @id',
-        <String, Object?>{'id': body['id']});
+    return _one('SELECT * FROM observations WHERE id = @id', <String, Object?>{
+      'id': body['id'],
+    });
   }
 
   /// The newest reading of each measurement for one patient.
@@ -389,12 +393,12 @@ class HospitalStore {
   /// first by this ordering" - far clearer than a window function or a
   /// correlated subquery, and it uses the (patient, type, time) index directly.
   Future<List<Map<String, dynamic>>> latestVitals(String patientId) => _rows(
-        '''SELECT DISTINCT ON (type) *
+    '''SELECT DISTINCT ON (type) *
              FROM observations
             WHERE patient_id = @patient
             ORDER BY type, effective_date_time DESC''',
-        <String, Object?>{'patient': patientId},
-      );
+    <String, Object?>{'patient': patientId},
+  );
 
   // ---- Formulary, prescriptions, dispensing --------------------------------
 
@@ -418,28 +422,29 @@ class HospitalStore {
     String? patientId,
     String? encounterId,
     bool activeOnly = false,
-  }) =>
-      _rows(
-        '''SELECT * FROM prescriptions
+  }) => _rows(
+    '''SELECT * FROM prescriptions
             WHERE (@patient::text IS NULL OR patient_id = @patient)
               AND (@encounter::text IS NULL OR encounter_id = @encounter)
               AND (@active = false OR status = 'active')
             ORDER BY start_date DESC''',
-        <String, Object?>{
-          'patient': patientId,
-          'encounter': encounterId,
-          'active': activeOnly,
-        },
-      );
+    <String, Object?>{
+      'patient': patientId,
+      'encounter': encounterId,
+      'active': activeOnly,
+    },
+  );
 
   Future<Map<String, dynamic>?> findPrescription(String id) => _one(
-        'SELECT * FROM prescriptions WHERE id = @id',
-        <String, Object?>{'id': id},
-      );
+    'SELECT * FROM prescriptions WHERE id = @id',
+    <String, Object?>{'id': id},
+  );
 
   Future<Map<String, dynamic>?> savePrescription(
-      Map<String, dynamic> body) async {
-    final medication = (body['medication'] as Map?)?.cast<String, dynamic>() ??
+    Map<String, dynamic> body,
+  ) async {
+    final medication =
+        (body['medication'] as Map?)?.cast<String, dynamic>() ??
         <String, dynamic>{};
     await _connection.execute(
       Sql.named('''
@@ -484,23 +489,22 @@ class HospitalStore {
     String? cabinetId,
     String? status,
     int limit = 200,
-  }) =>
-      _rows(
-        '''SELECT * FROM dispenses
+  }) => _rows(
+    '''SELECT * FROM dispenses
             WHERE (@patient::text IS NULL OR patient_id = @patient)
               AND (@prescription::text IS NULL OR prescription_id = @prescription)
               AND (@cabinet::text IS NULL OR cabinet_id = @cabinet)
               AND (@status::text IS NULL OR status = @status)
             ORDER BY requested_at DESC
             LIMIT @limit''',
-        <String, Object?>{
-          'patient': patientId,
-          'prescription': prescriptionId,
-          'cabinet': cabinetId,
-          'status': status,
-          'limit': limit,
-        },
-      );
+    <String, Object?>{
+      'patient': patientId,
+      'prescription': prescriptionId,
+      'cabinet': cabinetId,
+      'status': status,
+      'limit': limit,
+    },
+  );
 
   Future<Map<String, dynamic>?> saveDispense(Map<String, dynamic> body) async {
     await _connection.execute(
@@ -532,22 +536,23 @@ class HospitalStore {
         'lot_number': body['lot_number'],
       },
     );
-    return _one('SELECT * FROM dispenses WHERE id = @id',
-        <String, Object?>{'id': body['id']});
+    return _one('SELECT * FROM dispenses WHERE id = @id', <String, Object?>{
+      'id': body['id'],
+    });
   }
 
   // ---- Pharmacy stock ------------------------------------------------------
 
   Future<List<Map<String, dynamic>>> listCabinets({String? wardId}) => _rows(
-        'SELECT * FROM cabinets WHERE (@ward::text IS NULL OR ward_id = @ward) '
-        'ORDER BY code',
-        <String, Object?>{'ward': wardId},
-      );
+    'SELECT * FROM cabinets WHERE (@ward::text IS NULL OR ward_id = @ward) '
+    'ORDER BY code',
+    <String, Object?>{'ward': wardId},
+  );
 
   Future<Map<String, dynamic>?> findCabinet(String id) => _one(
-        'SELECT * FROM cabinets WHERE id = @id',
-        <String, Object?>{'id': id},
-      );
+    'SELECT * FROM cabinets WHERE id = @id',
+    <String, Object?>{'id': id},
+  );
 
   Future<Map<String, dynamic>?> saveCabinet(Map<String, dynamic> body) async {
     await _connection.execute(
@@ -573,9 +578,8 @@ class HospitalStore {
   Future<List<Map<String, dynamic>>> listStock({
     String? cabinetId,
     String? query,
-  }) =>
-      _rows(
-        '''SELECT * FROM stock_items
+  }) => _rows(
+    '''SELECT * FROM stock_items
             WHERE (@cabinet::text IS NULL OR cabinet_id = @cabinet)
               AND (@q::text IS NULL
                    OR lower(medication->'name'->>'en') LIKE @q
@@ -583,21 +587,22 @@ class HospitalStore {
                    OR lower(medication->'name'->>'nl') LIKE @q
                    OR lower(slot) LIKE @q)
             ORDER BY slot''',
-        <String, Object?>{
-          'cabinet': cabinetId,
-          'q': (query == null || query.trim().isEmpty)
-              ? null
-              : '%${query.trim().toLowerCase()}%',
-        },
-      );
+    <String, Object?>{
+      'cabinet': cabinetId,
+      'q': (query == null || query.trim().isEmpty)
+          ? null
+          : '%${query.trim().toLowerCase()}%',
+    },
+  );
 
   Future<Map<String, dynamic>?> findStockItem(String id) => _one(
-        'SELECT * FROM stock_items WHERE id = @id',
-        <String, Object?>{'id': id},
-      );
+    'SELECT * FROM stock_items WHERE id = @id',
+    <String, Object?>{'id': id},
+  );
 
   Future<Map<String, dynamic>?> saveStockItem(Map<String, dynamic> body) async {
-    final medication = (body['medication'] as Map?)?.cast<String, dynamic>() ??
+    final medication =
+        (body['medication'] as Map?)?.cast<String, dynamic>() ??
         <String, dynamic>{};
     await _connection.execute(
       Sql.named('''
@@ -628,15 +633,15 @@ class HospitalStore {
   // ---- Devices -------------------------------------------------------------
 
   Future<List<Map<String, dynamic>>> listDevices({String? wardId}) => _rows(
-        'SELECT * FROM devices WHERE (@ward::text IS NULL OR ward_id = @ward) '
-        'ORDER BY code',
-        <String, Object?>{'ward': wardId},
-      );
+    'SELECT * FROM devices WHERE (@ward::text IS NULL OR ward_id = @ward) '
+    'ORDER BY code',
+    <String, Object?>{'ward': wardId},
+  );
 
   Future<Map<String, dynamic>?> findDeviceByCode(String code) => _one(
-        'SELECT * FROM devices WHERE upper(code) = upper(@code) OR id = @code',
-        <String, Object?>{'code': code},
-      );
+    'SELECT * FROM devices WHERE upper(code) = upper(@code) OR id = @code',
+    <String, Object?>{'code': code},
+  );
 
   Future<Map<String, dynamic>?> saveDevice(Map<String, dynamic> body) async {
     await _connection.execute(
@@ -679,19 +684,18 @@ class HospitalStore {
     String? patientId,
     String? encounterId,
     String? type,
-  }) =>
-      _rows(
-        '''SELECT * FROM clinical_notes
+  }) => _rows(
+    '''SELECT * FROM clinical_notes
             WHERE (@patient::text IS NULL OR patient_id = @patient)
               AND (@encounter::text IS NULL OR encounter_id = @encounter)
               AND (@type::text IS NULL OR type = @type)
             ORDER BY created_at DESC''',
-        <String, Object?>{
-          'patient': patientId,
-          'encounter': encounterId,
-          'type': type,
-        },
-      );
+    <String, Object?>{
+      'patient': patientId,
+      'encounter': encounterId,
+      'type': type,
+    },
+  );
 
   Future<Map<String, dynamic>?> saveNote(Map<String, dynamic> body) async {
     await _connection.execute(
@@ -723,13 +727,17 @@ class HospitalStore {
         'language': body['language'] ?? 'fr',
       },
     );
-    return _one('SELECT * FROM clinical_notes WHERE id = @id',
-        <String, Object?>{'id': body['id']});
+    return _one(
+      'SELECT * FROM clinical_notes WHERE id = @id',
+      <String, Object?>{'id': body['id']},
+    );
   }
 
   Future<void> deleteNote(String id) => _connection
-      .execute(Sql.named('DELETE FROM clinical_notes WHERE id = @id'),
-          parameters: <String, Object?>{'id': id})
+      .execute(
+        Sql.named('DELETE FROM clinical_notes WHERE id = @id'),
+        parameters: <String, Object?>{'id': id},
+      )
       .then((_) {});
 
   // ---- Integration ---------------------------------------------------------
@@ -738,9 +746,9 @@ class HospitalStore {
       _rows('SELECT * FROM integration_flows ORDER BY updated_at DESC');
 
   Future<Map<String, dynamic>?> findFlow(String id) => _one(
-        'SELECT * FROM integration_flows WHERE id = @id',
-        <String, Object?>{'id': id},
-      );
+    'SELECT * FROM integration_flows WHERE id = @id',
+    <String, Object?>{'id': id},
+  );
 
   Future<Map<String, dynamic>?> saveFlow(Map<String, dynamic> body) async {
     await _connection.execute(
@@ -774,23 +782,24 @@ class HospitalStore {
   }
 
   Future<void> deleteFlow(String id) => _connection
-      .execute(Sql.named('DELETE FROM integration_flows WHERE id = @id'),
-          parameters: <String, Object?>{'id': id})
+      .execute(
+        Sql.named('DELETE FROM integration_flows WHERE id = @id'),
+        parameters: <String, Object?>{'id': id},
+      )
       .then((_) {});
 
   Future<List<Map<String, dynamic>>> listMessages({
     String? flowId,
     String? status,
     int limit = 100,
-  }) =>
-      _rows(
-        '''SELECT * FROM integration_messages
+  }) => _rows(
+    '''SELECT * FROM integration_messages
             WHERE (@flow::text IS NULL OR flow_id = @flow)
               AND (@status::text IS NULL OR status = @status)
             ORDER BY received_at DESC
             LIMIT @limit''',
-        <String, Object?>{'flow': flowId, 'status': status, 'limit': limit},
-      );
+    <String, Object?>{'flow': flowId, 'status': status, 'limit': limit},
+  );
 
   Future<Map<String, dynamic>?> saveMessage(Map<String, dynamic> body) async {
     await _connection.execute(
@@ -824,8 +833,10 @@ class HospitalStore {
         'error': body['error'],
       },
     );
-    return _one('SELECT * FROM integration_messages WHERE id = @id',
-        <String, Object?>{'id': body['id']});
+    return _one(
+      'SELECT * FROM integration_messages WHERE id = @id',
+      <String, Object?>{'id': body['id']},
+    );
   }
 
   // ---- Coercion ------------------------------------------------------------

@@ -38,12 +38,14 @@ class Formats {
   static String smart(BuildContext context, DateTime value) {
     final local = value.toLocal();
     final now = DateTime.now();
-    final isToday = local.year == now.year &&
+    final isToday =
+        local.year == now.year &&
         local.month == now.month &&
         local.day == now.day;
     if (isToday) return time(context, local);
     final yesterday = now.subtract(const Duration(days: 1));
-    final isYesterday = local.year == yesterday.year &&
+    final isYesterday =
+        local.year == yesterday.year &&
         local.month == yesterday.month &&
         local.day == yesterday.day;
     if (isYesterday) {
@@ -77,8 +79,8 @@ class Formats {
     final amount = elapsed.inDays >= 1
         ? '${elapsed.inDays} d'
         : elapsed.inHours >= 1
-            ? '${elapsed.inHours} h'
-            : '${elapsed.inMinutes} min';
+        ? '${elapsed.inHours} h'
+        : '${elapsed.inMinutes} min';
     return switch (code) {
       'fr' => 'il y a $amount',
       'nl' => '$amount geleden',

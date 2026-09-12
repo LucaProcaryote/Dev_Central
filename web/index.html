@@ -41,6 +41,25 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
+  <script>
+    // Some Linux desktops report a POSIX-style locale such as "en-US@posix".
+    // `Intl.Locale` rejects it, Flutter’s engine does not guard against that,
+    // and the application then fails to start with "Incorrect locale
+    // information provided" — a blank white page and nothing in the UI to
+    // explain it. Normalise the value before Flutter reads it.
+    (function () {
+      try {
+        new Intl.Locale(navigator.language);
+      } catch (_) {
+        var clean =
+          String(navigator.language || "en").split("@")[0].replace(/[^A-Za-z0-9-]/g, "") ||
+          "en";
+        var languages = [clean];
+        Object.defineProperty(navigator, "language", { get: function () { return clean; } });
+        Object.defineProperty(navigator, "languages", { get: function () { return languages; } });
+      }
+    })();
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

@@ -33,33 +33,33 @@ class Medication {
   final bool isControlled;
 
   factory Medication.fromJson(Map<String, dynamic> json) => Medication(
-        code: asString(json['code']),
-        name: LocalizedText.fromJson(json['name']),
-        form: LocalizedText.fromJson(json['form']),
-        strength: asString(json['strength']),
-        atcCode: asString(json['atc_code'] ?? json['atcCode']),
-        isControlled: asBool(json['is_controlled'] ?? json['isControlled']),
-      );
+    code: asString(json['code']),
+    name: LocalizedText.fromJson(json['name']),
+    form: LocalizedText.fromJson(json['form']),
+    strength: asString(json['strength']),
+    atcCode: asString(json['atc_code'] ?? json['atcCode']),
+    isControlled: asBool(json['is_controlled'] ?? json['isControlled']),
+  );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'code': code,
-        'name': name.toJson(),
-        'form': form.toJson(),
-        'strength': strength,
-        'atc_code': atcCode,
-        'is_controlled': isControlled,
-      };
+    'code': code,
+    'name': name.toJson(),
+    'form': form.toJson(),
+    'strength': strength,
+    'atc_code': atcCode,
+    'is_controlled': isControlled,
+  };
 
   Map<String, dynamic> toFhirCodeableConcept() => <String, dynamic>{
-        'coding': <dynamic>[
-          <String, dynamic>{
-            'system': CodeSystems.atc,
-            'code': atcCode,
-            'display': name.en,
-          }
-        ],
-        'text': '${name.en} $strength',
-      };
+    'coding': <dynamic>[
+      <String, dynamic>{
+        'system': CodeSystems.atc,
+        'code': atcCode,
+        'display': name.en,
+      },
+    ],
+    'text': '${name.en} $strength',
+  };
 }
 
 /// A prescription (FHIR `MedicationRequest`).
@@ -136,119 +136,120 @@ class Prescription {
     PrescriptionStatus? status,
     DateTime? endDate,
     String? instructions,
-  }) =>
-      Prescription(
-        id: id,
-        patientId: patientId,
-        medication: medication,
-        doseQuantity: doseQuantity,
-        doseUnit: doseUnit,
-        frequencyPerDay: frequencyPerDay,
-        route: route,
-        startDate: startDate,
-        prescriber: prescriber,
-        status: status ?? this.status,
-        encounterId: encounterId,
-        endDate: endDate ?? this.endDate,
-        instructions: instructions ?? this.instructions,
-        isPrn: isPrn,
-        indication: indication,
-      );
+  }) => Prescription(
+    id: id,
+    patientId: patientId,
+    medication: medication,
+    doseQuantity: doseQuantity,
+    doseUnit: doseUnit,
+    frequencyPerDay: frequencyPerDay,
+    route: route,
+    startDate: startDate,
+    prescriber: prescriber,
+    status: status ?? this.status,
+    encounterId: encounterId,
+    endDate: endDate ?? this.endDate,
+    instructions: instructions ?? this.instructions,
+    isPrn: isPrn,
+    indication: indication,
+  );
 
   factory Prescription.fromJson(Map<String, dynamic> json) => Prescription(
-        id: asString(json['id']),
-        patientId: asString(json['patient_id'] ?? json['patientId']),
-        medication: Medication.fromJson(
-          (json['medication'] as Map?)?.cast<String, dynamic>() ??
-              const <String, dynamic>{},
-        ),
-        doseQuantity: asDouble(json['dose_quantity'] ?? json['doseQuantity']),
-        doseUnit: asString(json['dose_unit'] ?? json['doseUnit']),
-        frequencyPerDay:
-            asInt(json['frequency_per_day'] ?? json['frequencyPerDay'], fallback: 1),
-        route: MedicationRoute.fromName(asString(json['route'], fallback: 'oral')),
-        startDate: asDateTime(json['start_date'] ?? json['startDate']),
-        prescriber: asString(json['prescriber']),
-        status: PrescriptionStatus.fromFhir(asString(json['status'])),
-        encounterId: asStringOrNull(json['encounter_id'] ?? json['encounterId']),
-        endDate: asDateTimeOrNull(json['end_date'] ?? json['endDate']),
-        instructions: asStringOrNull(json['instructions']),
-        isPrn: asBool(json['is_prn'] ?? json['isPrn']),
-        indication: asStringOrNull(json['indication']),
-      );
+    id: asString(json['id']),
+    patientId: asString(json['patient_id'] ?? json['patientId']),
+    medication: Medication.fromJson(
+      (json['medication'] as Map?)?.cast<String, dynamic>() ??
+          const <String, dynamic>{},
+    ),
+    doseQuantity: asDouble(json['dose_quantity'] ?? json['doseQuantity']),
+    doseUnit: asString(json['dose_unit'] ?? json['doseUnit']),
+    frequencyPerDay: asInt(
+      json['frequency_per_day'] ?? json['frequencyPerDay'],
+      fallback: 1,
+    ),
+    route: MedicationRoute.fromName(asString(json['route'], fallback: 'oral')),
+    startDate: asDateTime(json['start_date'] ?? json['startDate']),
+    prescriber: asString(json['prescriber']),
+    status: PrescriptionStatus.fromFhir(asString(json['status'])),
+    encounterId: asStringOrNull(json['encounter_id'] ?? json['encounterId']),
+    endDate: asDateTimeOrNull(json['end_date'] ?? json['endDate']),
+    instructions: asStringOrNull(json['instructions']),
+    isPrn: asBool(json['is_prn'] ?? json['isPrn']),
+    indication: asStringOrNull(json['indication']),
+  );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'patient_id': patientId,
-        'medication': medication.toJson(),
-        'dose_quantity': doseQuantity,
-        'dose_unit': doseUnit,
-        'frequency_per_day': frequencyPerDay,
-        'route': route.name,
-        'start_date': startDate.toIso8601String(),
-        'prescriber': prescriber,
-        'status': status.fhirCode,
-        'encounter_id': encounterId,
-        'end_date': endDate?.toIso8601String(),
-        'instructions': instructions,
-        'is_prn': isPrn,
-        'indication': indication,
-      };
+    'id': id,
+    'patient_id': patientId,
+    'medication': medication.toJson(),
+    'dose_quantity': doseQuantity,
+    'dose_unit': doseUnit,
+    'frequency_per_day': frequencyPerDay,
+    'route': route.name,
+    'start_date': startDate.toIso8601String(),
+    'prescriber': prescriber,
+    'status': status.fhirCode,
+    'encounter_id': encounterId,
+    'end_date': endDate?.toIso8601String(),
+    'instructions': instructions,
+    'is_prn': isPrn,
+    'indication': indication,
+  };
 
   Map<String, dynamic> toFhir() => pruneNulls(<String, dynamic>{
-        'resourceType': 'MedicationRequest',
-        'id': id,
-        'status': status.fhirCode,
-        'intent': 'order',
-        'medicationCodeableConcept': medication.toFhirCodeableConcept(),
-        'subject': <String, dynamic>{'reference': 'Patient/$patientId'},
-        if (encounterId != null)
-          'encounter': <String, dynamic>{'reference': 'Encounter/$encounterId'},
-        'authoredOn': toFhirDateTime(startDate),
-        'requester': <String, dynamic>{'display': prescriber},
-        if (indication != null)
-          'reasonCode': <dynamic>[
-            <String, dynamic>{'text': indication}
-          ],
-        'dosageInstruction': <dynamic>[
-          pruneNulls(<String, dynamic>{
-            'text': dosageText('en'),
-            'asNeededBoolean': isPrn,
-            if (instructions != null) 'patientInstruction': instructions,
-            'timing': <String, dynamic>{
-              'repeat': <String, dynamic>{
-                'frequency': frequencyPerDay,
-                'period': 1,
-                'periodUnit': 'd',
-                if (endDate != null)
-                  'boundsPeriod': <String, dynamic>{
-                    'start': toFhirDateTime(startDate),
-                    'end': toFhirDateTime(endDate!),
-                  },
+    'resourceType': 'MedicationRequest',
+    'id': id,
+    'status': status.fhirCode,
+    'intent': 'order',
+    'medicationCodeableConcept': medication.toFhirCodeableConcept(),
+    'subject': <String, dynamic>{'reference': 'Patient/$patientId'},
+    if (encounterId != null)
+      'encounter': <String, dynamic>{'reference': 'Encounter/$encounterId'},
+    'authoredOn': toFhirDateTime(startDate),
+    'requester': <String, dynamic>{'display': prescriber},
+    if (indication != null)
+      'reasonCode': <dynamic>[
+        <String, dynamic>{'text': indication},
+      ],
+    'dosageInstruction': <dynamic>[
+      pruneNulls(<String, dynamic>{
+        'text': dosageText('en'),
+        'asNeededBoolean': isPrn,
+        if (instructions != null) 'patientInstruction': instructions,
+        'timing': <String, dynamic>{
+          'repeat': <String, dynamic>{
+            'frequency': frequencyPerDay,
+            'period': 1,
+            'periodUnit': 'd',
+            if (endDate != null)
+              'boundsPeriod': <String, dynamic>{
+                'start': toFhirDateTime(startDate),
+                'end': toFhirDateTime(endDate!),
               },
+          },
+        },
+        'route': <String, dynamic>{
+          'coding': <dynamic>[
+            <String, dynamic>{
+              'system': CodeSystems.snomed,
+              'code': route.snomedCode,
+              'display': route.display.en,
             },
-            'route': <String, dynamic>{
-              'coding': <dynamic>[
-                <String, dynamic>{
-                  'system': CodeSystems.snomed,
-                  'code': route.snomedCode,
-                  'display': route.display.en,
-                }
-              ],
+          ],
+        },
+        'doseAndRate': <dynamic>[
+          <String, dynamic>{
+            'doseQuantity': <String, dynamic>{
+              'value': doseQuantity,
+              'unit': doseUnit,
+              'system': CodeSystems.ucum,
+              'code': doseUnit,
             },
-            'doseAndRate': <dynamic>[
-              <String, dynamic>{
-                'doseQuantity': <String, dynamic>{
-                  'value': doseQuantity,
-                  'unit': doseUnit,
-                  'system': CodeSystems.ucum,
-                  'code': doseUnit,
-                },
-              }
-            ],
-          })
+          },
         ],
-      });
+      }),
+    ],
+  });
 }
 
 /// A dispensing event from the pharmacy cabinet (FHIR `MedicationDispense`).
@@ -291,71 +292,70 @@ class Dispense {
     String? dispensedBy,
     String? refusalReason,
     String? lotNumber,
-  }) =>
-      Dispense(
-        id: id,
-        prescriptionId: prescriptionId,
-        patientId: patientId,
-        quantity: quantity,
-        status: status ?? this.status,
-        requestedAt: requestedAt,
-        dispensedAt: dispensedAt ?? this.dispensedAt,
-        dispensedBy: dispensedBy ?? this.dispensedBy,
-        cabinetId: cabinetId,
-        slot: slot,
-        refusalReason: refusalReason ?? this.refusalReason,
-        lotNumber: lotNumber ?? this.lotNumber,
-      );
+  }) => Dispense(
+    id: id,
+    prescriptionId: prescriptionId,
+    patientId: patientId,
+    quantity: quantity,
+    status: status ?? this.status,
+    requestedAt: requestedAt,
+    dispensedAt: dispensedAt ?? this.dispensedAt,
+    dispensedBy: dispensedBy ?? this.dispensedBy,
+    cabinetId: cabinetId,
+    slot: slot,
+    refusalReason: refusalReason ?? this.refusalReason,
+    lotNumber: lotNumber ?? this.lotNumber,
+  );
 
   factory Dispense.fromJson(Map<String, dynamic> json) => Dispense(
-        id: asString(json['id']),
-        prescriptionId:
-            asString(json['prescription_id'] ?? json['prescriptionId']),
-        patientId: asString(json['patient_id'] ?? json['patientId']),
-        quantity: asDouble(json['quantity']),
-        status: DispenseStatus.fromName(
-          asString(json['status'], fallback: 'requested'),
-        ),
-        requestedAt: asDateTime(json['requested_at'] ?? json['requestedAt']),
-        dispensedAt: asDateTimeOrNull(json['dispensed_at'] ?? json['dispensedAt']),
-        dispensedBy: asStringOrNull(json['dispensed_by'] ?? json['dispensedBy']),
-        cabinetId: asStringOrNull(json['cabinet_id'] ?? json['cabinetId']),
-        slot: asStringOrNull(json['slot']),
-        refusalReason:
-            asStringOrNull(json['refusal_reason'] ?? json['refusalReason']),
-        lotNumber: asStringOrNull(json['lot_number'] ?? json['lotNumber']),
-      );
+    id: asString(json['id']),
+    prescriptionId: asString(json['prescription_id'] ?? json['prescriptionId']),
+    patientId: asString(json['patient_id'] ?? json['patientId']),
+    quantity: asDouble(json['quantity']),
+    status: DispenseStatus.fromName(
+      asString(json['status'], fallback: 'requested'),
+    ),
+    requestedAt: asDateTime(json['requested_at'] ?? json['requestedAt']),
+    dispensedAt: asDateTimeOrNull(json['dispensed_at'] ?? json['dispensedAt']),
+    dispensedBy: asStringOrNull(json['dispensed_by'] ?? json['dispensedBy']),
+    cabinetId: asStringOrNull(json['cabinet_id'] ?? json['cabinetId']),
+    slot: asStringOrNull(json['slot']),
+    refusalReason: asStringOrNull(
+      json['refusal_reason'] ?? json['refusalReason'],
+    ),
+    lotNumber: asStringOrNull(json['lot_number'] ?? json['lotNumber']),
+  );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'prescription_id': prescriptionId,
-        'patient_id': patientId,
-        'quantity': quantity,
-        'status': status.name,
-        'requested_at': requestedAt.toIso8601String(),
-        'dispensed_at': dispensedAt?.toIso8601String(),
-        'dispensed_by': dispensedBy,
-        'cabinet_id': cabinetId,
-        'slot': slot,
-        'refusal_reason': refusalReason,
-        'lot_number': lotNumber,
-      };
+    'id': id,
+    'prescription_id': prescriptionId,
+    'patient_id': patientId,
+    'quantity': quantity,
+    'status': status.name,
+    'requested_at': requestedAt.toIso8601String(),
+    'dispensed_at': dispensedAt?.toIso8601String(),
+    'dispensed_by': dispensedBy,
+    'cabinet_id': cabinetId,
+    'slot': slot,
+    'refusal_reason': refusalReason,
+    'lot_number': lotNumber,
+  };
 
   Map<String, dynamic> toFhir() => pruneNulls(<String, dynamic>{
-        'resourceType': 'MedicationDispense',
-        'id': id,
-        'status': status.fhirCode,
-        'subject': <String, dynamic>{'reference': 'Patient/$patientId'},
-        'authorizingPrescription': <dynamic>[
-          <String, dynamic>{'reference': 'MedicationRequest/$prescriptionId'}
-        ],
-        'quantity': <String, dynamic>{'value': quantity},
-        if (dispensedAt != null) 'whenHandedOver': toFhirDateTime(dispensedAt!),
-        if (dispensedBy != null)
-          'performer': <dynamic>[
-            <String, dynamic>{
-              'actor': <String, dynamic>{'display': dispensedBy},
-            }
-          ],
-      });
+    'resourceType': 'MedicationDispense',
+    'id': id,
+    'status': status.fhirCode,
+    'subject': <String, dynamic>{'reference': 'Patient/$patientId'},
+    'authorizingPrescription': <dynamic>[
+      <String, dynamic>{'reference': 'MedicationRequest/$prescriptionId'},
+    ],
+    'quantity': <String, dynamic>{'value': quantity},
+    if (dispensedAt != null) 'whenHandedOver': toFhirDateTime(dispensedAt!),
+    if (dispensedBy != null)
+      'performer': <dynamic>[
+        <String, dynamic>{
+          'actor': <String, dynamic>{'display': dispensedBy},
+        },
+      ],
+  });
 }

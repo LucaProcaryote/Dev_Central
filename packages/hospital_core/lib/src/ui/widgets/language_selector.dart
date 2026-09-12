@@ -27,9 +27,9 @@ class LanguageSelector extends StatelessWidget {
         tooltip: SupportedLocales.nativeNameOf(current),
         icon: Text(
           SupportedLocales.shortNameOf(current),
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
       );
     }
@@ -45,11 +45,8 @@ class LanguageSelector extends StatelessWidget {
           ),
       ],
       selected: <Locale>{current},
-      onSelectionChanged: (selection) =>
-          controller.setLocale(selection.first),
-      style: const ButtonStyle(
-        visualDensity: VisualDensity.compact,
-      ),
+      onSelectionChanged: (selection) => controller.setLocale(selection.first),
+      style: const ButtonStyle(visualDensity: VisualDensity.compact),
     );
   }
 }

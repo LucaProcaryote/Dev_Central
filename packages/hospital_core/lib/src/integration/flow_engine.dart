@@ -24,19 +24,20 @@ class FlowExecutionContext {
 
   /// Hands the payload to one of the hospital applications.
   final Future<void> Function(String appCode, Map<String, dynamic> payload)
-      deliverToApplication;
+  deliverToApplication;
 
   /// Generic outbound HTTP POST.
-  final Future<void> Function(String url, Map<String, dynamic> payload) postToUrl;
+  final Future<void> Function(String url, Map<String, dynamic> payload)
+  postToUrl;
 
   /// A context that performs no side effects, for previewing a flow in the
   /// editor without touching any real system.
   static FlowExecutionContext dryRun() => FlowExecutionContext(
-        lookupPatient: (_) async => null,
-        writeToFhirStore: (_) async => 'preview',
-        deliverToApplication: (_, __) async {},
-        postToUrl: (_, __) async {},
-      );
+    lookupPatient: (_) async => null,
+    writeToFhirStore: (_) async => 'preview',
+    deliverToApplication: (_, __) async {},
+    postToUrl: (_, __) async {},
+  );
 }
 
 /// Executes integration flows and records what happened at every step.
@@ -105,15 +106,17 @@ class FlowEngine {
         result = _NodeResult.failure('$error');
       }
 
-      trace.add(TraceStep(
-        nodeId: node.id,
-        nodeLabel: node.effectiveLabel,
-        nodeType: node.type,
-        status: result.status,
-        at: DateTime.now(),
-        detail: result.detail,
-        payloadAfter: result.payload,
-      ));
+      trace.add(
+        TraceStep(
+          nodeId: node.id,
+          nodeLabel: node.effectiveLabel,
+          nodeType: node.type,
+          status: result.status,
+          at: DateTime.now(),
+          detail: result.detail,
+          payloadAfter: result.payload,
+        ),
+      );
 
       switch (result.status) {
         case MessageStatus.failed:
@@ -169,8 +172,9 @@ class FlowEngine {
 
       case FlowNodeType.filter:
         final path = (node.config['path'] ?? '').toString();
-        final operator =
-            FilterOperator.fromName((node.config['operator'] ?? 'equals').toString());
+        final operator = FilterOperator.fromName(
+          (node.config['operator'] ?? 'equals').toString(),
+        );
         final expected = (node.config['value'] ?? '').toString();
         final actual = readPath(input, path);
         final passes = operator.evaluate(actual, expected);
@@ -179,7 +183,8 @@ class FlowEngine {
         return passes
             ? _NodeResult.pass(input, 'Passed: $rendered')
             : _NodeResult.filtered(
-                'Dropped: $rendered (actual: ${actual ?? 'null'})');
+                'Dropped: $rendered (actual: ${actual ?? 'null'})',
+              );
 
       case FlowNodeType.mapper:
         final mappings = (node.config['mappings'] as List? ?? const <dynamic>[])
@@ -227,12 +232,17 @@ class FlowEngine {
           'gender': patient.gender.name,
           'preferred_language': patient.preferredLanguage,
         });
-        return _NodeResult.pass(enriched, 'Added demographics for ${patient.fullName}');
+        return _NodeResult.pass(
+          enriched,
+          'Added demographics for ${patient.fullName}',
+        );
 
       case FlowNodeType.validator:
         final resourceType = readPath(input, 'resourceType')?.toString();
         if (resourceType == null || resourceType.isEmpty) {
-          return _NodeResult.failure('Not a FHIR resource: "resourceType" is missing');
+          return _NodeResult.failure(
+            'Not a FHIR resource: "resourceType" is missing',
+          );
         }
         final requiredPaths = switch (resourceType) {
           'Observation' => <String>['status', 'code', 'subject'],
@@ -253,7 +263,8 @@ class FlowEngine {
 
       case FlowNodeType.codeTranslator:
         final path = (node.config['path'] ?? '').toString();
-        final table = (node.config['table'] as Map?)?.cast<String, dynamic>() ??
+        final table =
+            (node.config['table'] as Map?)?.cast<String, dynamic>() ??
             const <String, dynamic>{};
         final current = readPath(input, path)?.toString();
         if (current == null) {
@@ -264,7 +275,10 @@ class FlowEngine {
           if (onMissing == 'fail') {
             return _NodeResult.failure('No translation for code "$current"');
           }
-          return _NodeResult.pass(input, 'No translation for "$current", left as is');
+          return _NodeResult.pass(
+            input,
+            'No translation for "$current", left as is',
+          );
         }
         final translated = table[current];
         return _NodeResult.pass(
@@ -340,13 +354,12 @@ class _NodeResult {
     Map<String, dynamic> payload,
     String detail, {
     String? outputPort,
-  }) =>
-      _NodeResult(
-        status: MessageStatus.processing,
-        detail: detail,
-        payload: payload,
-        outputPort: outputPort,
-      );
+  }) => _NodeResult(
+    status: MessageStatus.processing,
+    detail: detail,
+    payload: payload,
+    outputPort: outputPort,
+  );
 
   factory _NodeResult.filtered(String detail) =>
       _NodeResult(status: MessageStatus.filtered, detail: detail);

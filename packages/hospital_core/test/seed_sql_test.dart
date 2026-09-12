@@ -27,6 +27,12 @@ void main() {
   final seed = HospitalSeed.build(now: reference);
 
   test('the committed seed.sql matches the Dart dataset', () {
+    if (!_isCanonicalCheckout()) {
+      markTestSkipped(
+        'seed.sql lives in Dev_Central/infrastructure; this is a vendored copy.',
+      );
+      return;
+    }
     final sql = _generate(seed, reference);
     final file = File(_seedPath());
 
@@ -46,15 +52,23 @@ void main() {
     expect(
       file.readAsStringSync(),
       sql,
-      reason: 'seed.sql is out of date with the Dart seed. Regenerate it:\n'
+      reason:
+          'seed.sql is out of date with the Dart seed. Regenerate it:\n'
           '  UPDATE_SEED_SQL=1 flutter test test/seed_sql_test.dart',
     );
   });
 }
 
 /// The generator only runs from inside Dev_Central, which owns the canonical
-/// package and the infrastructure directory beside it.
-String _seedPath() => '${Directory.current.path}/../../infrastructure/db/seed.sql';
+/// package and the infrastructure directory beside it. Vendored copies in the
+/// application repositories have no infrastructure directory, and this test is
+/// stripped from them by tools/sync_core.sh - but say so clearly if one ever
+/// does run it.
+String _seedPath() =>
+    '${Directory.current.path}/../../infrastructure/db/seed.sql';
+
+bool _isCanonicalCheckout() =>
+    Directory('${Directory.current.path}/../../infrastructure/db').existsSync();
 
 // ---------------------------------------------------------------------------
 // SQL emission
@@ -90,27 +104,49 @@ String _generate(HospitalSeed seed, DateTime reference) {
   out.writeln('-- Mini-Hospital 2026 - seed data');
   out.writeln('--');
   out.writeln('-- GENERATED FILE. Do not edit by hand.');
-  out.writeln('-- Source: packages/hospital_core/lib/src/seed/, in Dev_Central.');
-  out.writeln('-- Regenerate: UPDATE_SEED_SQL=1 flutter test test/seed_sql_test.dart');
+  out.writeln(
+    '-- Source: packages/hospital_core/lib/src/seed/, in Dev_Central.',
+  );
+  out.writeln(
+    '-- Regenerate: UPDATE_SEED_SQL=1 flutter test test/seed_sql_test.dart',
+  );
   out.writeln('--');
-  out.writeln('-- Every patient, address, telephone number and national register');
+  out.writeln(
+    '-- Every patient, address, telephone number and national register',
+  );
   out.writeln('-- number here is invented. The NISS check digits are computed');
-  out.writeln('-- correctly so format validation has something honest to work on,');
+  out.writeln(
+    '-- correctly so format validation has something honest to work on,',
+  );
   out.writeln('-- but the numbers belong to nobody.');
   out.writeln('--');
-  out.writeln('-- Timestamps are written relative to load time, so the hospital is');
-  out.writeln('-- always as current as the in-memory dataset rather than frozen on');
+  out.writeln(
+    '-- Timestamps are written relative to load time, so the hospital is',
+  );
+  out.writeln(
+    '-- always as current as the in-memory dataset rather than frozen on',
+  );
   out.writeln('-- the day this file was generated.');
   out.writeln();
   out.writeln('BEGIN;');
   out.writeln();
 
   // Loading twice must not double the hospital.
-  out.writeln('-- Idempotent: loading this file twice leaves one hospital, not two.');
-  out.writeln('TRUNCATE TABLE integration_messages, integration_flows, devices,');
-  out.writeln('               dispenses, stock_items, cabinets, clinical_notes,');
-  out.writeln('               prescriptions, observations, movements, encounters,');
-  out.writeln('               allergies, patients, staff, medications, beds, rooms,');
+  out.writeln(
+    '-- Idempotent: loading this file twice leaves one hospital, not two.',
+  );
+  out.writeln(
+    'TRUNCATE TABLE integration_messages, integration_flows, devices,',
+  );
+  out.writeln(
+    '               dispenses, stock_items, cabinets, clinical_notes,',
+  );
+  out.writeln(
+    '               prescriptions, observations, movements, encounters,',
+  );
+  out.writeln(
+    '               allergies, patients, staff, medications, beds, rooms,',
+  );
   out.writeln('               wards RESTART IDENTITY CASCADE;');
   out.writeln();
 
@@ -228,8 +264,12 @@ String _generate(HospitalSeed seed, DateTime reference) {
   }
 
   out.writeln();
-  out.writeln('-- Now that the encounters exist, mark the occupied beds. Doing this');
-  out.writeln('-- as an UPDATE derived from the encounters - rather than as literals -');
+  out.writeln(
+    '-- Now that the encounters exist, mark the occupied beds. Doing this',
+  );
+  out.writeln(
+    '-- as an UPDATE derived from the encounters - rather than as literals -',
+  );
   out.writeln('-- means the bed board and the patient list cannot disagree.');
   out.writeln('''UPDATE beds b
    SET status = 'occupied',

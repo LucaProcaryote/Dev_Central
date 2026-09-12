@@ -29,7 +29,29 @@ iOS from the same code.
 
 ---
 
-## Day one: get something on screen
+## Day zero: just open a link
+
+If the applications have been deployed (see [FIREBASE.md](FIREBASE.md)), there
+is nothing to install at all:
+
+| | |
+|---|---|
+| EHR | <https://my-hospital-2026-ehr.web.app> |
+| ADT | <https://my-hospital-2026-adt.web.app> |
+| PHARM | <https://my-hospital-2026-pharm.web.app> |
+| EAI | <https://my-hospital-2026-eai.web.app> |
+| Your device | `https://my-hospital-2026-dev.web.app/?device=DEV3` |
+
+Each visitor gets their own complete hospital in their own browser. Use your
+own `?device=` number so the class is ten different devices rather than ten
+copies of one.
+
+Nothing is shared between visitors in this mode, and nothing survives closing
+the tab. To share data you need the back end below.
+
+---
+
+## Day one: run it yourself
 
 The only prerequisite is the [Flutter SDK](https://docs.flutter.dev/get-started/install)
 (3.24 or newer). No database, no Docker, no Firebase account.
@@ -215,6 +237,11 @@ Every application takes the same `--dart-define` values:
 | `FHIR_BASE` | the HAPI FHIR endpoint | `http://localhost:8080/fhir` |
 | `EAI_BASE` | the integration engine | `http://localhost:8084` |
 | `DEVICE_ID` | `DEV1`..`DEV10` *(Dev_Central only)* | `DEV1` |
+
+On a hosted build, where you cannot pass `--dart-define`, the same settings can
+be given as query parameters — `?device=DEV3`, `?backend=restApi`,
+`?api=`, `?fhir=`, `?eai=`, `?auth=`. A query parameter wins over the value
+compiled in.
 
 ---
 

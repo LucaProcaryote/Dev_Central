@@ -122,18 +122,22 @@ List<StockItem> buildSeedStock(DateTime now) {
 
       var expiry = now.add(Duration(days: 90 + (seed % 600)));
       if (seed % 37 == 0) expiry = now.add(Duration(days: 8 + (seed % 20)));
-      if (seed % 89 == 0) expiry = now.subtract(Duration(days: 3 + (seed % 40)));
+      if (seed % 89 == 0) {
+        expiry = now.subtract(Duration(days: 3 + (seed % 40)));
+      }
 
-      items.add(StockItem(
-        id: '${cabinet.id}-${medication.code}',
-        cabinetId: cabinet.id,
-        slot: '$row-${slotNumber.toString().padLeft(2, '0')}',
-        medication: medication,
-        quantityOnHand: quantity,
-        parLevel: par,
-        expiryDate: expiry,
-        lotNumber: 'LOT${(240000 + lotCounter * 13).toString()}',
-      ));
+      items.add(
+        StockItem(
+          id: '${cabinet.id}-${medication.code}',
+          cabinetId: cabinet.id,
+          slot: '$row-${slotNumber.toString().padLeft(2, '0')}',
+          medication: medication,
+          quantityOnHand: quantity,
+          parLevel: par,
+          expiryDate: expiry,
+          lotNumber: 'LOT${(240000 + lotCounter * 13).toString()}',
+        ),
+      );
       index++;
     }
   }

@@ -42,12 +42,14 @@ class FirebaseAuthService extends AuthService {
     });
     // authStateChanges emits the restored session (or null) on subscribe, but
     // do not leave the UI stuck behind a splash if that is slow.
-    unawaited(Future<void>.delayed(const Duration(seconds: 3), () {
-      if (!_isReady) {
-        _isReady = true;
-        notifyListeners();
-      }
-    }));
+    unawaited(
+      Future<void>.delayed(const Duration(seconds: 3), () {
+        if (!_isReady) {
+          _isReady = true;
+          notifyListeners();
+        }
+      }),
+    );
   }
 
   @override
@@ -92,17 +94,14 @@ class FirebaseAuthService extends AuthService {
   }
 
   static String _mapCode(String firebaseCode) => switch (firebaseCode) {
-        'invalid-email' ||
-        'wrong-password' ||
-        'invalid-credential' =>
-          'invalid-credentials',
-        'user-not-found' => 'user-not-found',
-        'network-request-failed' => 'network',
-        'operation-not-allowed' ||
-        'configuration-not-found' =>
-          'not-configured',
-        _ => 'unknown',
-      };
+    'invalid-email' ||
+    'wrong-password' ||
+    'invalid-credential' => 'invalid-credentials',
+    'user-not-found' => 'user-not-found',
+    'network-request-failed' => 'network',
+    'operation-not-allowed' || 'configuration-not-found' => 'not-configured',
+    _ => 'unknown',
+  };
 
   /// Reads the `role` custom claim, defaulting to [UserRole.student].
   static Future<UserRole> defaultRoleResolver(fb.User user) async {

@@ -125,8 +125,7 @@ class _PatientAssignment extends StatelessWidget {
           Expanded(
             child: DropdownButtonFormField<String?>(
               initialValue: patient?.id,
-              decoration:
-                  InputDecoration(labelText: l10n.deviceTargetPatient),
+              decoration: InputDecoration(labelText: l10n.deviceTargetPatient),
               items: <DropdownMenuItem<String?>>[
                 DropdownMenuItem<String?>(
                   value: null,
@@ -174,8 +173,10 @@ class _ConfigurationCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(l10n.deviceScenario,
-              style: Theme.of(context).textTheme.labelMedium),
+          Text(
+            l10n.deviceScenario,
+            style: Theme.of(context).textTheme.labelMedium,
+          ),
           Gap.h8,
           Wrap(
             spacing: Gap.sm,
@@ -210,8 +211,8 @@ class _ConfigurationCard extends StatelessWidget {
                 onPressed: !canRun
                     ? null
                     : () => controller.isRunning
-                        ? controller.stop()
-                        : controller.start(),
+                          ? controller.stop()
+                          : controller.start(),
                 icon: Icon(
                   controller.isRunning ? Icons.stop : Icons.play_arrow,
                   size: 18,
@@ -242,8 +243,8 @@ class _ConfigurationCard extends StatelessWidget {
               child: Text(
                 l10n.deviceNotAssigned,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: HospitalTheme.warningOf(context),
-                    ),
+                  color: HospitalTheme.warningOf(context),
+                ),
               ),
             ),
         ],
@@ -352,7 +353,10 @@ class _OutboxCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     trailing: Text(
-                      Formats.time(context, entry.observation.effectiveDateTime),
+                      Formats.time(
+                        context,
+                        entry.observation.effectiveDateTime,
+                      ),
                       style: theme.textTheme.labelSmall,
                     ),
                   ),

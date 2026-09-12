@@ -32,10 +32,9 @@ class HospitalTheme {
   /// falls below 3:1 on a light surface. Both are relieved the same way - every
   /// status is drawn with a written label, and never colour alone. Do not
   /// introduce a status pill without its text.
-  static Color critical(Brightness brightness) =>
-      brightness == Brightness.dark
-          ? const Color(0xFFD9455A)
-          : const Color(0xFFE34948);
+  static Color critical(Brightness brightness) => brightness == Brightness.dark
+      ? const Color(0xFFD9455A)
+      : const Color(0xFFE34948);
 
   static Color warning(Brightness brightness) => brightness == Brightness.dark
       ? const Color(0xFFB98A00)
@@ -59,7 +58,8 @@ class HospitalTheme {
       warning(Theme.of(context).brightness);
   static Color successOf(BuildContext context) =>
       success(Theme.of(context).brightness);
-  static Color infoOf(BuildContext context) => info(Theme.of(context).brightness);
+  static Color infoOf(BuildContext context) =>
+      info(Theme.of(context).brightness);
   static Color seriesOf(BuildContext context) =>
       series(Theme.of(context).brightness);
 
@@ -93,9 +93,7 @@ class HospitalTheme {
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         isDense: true,
         filled: true,
         fillColor: scheme.surfaceContainerHighest.withValues(alpha: 0.35),
@@ -135,9 +133,7 @@ class HospitalTheme {
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }

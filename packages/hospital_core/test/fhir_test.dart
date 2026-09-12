@@ -36,8 +36,10 @@ void main() {
         expect(restored.familyName, original.familyName);
         expect(restored.givenName, original.givenName);
         expect(restored.gender, original.gender);
-        expect(restored.birthDate.toIso8601String().substring(0, 10),
-            original.birthDate.toIso8601String().substring(0, 10));
+        expect(
+          restored.birthDate.toIso8601String().substring(0, 10),
+          original.birthDate.toIso8601String().substring(0, 10),
+        );
         expect(restored.nationalNumber, original.nationalNumber);
         expect(restored.preferredLanguage, original.preferredLanguage);
         expect(restored.address.city, original.address.city);
@@ -122,15 +124,15 @@ void main() {
     });
 
     test('MedicationRequest carries the ATC code and a dosage', () {
-      final prescription =
-          seed.prescriptions.firstWhere((p) => !p.isPrn);
+      final prescription = seed.prescriptions.firstWhere((p) => !p.isPrn);
       final resource = prescription.toFhir();
 
       expect(resource['resourceType'], 'MedicationRequest');
       expect(resource['intent'], 'order');
-      final coding = ((resource['medicationCodeableConcept'] as Map)['coding']
-              as List)
-          .first as Map;
+      final coding =
+          ((resource['medicationCodeableConcept'] as Map)['coding'] as List)
+                  .first
+              as Map;
       expect(coding['system'], CodeSystems.atc);
       expect(coding['code'], prescription.medication.atcCode);
 
@@ -146,8 +148,11 @@ void main() {
       // FHIR forbids outright.
       void check(Map<String, dynamic> resource) {
         expect(resource['resourceType'], isNotNull);
-        expect(resource.values.any((v) => v == null), isFalse,
-            reason: 'null element in ${resource['resourceType']}');
+        expect(
+          resource.values.any((v) => v == null),
+          isFalse,
+          reason: 'null element in ${resource['resourceType']}',
+        );
       }
 
       for (final patient in seed.patients) {

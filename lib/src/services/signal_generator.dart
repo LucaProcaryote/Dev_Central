@@ -17,7 +17,11 @@ enum SimulationScenario {
     LocalizedText(en: 'Recovering', fr: 'Amélioration', nl: 'Herstellend'),
   ),
   artefact(
-    LocalizedText(en: 'Noisy signal', fr: 'Signal bruité', nl: 'Ruisachtig signaal'),
+    LocalizedText(
+      en: 'Noisy signal',
+      fr: 'Signal bruité',
+      nl: 'Ruisachtig signaal',
+    ),
   );
 
   const SimulationScenario(this.display);
@@ -36,12 +40,12 @@ class SignalGenerator {
     required this.scenario,
     Map<VitalSignType, double>? initial,
     int? seed,
-  })  : _random = Random(seed),
-        _current = <VitalSignType, double>{
-          ..._baselines,
-          if (initial != null) ...initial,
-        },
-        _elapsed = Duration.zero;
+  }) : _random = Random(seed),
+       _current = <VitalSignType, double>{
+         ..._baselines,
+         if (initial != null) ...initial,
+       },
+       _elapsed = Duration.zero;
 
   /// Healthy starting values, used when the caller has nothing better.
   static const Map<VitalSignType, double> _baselines = <VitalSignType, double>{
@@ -71,28 +75,28 @@ class SignalGenerator {
   /// The sign is physiological, not arithmetic: deteriorating means the
   /// saturation goes *down* and the heart rate goes *up*.
   double _driftPerMinute(VitalSignType type) => switch (scenario) {
-        SimulationScenario.stable || SimulationScenario.artefact => 0,
-        SimulationScenario.deteriorating => switch (type) {
-            VitalSignType.oxygenSaturation => -0.9,
-            VitalSignType.heartRate => 1.8,
-            VitalSignType.respiratoryRate => 0.5,
-            VitalSignType.bodyTemperature => 0.06,
-            VitalSignType.systolicBloodPressure => -1.4,
-            VitalSignType.diastolicBloodPressure => -0.9,
-            VitalSignType.activitySteps => -40,
-            VitalSignType.bodyWeight => 0.01,
-          },
-        SimulationScenario.recovering => switch (type) {
-            VitalSignType.oxygenSaturation => 0.5,
-            VitalSignType.heartRate => -1.1,
-            VitalSignType.respiratoryRate => -0.3,
-            VitalSignType.bodyTemperature => -0.05,
-            VitalSignType.systolicBloodPressure => 0.8,
-            VitalSignType.diastolicBloodPressure => 0.5,
-            VitalSignType.activitySteps => 60,
-            VitalSignType.bodyWeight => -0.01,
-          },
-      };
+    SimulationScenario.stable || SimulationScenario.artefact => 0,
+    SimulationScenario.deteriorating => switch (type) {
+      VitalSignType.oxygenSaturation => -0.9,
+      VitalSignType.heartRate => 1.8,
+      VitalSignType.respiratoryRate => 0.5,
+      VitalSignType.bodyTemperature => 0.06,
+      VitalSignType.systolicBloodPressure => -1.4,
+      VitalSignType.diastolicBloodPressure => -0.9,
+      VitalSignType.activitySteps => -40,
+      VitalSignType.bodyWeight => 0.01,
+    },
+    SimulationScenario.recovering => switch (type) {
+      VitalSignType.oxygenSaturation => 0.5,
+      VitalSignType.heartRate => -1.1,
+      VitalSignType.respiratoryRate => -0.3,
+      VitalSignType.bodyTemperature => -0.05,
+      VitalSignType.systolicBloodPressure => 0.8,
+      VitalSignType.diastolicBloodPressure => 0.5,
+      VitalSignType.activitySteps => 60,
+      VitalSignType.bodyWeight => -0.01,
+    },
+  };
 
   /// Beat-to-beat variation, which is what makes a trace look measured rather
   /// than computed. Wider in the artefact scenario, where the point is to see
@@ -111,14 +115,14 @@ class SignalGenerator {
   }
 
   static double _clampFor(VitalSignType type, double value) => switch (type) {
-        VitalSignType.oxygenSaturation => value.clamp(60, 100),
-        VitalSignType.bodyTemperature => value.clamp(33, 42.5),
-        VitalSignType.heartRate => value.clamp(28, 220),
-        VitalSignType.respiratoryRate => value.clamp(4, 50),
-        VitalSignType.activitySteps => value.clamp(0, 40000),
-        VitalSignType.bodyWeight => value.clamp(2, 300),
-        _ => value.clamp(30, 260),
-      };
+    VitalSignType.oxygenSaturation => value.clamp(60, 100),
+    VitalSignType.bodyTemperature => value.clamp(33, 42.5),
+    VitalSignType.heartRate => value.clamp(28, 220),
+    VitalSignType.respiratoryRate => value.clamp(4, 50),
+    VitalSignType.activitySteps => value.clamp(0, 40000),
+    VitalSignType.bodyWeight => value.clamp(2, 300),
+    _ => value.clamp(30, 260),
+  };
 
   /// Advances the simulated clock and returns the next value for [type].
   double next(VitalSignType type, Duration since) {
@@ -141,20 +145,19 @@ class SignalGenerator {
     required Duration since,
     required DateTime at,
     required String Function() nextId,
-  }) =>
-      <Observation>[
-        for (final type in device.kind.measures)
-          Observation(
-            id: nextId(),
-            patientId: patientId,
-            encounterId: encounterId,
-            type: type,
-            value: next(type, since),
-            effectiveDateTime: at,
-            deviceId: device.code,
-            status: ObservationStatus.finalised,
-          ),
-      ];
+  }) => <Observation>[
+    for (final type in device.kind.measures)
+      Observation(
+        id: nextId(),
+        patientId: patientId,
+        encounterId: encounterId,
+        type: type,
+        value: next(type, since),
+        effectiveDateTime: at,
+        deviceId: device.code,
+        status: ObservationStatus.finalised,
+      ),
+  ];
 
   Duration get elapsed => _elapsed;
 }

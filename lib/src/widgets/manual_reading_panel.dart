@@ -65,8 +65,9 @@ class _ManualReadingPanelState extends State<ManualReadingPanel> {
                 flex: 2,
                 child: TextField(
                   controller: _valueController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: InputDecoration(
                     labelText: type.unit,
                     hintText: '${type.normalLow} – ${type.normalHigh}',
@@ -90,8 +91,8 @@ class _ManualReadingPanelState extends State<ManualReadingPanel> {
               type.unit,
             ),
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
@@ -112,12 +113,14 @@ class _ManualReadingPanelState extends State<ManualReadingPanel> {
     final entry = await controller.sendManual(type, value);
     if (entry == null) return;
 
-    messenger.showSnackBar(SnackBar(
-      content: Text(
-        entry.delivered
-            ? l10n.deviceSent
-            : l10n.deviceSendFailed(entry.error ?? ''),
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          entry.delivered
+              ? l10n.deviceSent
+              : l10n.deviceSendFailed(entry.error ?? ''),
+        ),
       ),
-    ));
+    );
   }
 }

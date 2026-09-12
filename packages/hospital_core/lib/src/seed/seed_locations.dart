@@ -25,7 +25,11 @@ const List<Ward> seedWards = <Ward>[
     code: 'CARD',
     name: LocalizedText(en: 'Cardiology', fr: 'Cardiologie', nl: 'Cardiologie'),
     floor: 3,
-    specialty: LocalizedText(en: 'Cardiology', fr: 'Cardiologie', nl: 'Cardiologie'),
+    specialty: LocalizedText(
+      en: 'Cardiology',
+      fr: 'Cardiologie',
+      nl: 'Cardiologie',
+    ),
     phoneExtension: '3100',
   ),
   Ward(
@@ -77,7 +81,11 @@ const List<Ward> seedWards = <Ward>[
     code: 'PED',
     name: LocalizedText(en: 'Paediatrics', fr: 'Pédiatrie', nl: 'Pediatrie'),
     floor: 5,
-    specialty: LocalizedText(en: 'Paediatrics', fr: 'Pédiatrie', nl: 'Pediatrie'),
+    specialty: LocalizedText(
+      en: 'Paediatrics',
+      fr: 'Pédiatrie',
+      nl: 'Pediatrie',
+    ),
     phoneExtension: '5100',
   ),
   Ward(
@@ -85,20 +93,52 @@ const List<Ward> seedWards = <Ward>[
     code: 'GERI',
     name: LocalizedText(en: 'Geriatrics', fr: 'Gériatrie', nl: 'Geriatrie'),
     floor: 6,
-    specialty: LocalizedText(en: 'Geriatrics', fr: 'Gériatrie', nl: 'Geriatrie'),
+    specialty: LocalizedText(
+      en: 'Geriatrics',
+      fr: 'Gériatrie',
+      nl: 'Geriatrie',
+    ),
     phoneExtension: '6100',
   ),
 ];
 
 /// How many rooms each ward has, and which of them are isolation rooms.
 const Map<String, _WardLayout> _layouts = <String, _WardLayout>{
-  'ward-emer': _WardLayout(firstRoom: 1, roomCount: 6, isolationRooms: <int>[6]),
-  'ward-card': _WardLayout(firstRoom: 301, roomCount: 8, isolationRooms: <int>[308]),
-  'ward-int': _WardLayout(firstRoom: 401, roomCount: 8, isolationRooms: <int>[407, 408]),
-  'ward-surg': _WardLayout(firstRoom: 201, roomCount: 6, isolationRooms: <int>[]),
-  'ward-icu': _WardLayout(firstRoom: 221, roomCount: 6, isolationRooms: <int>[221, 222, 223, 224, 225, 226]),
-  'ward-ped': _WardLayout(firstRoom: 501, roomCount: 6, isolationRooms: <int>[506]),
-  'ward-geri': _WardLayout(firstRoom: 601, roomCount: 8, isolationRooms: <int>[608]),
+  'ward-emer': _WardLayout(
+    firstRoom: 1,
+    roomCount: 6,
+    isolationRooms: <int>[6],
+  ),
+  'ward-card': _WardLayout(
+    firstRoom: 301,
+    roomCount: 8,
+    isolationRooms: <int>[308],
+  ),
+  'ward-int': _WardLayout(
+    firstRoom: 401,
+    roomCount: 8,
+    isolationRooms: <int>[407, 408],
+  ),
+  'ward-surg': _WardLayout(
+    firstRoom: 201,
+    roomCount: 6,
+    isolationRooms: <int>[],
+  ),
+  'ward-icu': _WardLayout(
+    firstRoom: 221,
+    roomCount: 6,
+    isolationRooms: <int>[221, 222, 223, 224, 225, 226],
+  ),
+  'ward-ped': _WardLayout(
+    firstRoom: 501,
+    roomCount: 6,
+    isolationRooms: <int>[506],
+  ),
+  'ward-geri': _WardLayout(
+    firstRoom: 601,
+    roomCount: 8,
+    isolationRooms: <int>[608],
+  ),
 };
 
 class _WardLayout {
@@ -120,12 +160,14 @@ List<Room> buildSeedRooms() {
     final layout = _layouts[ward.id]!;
     for (var i = 0; i < layout.roomCount; i++) {
       final number = layout.firstRoom + i;
-      rooms.add(Room(
-        id: 'room-${ward.code.toLowerCase()}-$number',
-        wardId: ward.id,
-        number: '$number',
-        isIsolation: layout.isolationRooms.contains(number),
-      ));
+      rooms.add(
+        Room(
+          id: 'room-${ward.code.toLowerCase()}-$number',
+          wardId: ward.id,
+          number: '$number',
+          isIsolation: layout.isolationRooms.contains(number),
+        ),
+      );
     }
   }
   return rooms;
@@ -138,13 +180,15 @@ List<Bed> buildSeedBeds(List<Room> rooms) {
     final wardCode = room.id.split('-')[1];
     final letters = room.isIsolation ? <String>['A'] : <String>['A', 'B'];
     for (final letter in letters) {
-      beds.add(Bed(
-        id: 'bed-$wardCode-${room.number}$letter'.toLowerCase(),
-        roomId: room.id,
-        wardId: room.wardId,
-        label: '${room.number}-$letter',
-        status: BedStatus.free,
-      ));
+      beds.add(
+        Bed(
+          id: 'bed-$wardCode-${room.number}$letter'.toLowerCase(),
+          roomId: room.id,
+          wardId: room.wardId,
+          label: '${room.number}-$letter',
+          status: BedStatus.free,
+        ),
+      );
     }
   }
   return beds;

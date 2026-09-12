@@ -7,7 +7,11 @@ import '../util/localized_text.dart';
 /// crash, only a surprising value they can reason about.
 enum FieldTransform {
   none(
-    LocalizedText(en: 'Copy as is', fr: 'Copier tel quel', nl: 'Ongewijzigd kopiëren'),
+    LocalizedText(
+      en: 'Copy as is',
+      fr: 'Copier tel quel',
+      nl: 'Ongewijzigd kopiëren',
+    ),
     takesArgument: false,
   ),
   uppercase(
@@ -19,7 +23,11 @@ enum FieldTransform {
     takesArgument: false,
   ),
   trim(
-    LocalizedText(en: 'Trim spaces', fr: 'Supprimer les espaces', nl: 'Spaties verwijderen'),
+    LocalizedText(
+      en: 'Trim spaces',
+      fr: 'Supprimer les espaces',
+      nl: 'Spaties verwijderen',
+    ),
     takesArgument: false,
   ),
   dateOnly(
@@ -43,11 +51,19 @@ enum FieldTransform {
     takesArgument: true,
   ),
   prefix(
-    LocalizedText(en: 'Add prefix', fr: 'Ajouter un préfixe', nl: 'Voorvoegsel toevoegen'),
+    LocalizedText(
+      en: 'Add prefix',
+      fr: 'Ajouter un préfixe',
+      nl: 'Voorvoegsel toevoegen',
+    ),
     takesArgument: true,
   ),
   suffix(
-    LocalizedText(en: 'Add suffix', fr: 'Ajouter un suffixe', nl: 'Achtervoegsel toevoegen'),
+    LocalizedText(
+      en: 'Add suffix',
+      fr: 'Ajouter un suffixe',
+      nl: 'Achtervoegsel toevoegen',
+    ),
     takesArgument: true,
   ),
   stripPrefix(
@@ -75,9 +91,9 @@ enum FieldTransform {
   final bool takesArgument;
 
   static FieldTransform fromName(String value) => values.firstWhere(
-        (t) => t.name == value,
-        orElse: () => FieldTransform.none,
-      );
+    (t) => t.name == value,
+    orElse: () => FieldTransform.none,
+  );
 
   /// Applies the transform. [argument] is ignored when [takesArgument] is false.
   Object? apply(Object? input, String? argument) {
@@ -132,30 +148,50 @@ class FieldMapping {
   final String? argument;
 
   factory FieldMapping.fromJson(Map<String, dynamic> json) => FieldMapping(
-        sourcePath: (json['source'] ?? json['sourcePath'] ?? '').toString(),
-        targetPath: (json['target'] ?? json['targetPath'] ?? '').toString(),
-        transform: FieldTransform.fromName((json['transform'] ?? 'none').toString()),
-        argument: json['argument']?.toString(),
-      );
+    sourcePath: (json['source'] ?? json['sourcePath'] ?? '').toString(),
+    targetPath: (json['target'] ?? json['targetPath'] ?? '').toString(),
+    transform: FieldTransform.fromName(
+      (json['transform'] ?? 'none').toString(),
+    ),
+    argument: json['argument']?.toString(),
+  );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'source': sourcePath,
-        'target': targetPath,
-        'transform': transform.name,
-        'argument': argument,
-      };
+    'source': sourcePath,
+    'target': targetPath,
+    'transform': transform.name,
+    'argument': argument,
+  };
 }
 
 /// Comparison used by filter and router nodes.
 enum FilterOperator {
   equals('=', LocalizedText(en: 'equals', fr: 'égal à', nl: 'gelijk aan')),
-  notEquals('≠', LocalizedText(en: 'is not', fr: 'différent de', nl: 'niet gelijk aan')),
+  notEquals(
+    '≠',
+    LocalizedText(en: 'is not', fr: 'différent de', nl: 'niet gelijk aan'),
+  ),
   contains('∋', LocalizedText(en: 'contains', fr: 'contient', nl: 'bevat')),
-  startsWith('^', LocalizedText(en: 'starts with', fr: 'commence par', nl: 'begint met')),
-  exists('∃', LocalizedText(en: 'is present', fr: 'est présent', nl: 'is aanwezig')),
-  notExists('∄', LocalizedText(en: 'is absent', fr: 'est absent', nl: 'is afwezig')),
-  greaterThan('>', LocalizedText(en: 'greater than', fr: 'supérieur à', nl: 'groter dan')),
-  lessThan('<', LocalizedText(en: 'less than', fr: 'inférieur à', nl: 'kleiner dan'));
+  startsWith(
+    '^',
+    LocalizedText(en: 'starts with', fr: 'commence par', nl: 'begint met'),
+  ),
+  exists(
+    '∃',
+    LocalizedText(en: 'is present', fr: 'est présent', nl: 'is aanwezig'),
+  ),
+  notExists(
+    '∄',
+    LocalizedText(en: 'is absent', fr: 'est absent', nl: 'is afwezig'),
+  ),
+  greaterThan(
+    '>',
+    LocalizedText(en: 'greater than', fr: 'supérieur à', nl: 'groter dan'),
+  ),
+  lessThan(
+    '<',
+    LocalizedText(en: 'less than', fr: 'inférieur à', nl: 'kleiner dan'),
+  );
 
   const FilterOperator(this.symbol, this.display);
 
@@ -166,9 +202,9 @@ enum FilterOperator {
       this != FilterOperator.exists && this != FilterOperator.notExists;
 
   static FilterOperator fromName(String value) => values.firstWhere(
-        (o) => o.name == value,
-        orElse: () => FilterOperator.equals,
-      );
+    (o) => o.name == value,
+    orElse: () => FilterOperator.equals,
+  );
 
   /// Evaluates `actual <op> expected`.
   bool evaluate(Object? actual, String expected) {

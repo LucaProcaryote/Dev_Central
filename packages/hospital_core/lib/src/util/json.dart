@@ -12,34 +12,34 @@ String asString(Object? value, {String fallback = ''}) =>
     value?.toString() ?? fallback;
 
 int? asIntOrNull(Object? value) => switch (value) {
-      null => null,
-      final int v => v,
-      final num v => v.toInt(),
-      final String v => int.tryParse(v),
-      _ => null,
-    };
+  null => null,
+  final int v => v,
+  final num v => v.toInt(),
+  final String v => int.tryParse(v),
+  _ => null,
+};
 
 int asInt(Object? value, {int fallback = 0}) => asIntOrNull(value) ?? fallback;
 
 double? asDoubleOrNull(Object? value) => switch (value) {
-      null => null,
-      final double v => v,
-      final num v => v.toDouble(),
-      final String v => double.tryParse(v),
-      _ => null,
-    };
+  null => null,
+  final double v => v,
+  final num v => v.toDouble(),
+  final String v => double.tryParse(v),
+  _ => null,
+};
 
 double asDouble(Object? value, {double fallback = 0}) =>
     asDoubleOrNull(value) ?? fallback;
 
 bool asBool(Object? value, {bool fallback = false}) => switch (value) {
-      null => fallback,
-      final bool v => v,
-      final num v => v != 0,
-      'true' || 't' || '1' || 'yes' => true,
-      'false' || 'f' || '0' || 'no' => false,
-      _ => fallback,
-    };
+  null => fallback,
+  final bool v => v,
+  final num v => v != 0,
+  'true' || 't' || '1' || 'yes' => true,
+  'false' || 'f' || '0' || 'no' => false,
+  _ => fallback,
+};
 
 /// Parses an ISO-8601 timestamp, tolerating nulls and malformed values.
 DateTime? asDateTimeOrNull(Object? value) {
@@ -49,15 +49,16 @@ DateTime? asDateTimeOrNull(Object? value) {
 }
 
 DateTime asDateTime(Object? value, {DateTime? fallback}) =>
-    asDateTimeOrNull(value) ?? fallback ?? DateTime.fromMillisecondsSinceEpoch(0);
+    asDateTimeOrNull(value) ??
+    fallback ??
+    DateTime.fromMillisecondsSinceEpoch(0);
 
 /// Formats a [DateTime] as a FHIR `dateTime` (always UTC, second precision).
 String toFhirDateTime(DateTime value) =>
     '${value.toUtc().toIso8601String().split('.').first}Z';
 
 /// Formats a [DateTime] as a FHIR `date` (`YYYY-MM-DD`).
-String toFhirDate(DateTime value) =>
-    value.toIso8601String().substring(0, 10);
+String toFhirDate(DateTime value) => value.toIso8601String().substring(0, 10);
 
 List<Map<String, dynamic>> asMapList(Object? value) {
   if (value is! List) return const <Map<String, dynamic>>[];

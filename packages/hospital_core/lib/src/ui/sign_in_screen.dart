@@ -40,10 +40,12 @@ class _SignInScreenState extends State<SignInScreen> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    await _run(() => context.read<AuthService>().signIn(
-          email: _emailController.text,
-          password: _passwordController.text,
-        ));
+    await _run(
+      () => context.read<AuthService>().signIn(
+        email: _emailController.text,
+        password: _passwordController.text,
+      ),
+    );
   }
 
   Future<void> _quickSignIn(HospitalUser user) =>
@@ -65,7 +67,8 @@ class _SignInScreenState extends State<SignInScreen> {
     }
   }
 
-  String _errorMessage(HospitalLocalizations l10n, String code) => switch (code) {
+  String _errorMessage(HospitalLocalizations l10n, String code) =>
+      switch (code) {
         'invalid-credentials' => l10n.authErrorInvalidCredentials,
         'user-not-found' => l10n.authErrorUserNotFound,
         'network' => l10n.authErrorNetwork,
@@ -201,9 +204,9 @@ class _SignInScreenState extends State<SignInScreen> {
                           onFieldSubmitted: (_) => _submit(),
                           validator: (value) =>
                               config.authMode == AuthMode.firebase &&
-                                      (value ?? '').isEmpty
-                                  ? l10n.errorFieldRequired
-                                  : null,
+                                  (value ?? '').isEmpty
+                              ? l10n.errorFieldRequired
+                              : null,
                         ),
                       ],
                     ),
@@ -222,8 +225,9 @@ class _SignInScreenState extends State<SignInScreen> {
                         Expanded(
                           child: Text(
                             _errorMessage(l10n, _errorCode!),
-                            style: theme.textTheme.bodySmall
-                                ?.copyWith(color: theme.colorScheme.error),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.error,
+                            ),
                           ),
                         ),
                       ],
@@ -283,16 +287,19 @@ class _SignInScreenState extends State<SignInScreen> {
                                       account.displayName,
                                       style: theme.textTheme.bodyMedium
                                           ?.copyWith(
-                                              fontWeight: FontWeight.w600),
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                     ),
                                     Text(
-                                      account.role.display
-                                          .forLanguage(language),
+                                      account.role.display.forLanguage(
+                                        language,
+                                      ),
                                       style: theme.textTheme.labelSmall
                                           ?.copyWith(
-                                        color:
-                                            theme.colorScheme.onSurfaceVariant,
-                                      ),
+                                            color: theme
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          ),
                                     ),
                                   ],
                                 ),

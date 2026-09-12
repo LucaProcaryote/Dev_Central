@@ -31,7 +31,11 @@ enum FlowNodeType {
   ),
   adtSource(
     FlowNodeFamily.source,
-    LocalizedText(en: 'ADT events', fr: 'Événements ADT', nl: 'ADT-gebeurtenissen'),
+    LocalizedText(
+      en: 'ADT events',
+      fr: 'Événements ADT',
+      nl: 'ADT-gebeurtenissen',
+    ),
     LocalizedText(
       en: 'Admission, transfer and discharge movements.',
       fr: 'Mouvements d’admission, de transfert et de sortie.',
@@ -60,7 +64,11 @@ enum FlowNodeType {
   ),
   mapper(
     FlowNodeFamily.processor,
-    LocalizedText(en: 'Field mapper', fr: 'Mappage de champs', nl: 'Veldtoewijzing'),
+    LocalizedText(
+      en: 'Field mapper',
+      fr: 'Mappage de champs',
+      nl: 'Veldtoewijzing',
+    ),
     LocalizedText(
       en: 'Moves and rewrites fields from the input to the output.',
       fr: 'Déplace et réécrit les champs de l’entrée vers la sortie.',
@@ -78,7 +86,11 @@ enum FlowNodeType {
   ),
   validator(
     FlowNodeFamily.processor,
-    LocalizedText(en: 'FHIR validator', fr: 'Validateur FHIR', nl: 'FHIR-validator'),
+    LocalizedText(
+      en: 'FHIR validator',
+      fr: 'Validateur FHIR',
+      nl: 'FHIR-validator',
+    ),
     LocalizedText(
       en: 'Rejects messages that are not well-formed FHIR resources.',
       fr: 'Rejette les messages qui ne sont pas des ressources FHIR valides.',
@@ -120,11 +132,7 @@ enum FlowNodeType {
   ),
   applicationDestination(
     FlowNodeFamily.destination,
-    LocalizedText(
-      en: 'Application',
-      fr: 'Application',
-      nl: 'Toepassing',
-    ),
+    LocalizedText(en: 'Application', fr: 'Application', nl: 'Toepassing'),
     LocalizedText(
       en: 'Delivers the message to EHR, ADT or PHARM.',
       fr: 'Livre le message à l’EHR, l’ADT ou la PHARM.',
@@ -160,9 +168,9 @@ enum FlowNodeType {
   bool get hasOutput => family != FlowNodeFamily.destination;
 
   static FlowNodeType fromName(String value) => values.firstWhere(
-        (t) => t.name == value,
-        orElse: () => FlowNodeType.logDestination,
-      );
+    (t) => t.name == value,
+    orElse: () => FlowNodeType.logDestination,
+  );
 }
 
 enum FlowNodeFamily {
@@ -217,34 +225,34 @@ class FlowNode {
     double? x,
     double? y,
     Map<String, dynamic>? config,
-  }) =>
-      FlowNode(
-        id: id,
-        type: type,
-        label: label ?? this.label,
-        x: x ?? this.x,
-        y: y ?? this.y,
-        config: config ?? this.config,
-      );
+  }) => FlowNode(
+    id: id,
+    type: type,
+    label: label ?? this.label,
+    x: x ?? this.x,
+    y: y ?? this.y,
+    config: config ?? this.config,
+  );
 
   factory FlowNode.fromJson(Map<String, dynamic> json) => FlowNode(
-        id: asString(json['id']),
-        type: FlowNodeType.fromName(asString(json['type'])),
-        label: asString(json['label']),
-        x: asDouble(json['x']),
-        y: asDouble(json['y']),
-        config: (json['config'] as Map?)?.cast<String, dynamic>() ??
-            const <String, dynamic>{},
-      );
+    id: asString(json['id']),
+    type: FlowNodeType.fromName(asString(json['type'])),
+    label: asString(json['label']),
+    x: asDouble(json['x']),
+    y: asDouble(json['y']),
+    config:
+        (json['config'] as Map?)?.cast<String, dynamic>() ??
+        const <String, dynamic>{},
+  );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'type': type.name,
-        'label': label,
-        'x': x,
-        'y': y,
-        'config': config,
-      };
+    'id': id,
+    'type': type.name,
+    'label': label,
+    'x': x,
+    'y': y,
+    'config': config,
+  };
 }
 
 /// A directed link between two nodes.
@@ -266,18 +274,18 @@ class FlowConnection {
   final String fromPort;
 
   factory FlowConnection.fromJson(Map<String, dynamic> json) => FlowConnection(
-        id: asString(json['id']),
-        fromNodeId: asString(json['from_node_id'] ?? json['fromNodeId']),
-        toNodeId: asString(json['to_node_id'] ?? json['toNodeId']),
-        fromPort: asString(json['from_port'] ?? json['fromPort'], fallback: 'out'),
-      );
+    id: asString(json['id']),
+    fromNodeId: asString(json['from_node_id'] ?? json['fromNodeId']),
+    toNodeId: asString(json['to_node_id'] ?? json['toNodeId']),
+    fromPort: asString(json['from_port'] ?? json['fromPort'], fallback: 'out'),
+  );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'from_node_id': fromNodeId,
-        'to_node_id': toNodeId,
-        'from_port': fromPort,
-      };
+    'id': id,
+    'from_node_id': fromNodeId,
+    'to_node_id': toNodeId,
+    'from_port': fromPort,
+  };
 }
 
 /// A complete integration flow, as drawn on the canvas.
@@ -332,60 +340,68 @@ class IntegrationFlow {
   List<FlowValidationIssue> validate() {
     final issues = <FlowValidationIssue>[];
     if (nodes.isEmpty) {
-      issues.add(const FlowValidationIssue(
-        nodeId: null,
-        message: LocalizedText(
-          en: 'The flow is empty. Drag a source onto the canvas to start.',
-          fr: 'Le flux est vide. Faites glisser une source pour commencer.',
-          nl: 'De flow is leeg. Sleep een bron naar het canvas om te beginnen.',
+      issues.add(
+        const FlowValidationIssue(
+          nodeId: null,
+          message: LocalizedText(
+            en: 'The flow is empty. Drag a source onto the canvas to start.',
+            fr: 'Le flux est vide. Faites glisser une source pour commencer.',
+            nl: 'De flow is leeg. Sleep een bron naar het canvas om te beginnen.',
+          ),
         ),
-      ));
+      );
       return issues;
     }
     if (sources.isEmpty) {
-      issues.add(const FlowValidationIssue(
-        nodeId: null,
-        message: LocalizedText(
-          en: 'The flow has no source, so nothing can enter it.',
-          fr: 'Le flux n’a pas de source, rien ne peut y entrer.',
-          nl: 'De flow heeft geen bron, er kan niets binnenkomen.',
+      issues.add(
+        const FlowValidationIssue(
+          nodeId: null,
+          message: LocalizedText(
+            en: 'The flow has no source, so nothing can enter it.',
+            fr: 'Le flux n’a pas de source, rien ne peut y entrer.',
+            nl: 'De flow heeft geen bron, er kan niets binnenkomen.',
+          ),
         ),
-      ));
+      );
     }
     if (!nodes.any((n) => n.type.family == FlowNodeFamily.destination)) {
-      issues.add(const FlowValidationIssue(
-        nodeId: null,
-        message: LocalizedText(
-          en: 'The flow has no destination, so messages go nowhere.',
-          fr: 'Le flux n’a pas de destination, les messages ne vont nulle part.',
-          nl: 'De flow heeft geen bestemming, berichten gaan nergens heen.',
+      issues.add(
+        const FlowValidationIssue(
+          nodeId: null,
+          message: LocalizedText(
+            en: 'The flow has no destination, so messages go nowhere.',
+            fr: 'Le flux n’a pas de destination, les messages ne vont nulle part.',
+            nl: 'De flow heeft geen bestemming, berichten gaan nergens heen.',
+          ),
         ),
-      ));
+      );
     }
     for (final node in nodes) {
-      final hasIncoming =
-          connections.any((c) => c.toNodeId == node.id);
-      final hasOutgoing =
-          connections.any((c) => c.fromNodeId == node.id);
+      final hasIncoming = connections.any((c) => c.toNodeId == node.id);
+      final hasOutgoing = connections.any((c) => c.fromNodeId == node.id);
       if (node.type.hasInput && !hasIncoming) {
-        issues.add(FlowValidationIssue(
-          nodeId: node.id,
-          message: LocalizedText(
-            en: '"${node.effectiveLabel}" has no incoming connection.',
-            fr: '« ${node.effectiveLabel} » n’a aucune connexion entrante.',
-            nl: '"${node.effectiveLabel}" heeft geen inkomende verbinding.',
+        issues.add(
+          FlowValidationIssue(
+            nodeId: node.id,
+            message: LocalizedText(
+              en: '"${node.effectiveLabel}" has no incoming connection.',
+              fr: '« ${node.effectiveLabel} » n’a aucune connexion entrante.',
+              nl: '"${node.effectiveLabel}" heeft geen inkomende verbinding.',
+            ),
           ),
-        ));
+        );
       }
       if (node.type.hasOutput && !hasOutgoing) {
-        issues.add(FlowValidationIssue(
-          nodeId: node.id,
-          message: LocalizedText(
-            en: '"${node.effectiveLabel}" has no outgoing connection.',
-            fr: '« ${node.effectiveLabel} » n’a aucune connexion sortante.',
-            nl: '"${node.effectiveLabel}" heeft geen uitgaande verbinding.',
+        issues.add(
+          FlowValidationIssue(
+            nodeId: node.id,
+            message: LocalizedText(
+              en: '"${node.effectiveLabel}" has no outgoing connection.',
+              fr: '« ${node.effectiveLabel} » n’a aucune connexion sortante.',
+              nl: '"${node.effectiveLabel}" heeft geen uitgaande verbinding.',
+            ),
           ),
-        ));
+        );
       }
     }
     return issues;
@@ -399,44 +415,47 @@ class IntegrationFlow {
     List<FlowConnection>? connections,
     int? messagesProcessed,
     int? messagesFailed,
-  }) =>
-      IntegrationFlow(
-        id: id,
-        name: name ?? this.name,
-        description: description ?? this.description,
-        isEnabled: isEnabled ?? this.isEnabled,
-        nodes: nodes ?? this.nodes,
-        connections: connections ?? this.connections,
-        updatedAt: DateTime.now(),
-        messagesProcessed: messagesProcessed ?? this.messagesProcessed,
-        messagesFailed: messagesFailed ?? this.messagesFailed,
-      );
+  }) => IntegrationFlow(
+    id: id,
+    name: name ?? this.name,
+    description: description ?? this.description,
+    isEnabled: isEnabled ?? this.isEnabled,
+    nodes: nodes ?? this.nodes,
+    connections: connections ?? this.connections,
+    updatedAt: DateTime.now(),
+    messagesProcessed: messagesProcessed ?? this.messagesProcessed,
+    messagesFailed: messagesFailed ?? this.messagesFailed,
+  );
 
-  factory IntegrationFlow.fromJson(Map<String, dynamic> json) => IntegrationFlow(
-        id: asString(json['id']),
-        name: LocalizedText.fromJson(json['name']),
-        description: LocalizedText.fromJson(json['description']),
-        isEnabled: asBool(json['is_enabled'] ?? json['isEnabled'], fallback: true),
-        nodes: asMapList(json['nodes']).map(FlowNode.fromJson).toList(),
-        connections:
-            asMapList(json['connections']).map(FlowConnection.fromJson).toList(),
-        updatedAt: asDateTime(json['updated_at'] ?? json['updatedAt']),
-        messagesProcessed:
-            asInt(json['messages_processed'] ?? json['messagesProcessed']),
-        messagesFailed: asInt(json['messages_failed'] ?? json['messagesFailed']),
-      );
+  factory IntegrationFlow.fromJson(
+    Map<String, dynamic> json,
+  ) => IntegrationFlow(
+    id: asString(json['id']),
+    name: LocalizedText.fromJson(json['name']),
+    description: LocalizedText.fromJson(json['description']),
+    isEnabled: asBool(json['is_enabled'] ?? json['isEnabled'], fallback: true),
+    nodes: asMapList(json['nodes']).map(FlowNode.fromJson).toList(),
+    connections: asMapList(
+      json['connections'],
+    ).map(FlowConnection.fromJson).toList(),
+    updatedAt: asDateTime(json['updated_at'] ?? json['updatedAt']),
+    messagesProcessed: asInt(
+      json['messages_processed'] ?? json['messagesProcessed'],
+    ),
+    messagesFailed: asInt(json['messages_failed'] ?? json['messagesFailed']),
+  );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'name': name.toJson(),
-        'description': description.toJson(),
-        'is_enabled': isEnabled,
-        'nodes': nodes.map((n) => n.toJson()).toList(),
-        'connections': connections.map((c) => c.toJson()).toList(),
-        'updated_at': updatedAt.toIso8601String(),
-        'messages_processed': messagesProcessed,
-        'messages_failed': messagesFailed,
-      };
+    'id': id,
+    'name': name.toJson(),
+    'description': description.toJson(),
+    'is_enabled': isEnabled,
+    'nodes': nodes.map((n) => n.toJson()).toList(),
+    'connections': connections.map((c) => c.toJson()).toList(),
+    'updated_at': updatedAt.toIso8601String(),
+    'messages_processed': messagesProcessed,
+    'messages_failed': messagesFailed,
+  };
 }
 
 @immutable
@@ -449,7 +468,9 @@ class FlowValidationIssue {
 /// Outcome of a message passing through the engine.
 enum MessageStatus {
   received(LocalizedText(en: 'Received', fr: 'Reçu', nl: 'Ontvangen')),
-  processing(LocalizedText(en: 'Processing', fr: 'En traitement', nl: 'In verwerking')),
+  processing(
+    LocalizedText(en: 'Processing', fr: 'En traitement', nl: 'In verwerking'),
+  ),
   delivered(LocalizedText(en: 'Delivered', fr: 'Livré', nl: 'Afgeleverd')),
   filtered(LocalizedText(en: 'Filtered out', fr: 'Filtré', nl: 'Uitgefilterd')),
   failed(LocalizedText(en: 'Failed', fr: 'Échec', nl: 'Mislukt'));
@@ -458,9 +479,9 @@ enum MessageStatus {
   final LocalizedText display;
 
   static MessageStatus fromName(String value) => values.firstWhere(
-        (s) => s.name == value,
-        orElse: () => MessageStatus.received,
-      );
+    (s) => s.name == value,
+    orElse: () => MessageStatus.received,
+  );
 }
 
 /// One step of a message's journey through a flow. The trace is what makes the
@@ -491,29 +512,29 @@ class TraceStep {
   final Map<String, dynamic>? payloadAfter;
 
   factory TraceStep.fromJson(Map<String, dynamic> json) => TraceStep(
-        nodeId: asString(json['node_id'] ?? json['nodeId']),
-        nodeLabel: asString(json['node_label'] ?? json['nodeLabel']),
-        nodeType: FlowNodeType.fromName(
-          asString(json['node_type'] ?? json['nodeType']),
-        ),
-        status: MessageStatus.fromName(asString(json['status'])),
-        at: asDateTime(json['at']),
-        detail: asString(json['detail']),
-        payloadAfter: (json['payload_after'] ?? json['payloadAfter']) is Map
-            ? ((json['payload_after'] ?? json['payloadAfter']) as Map)
-                .cast<String, dynamic>()
-            : null,
-      );
+    nodeId: asString(json['node_id'] ?? json['nodeId']),
+    nodeLabel: asString(json['node_label'] ?? json['nodeLabel']),
+    nodeType: FlowNodeType.fromName(
+      asString(json['node_type'] ?? json['nodeType']),
+    ),
+    status: MessageStatus.fromName(asString(json['status'])),
+    at: asDateTime(json['at']),
+    detail: asString(json['detail']),
+    payloadAfter: (json['payload_after'] ?? json['payloadAfter']) is Map
+        ? ((json['payload_after'] ?? json['payloadAfter']) as Map)
+              .cast<String, dynamic>()
+        : null,
+  );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'node_id': nodeId,
-        'node_label': nodeLabel,
-        'node_type': nodeType.name,
-        'status': status.name,
-        'at': at.toIso8601String(),
-        'detail': detail,
-        'payload_after': payloadAfter,
-      };
+    'node_id': nodeId,
+    'node_label': nodeLabel,
+    'node_type': nodeType.name,
+    'status': status.name,
+    'at': at.toIso8601String(),
+    'detail': detail,
+    'payload_after': payloadAfter,
+  };
 }
 
 /// A message handled by the integration engine.
@@ -553,8 +574,7 @@ class IntegrationMessage {
   final List<TraceStep> trace;
   final String? patientId;
 
-  Duration? get latency =>
-      processedAt?.difference(receivedAt);
+  Duration? get latency => processedAt?.difference(receivedAt);
 
   IntegrationMessage copyWith({
     MessageStatus? status,
@@ -564,51 +584,53 @@ class IntegrationMessage {
     String? error,
     List<TraceStep>? trace,
     Map<String, dynamic>? payload,
-  }) =>
-      IntegrationMessage(
-        id: id,
-        messageType: messageType,
-        sourceApp: sourceApp,
-        payload: payload ?? this.payload,
-        status: status ?? this.status,
-        receivedAt: receivedAt,
-        flowId: flowId ?? this.flowId,
-        targetApp: targetApp ?? this.targetApp,
-        processedAt: processedAt ?? this.processedAt,
-        error: error ?? this.error,
-        trace: trace ?? this.trace,
-        patientId: patientId,
-      );
+  }) => IntegrationMessage(
+    id: id,
+    messageType: messageType,
+    sourceApp: sourceApp,
+    payload: payload ?? this.payload,
+    status: status ?? this.status,
+    receivedAt: receivedAt,
+    flowId: flowId ?? this.flowId,
+    targetApp: targetApp ?? this.targetApp,
+    processedAt: processedAt ?? this.processedAt,
+    error: error ?? this.error,
+    trace: trace ?? this.trace,
+    patientId: patientId,
+  );
 
   factory IntegrationMessage.fromJson(Map<String, dynamic> json) =>
       IntegrationMessage(
         id: asString(json['id']),
         messageType: asString(json['message_type'] ?? json['messageType']),
         sourceApp: asString(json['source_app'] ?? json['sourceApp']),
-        payload: (json['payload'] as Map?)?.cast<String, dynamic>() ??
+        payload:
+            (json['payload'] as Map?)?.cast<String, dynamic>() ??
             const <String, dynamic>{},
         status: MessageStatus.fromName(asString(json['status'])),
         receivedAt: asDateTime(json['received_at'] ?? json['receivedAt']),
         flowId: asStringOrNull(json['flow_id'] ?? json['flowId']),
         targetApp: asStringOrNull(json['target_app'] ?? json['targetApp']),
-        processedAt: asDateTimeOrNull(json['processed_at'] ?? json['processedAt']),
+        processedAt: asDateTimeOrNull(
+          json['processed_at'] ?? json['processedAt'],
+        ),
         error: asStringOrNull(json['error']),
         trace: asMapList(json['trace']).map(TraceStep.fromJson).toList(),
         patientId: asStringOrNull(json['patient_id'] ?? json['patientId']),
       );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'message_type': messageType,
-        'source_app': sourceApp,
-        'payload': payload,
-        'status': status.name,
-        'received_at': receivedAt.toIso8601String(),
-        'flow_id': flowId,
-        'target_app': targetApp,
-        'processed_at': processedAt?.toIso8601String(),
-        'error': error,
-        'trace': trace.map((t) => t.toJson()).toList(),
-        'patient_id': patientId,
-      };
+    'id': id,
+    'message_type': messageType,
+    'source_app': sourceApp,
+    'payload': payload,
+    'status': status.name,
+    'received_at': receivedAt.toIso8601String(),
+    'flow_id': flowId,
+    'target_app': targetApp,
+    'processed_at': processedAt?.toIso8601String(),
+    'error': error,
+    'trace': trace.map((t) => t.toJson()).toList(),
+    'patient_id': patientId,
+  };
 }

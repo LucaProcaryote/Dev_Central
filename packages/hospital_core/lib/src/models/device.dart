@@ -17,22 +17,38 @@ enum DeviceKind {
     '448',
   ),
   cardiacMonitor(
-    LocalizedText(en: 'Cardiac monitor', fr: 'Moniteur cardiaque', nl: 'Hartmonitor'),
+    LocalizedText(
+      en: 'Cardiac monitor',
+      fr: 'Moniteur cardiaque',
+      nl: 'Hartmonitor',
+    ),
     <VitalSignType>[VitalSignType.heartRate, VitalSignType.respiratoryRate],
     '347',
   ),
   pulseOximeter(
-    LocalizedText(en: 'Pulse oximeter', fr: 'Oxymètre de pouls', nl: 'Pulsoximeter'),
+    LocalizedText(
+      en: 'Pulse oximeter',
+      fr: 'Oxymètre de pouls',
+      nl: 'Pulsoximeter',
+    ),
     <VitalSignType>[VitalSignType.oxygenSaturation, VitalSignType.heartRate],
     '448',
   ),
   activityTracker(
-    LocalizedText(en: 'Activity tracker', fr: "Traceur d'activité", nl: 'Activiteitentracker'),
+    LocalizedText(
+      en: 'Activity tracker',
+      fr: "Traceur d'activité",
+      nl: 'Activiteitentracker',
+    ),
     <VitalSignType>[VitalSignType.activitySteps, VitalSignType.heartRate],
     '625',
   ),
   bloodPressureMonitor(
-    LocalizedText(en: 'Blood pressure monitor', fr: 'Tensiomètre', nl: 'Bloeddrukmeter'),
+    LocalizedText(
+      en: 'Blood pressure monitor',
+      fr: 'Tensiomètre',
+      nl: 'Bloeddrukmeter',
+    ),
     <VitalSignType>[
       VitalSignType.systolicBloodPressure,
       VitalSignType.diastolicBloodPressure,
@@ -67,25 +83,27 @@ enum DeviceKind {
   final String mdcCode;
 
   static DeviceKind fromName(String value) => values.firstWhere(
-        (k) => k.name == value,
-        orElse: () => DeviceKind.multiparameter,
-      );
+    (k) => k.name == value,
+    orElse: () => DeviceKind.multiparameter,
+  );
 }
 
 /// Operational state of a device.
 enum DeviceStatus {
   active(LocalizedText(en: 'Active', fr: 'Actif', nl: 'Actief')),
   standby(LocalizedText(en: 'Standby', fr: 'En veille', nl: 'Stand-by')),
-  maintenance(LocalizedText(en: 'Maintenance', fr: 'Maintenance', nl: 'Onderhoud')),
+  maintenance(
+    LocalizedText(en: 'Maintenance', fr: 'Maintenance', nl: 'Onderhoud'),
+  ),
   offline(LocalizedText(en: 'Offline', fr: 'Hors ligne', nl: 'Offline'));
 
   const DeviceStatus(this.display);
   final LocalizedText display;
 
   static DeviceStatus fromName(String value) => values.firstWhere(
-        (s) => s.name == value,
-        orElse: () => DeviceStatus.offline,
-      );
+    (s) => s.name == value,
+    orElse: () => DeviceStatus.offline,
+  );
 }
 
 /// A connected medical device (FHIR `Device`).
@@ -145,90 +163,91 @@ class MedicalDevice {
     DateTime? lastSeenAt,
     int? batteryPercent,
     bool clearAssignment = false,
-  }) =>
-      MedicalDevice(
-        id: id,
-        code: code,
-        kind: kind,
-        manufacturer: manufacturer,
-        model: model,
-        serialNumber: serialNumber,
-        status: status ?? this.status,
-        assignedPatientId:
-            clearAssignment ? null : (assignedPatientId ?? this.assignedPatientId),
-        assignedBedId:
-            clearAssignment ? null : (assignedBedId ?? this.assignedBedId),
-        wardId: wardId ?? this.wardId,
-        lastSeenAt: lastSeenAt ?? this.lastSeenAt,
-        batteryPercent: batteryPercent ?? this.batteryPercent,
-        ownerStudent: ownerStudent,
-      );
+  }) => MedicalDevice(
+    id: id,
+    code: code,
+    kind: kind,
+    manufacturer: manufacturer,
+    model: model,
+    serialNumber: serialNumber,
+    status: status ?? this.status,
+    assignedPatientId: clearAssignment
+        ? null
+        : (assignedPatientId ?? this.assignedPatientId),
+    assignedBedId: clearAssignment
+        ? null
+        : (assignedBedId ?? this.assignedBedId),
+    wardId: wardId ?? this.wardId,
+    lastSeenAt: lastSeenAt ?? this.lastSeenAt,
+    batteryPercent: batteryPercent ?? this.batteryPercent,
+    ownerStudent: ownerStudent,
+  );
 
   factory MedicalDevice.fromJson(Map<String, dynamic> json) => MedicalDevice(
-        id: asString(json['id']),
-        code: asString(json['code']),
-        kind: DeviceKind.fromName(asString(json['kind'])),
-        manufacturer: asString(json['manufacturer']),
-        model: asString(json['model']),
-        serialNumber: asString(json['serial_number'] ?? json['serialNumber']),
-        status: DeviceStatus.fromName(asString(json['status'], fallback: 'offline')),
-        assignedPatientId: asStringOrNull(
-          json['assigned_patient_id'] ?? json['assignedPatientId'],
-        ),
-        assignedBedId:
-            asStringOrNull(json['assigned_bed_id'] ?? json['assignedBedId']),
-        wardId: asStringOrNull(json['ward_id'] ?? json['wardId']),
-        lastSeenAt: asDateTimeOrNull(json['last_seen_at'] ?? json['lastSeenAt']),
-        batteryPercent:
-            asIntOrNull(json['battery_percent'] ?? json['batteryPercent']),
-        ownerStudent:
-            asStringOrNull(json['owner_student'] ?? json['ownerStudent']),
-      );
+    id: asString(json['id']),
+    code: asString(json['code']),
+    kind: DeviceKind.fromName(asString(json['kind'])),
+    manufacturer: asString(json['manufacturer']),
+    model: asString(json['model']),
+    serialNumber: asString(json['serial_number'] ?? json['serialNumber']),
+    status: DeviceStatus.fromName(
+      asString(json['status'], fallback: 'offline'),
+    ),
+    assignedPatientId: asStringOrNull(
+      json['assigned_patient_id'] ?? json['assignedPatientId'],
+    ),
+    assignedBedId: asStringOrNull(
+      json['assigned_bed_id'] ?? json['assignedBedId'],
+    ),
+    wardId: asStringOrNull(json['ward_id'] ?? json['wardId']),
+    lastSeenAt: asDateTimeOrNull(json['last_seen_at'] ?? json['lastSeenAt']),
+    batteryPercent: asIntOrNull(
+      json['battery_percent'] ?? json['batteryPercent'],
+    ),
+    ownerStudent: asStringOrNull(json['owner_student'] ?? json['ownerStudent']),
+  );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'code': code,
-        'kind': kind.name,
-        'manufacturer': manufacturer,
-        'model': model,
-        'serial_number': serialNumber,
-        'status': status.name,
-        'assigned_patient_id': assignedPatientId,
-        'assigned_bed_id': assignedBedId,
-        'ward_id': wardId,
-        'last_seen_at': lastSeenAt?.toIso8601String(),
-        'battery_percent': batteryPercent,
-        'owner_student': ownerStudent,
-      };
+    'id': id,
+    'code': code,
+    'kind': kind.name,
+    'manufacturer': manufacturer,
+    'model': model,
+    'serial_number': serialNumber,
+    'status': status.name,
+    'assigned_patient_id': assignedPatientId,
+    'assigned_bed_id': assignedBedId,
+    'ward_id': wardId,
+    'last_seen_at': lastSeenAt?.toIso8601String(),
+    'battery_percent': batteryPercent,
+    'owner_student': ownerStudent,
+  };
 
   Map<String, dynamic> toFhir() => pruneNulls(<String, dynamic>{
-        'resourceType': 'Device',
-        'id': id,
-        'identifier': <dynamic>[
-          <String, dynamic>{
-            'system': CodeSystems.localDevice,
-            'value': code,
-          }
-        ],
-        'status': status == DeviceStatus.offline ? 'inactive' : 'active',
-        'manufacturer': manufacturer,
-        'serialNumber': serialNumber,
-        'deviceName': <dynamic>[
-          <String, dynamic>{'name': model, 'type': 'model-name'}
-        ],
-        'type': <String, dynamic>{
-          'coding': <dynamic>[
-            <String, dynamic>{
-              'system': 'urn:iso:std:iso:11073:10101',
-              'code': kind.mdcCode,
-              'display': kind.display.en,
-            }
-          ],
-          'text': kind.display.en,
+    'resourceType': 'Device',
+    'id': id,
+    'identifier': <dynamic>[
+      <String, dynamic>{'system': CodeSystems.localDevice, 'value': code},
+    ],
+    'status': status == DeviceStatus.offline ? 'inactive' : 'active',
+    'manufacturer': manufacturer,
+    'serialNumber': serialNumber,
+    'deviceName': <dynamic>[
+      <String, dynamic>{'name': model, 'type': 'model-name'},
+    ],
+    'type': <String, dynamic>{
+      'coding': <dynamic>[
+        <String, dynamic>{
+          'system': 'urn:iso:std:iso:11073:10101',
+          'code': kind.mdcCode,
+          'display': kind.display.en,
         },
-        if (assignedPatientId != null)
-          'patient': <String, dynamic>{'reference': 'Patient/$assignedPatientId'},
-        if (assignedBedId != null)
-          'location': <String, dynamic>{'reference': 'Location/$assignedBedId'},
-      });
+      ],
+      'text': kind.display.en,
+    },
+    if (assignedPatientId != null)
+      'patient': <String, dynamic>{'reference': 'Patient/$assignedPatientId'},
+    if (assignedBedId != null)
+      'location': <String, dynamic>{'reference': 'Location/$assignedBedId'},
+  });
 }

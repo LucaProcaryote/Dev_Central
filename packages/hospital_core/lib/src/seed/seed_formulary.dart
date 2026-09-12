@@ -9,7 +9,11 @@ import '../util/localized_text.dart';
 const List<Medication> seedFormulary = <Medication>[
   Medication(
     code: 'MED-0101',
-    name: LocalizedText(en: 'Paracetamol', fr: 'Paracétamol', nl: 'Paracetamol'),
+    name: LocalizedText(
+      en: 'Paracetamol',
+      fr: 'Paracétamol',
+      nl: 'Paracetamol',
+    ),
     form: LocalizedText(en: 'Tablet', fr: 'Comprimé', nl: 'Tablet'),
     strength: '500 mg',
     atcCode: 'N02BE01',
@@ -23,7 +27,11 @@ const List<Medication> seedFormulary = <Medication>[
   ),
   Medication(
     code: 'MED-0103',
-    name: LocalizedText(en: 'Amoxicillin', fr: 'Amoxicilline', nl: 'Amoxicilline'),
+    name: LocalizedText(
+      en: 'Amoxicillin',
+      fr: 'Amoxicilline',
+      nl: 'Amoxicilline',
+    ),
     form: LocalizedText(en: 'Capsule', fr: 'Gélule', nl: 'Capsule'),
     strength: '500 mg',
     atcCode: 'J01CA04',
@@ -70,14 +78,22 @@ const List<Medication> seedFormulary = <Medication>[
   ),
   Medication(
     code: 'MED-0108',
-    name: LocalizedText(en: 'Perindopril', fr: 'Périndopril', nl: 'Perindopril'),
+    name: LocalizedText(
+      en: 'Perindopril',
+      fr: 'Périndopril',
+      nl: 'Perindopril',
+    ),
     form: LocalizedText(en: 'Tablet', fr: 'Comprimé', nl: 'Tablet'),
     strength: '5 mg',
     atcCode: 'C09AA04',
   ),
   Medication(
     code: 'MED-0109',
-    name: LocalizedText(en: 'Atorvastatin', fr: 'Atorvastatine', nl: 'Atorvastatine'),
+    name: LocalizedText(
+      en: 'Atorvastatin',
+      fr: 'Atorvastatine',
+      nl: 'Atorvastatine',
+    ),
     form: LocalizedText(en: 'Tablet', fr: 'Comprimé', nl: 'Tablet'),
     strength: '40 mg',
     atcCode: 'C10AA05',
@@ -196,7 +212,11 @@ const List<Medication> seedFormulary = <Medication>[
   ),
   Medication(
     code: 'MED-0120',
-    name: LocalizedText(en: 'Levothyroxine', fr: 'Lévothyroxine', nl: 'Levothyroxine'),
+    name: LocalizedText(
+      en: 'Levothyroxine',
+      fr: 'Lévothyroxine',
+      nl: 'Levothyroxine',
+    ),
     form: LocalizedText(en: 'Tablet', fr: 'Comprimé', nl: 'Tablet'),
     strength: '75 µg',
     atcCode: 'H03AA01',

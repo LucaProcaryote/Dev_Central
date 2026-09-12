@@ -18,7 +18,8 @@ class CodeSystems {
       'http://terminology.hl7.org/CodeSystem/discharge-disposition';
 
   /// Local code systems, namespaced under the teaching hospital.
-  static const String localBase = 'http://mini-hospital.example.org/fhir/CodeSystem';
+  static const String localBase =
+      'http://mini-hospital.example.org/fhir/CodeSystem';
   static const String localWard = '$localBase/ward';
   static const String localNoteType = '$localBase/note-type';
   static const String localDevice = '$localBase/device-type';
@@ -33,7 +34,11 @@ enum VitalSignType {
     loincCode: '29463-7',
     unit: 'kg',
     ucum: 'kg',
-    display: LocalizedText(en: 'Body weight', fr: 'Poids corporel', nl: 'Lichaamsgewicht'),
+    display: LocalizedText(
+      en: 'Body weight',
+      fr: 'Poids corporel',
+      nl: 'Lichaamsgewicht',
+    ),
     normalLow: 2,
     normalHigh: 250,
     decimals: 1,
@@ -181,20 +186,25 @@ enum VitalSignType {
 }
 
 /// FHIR `Observation.status`.
-enum ObservationStatus { registered, preliminary, finalised, amended, cancelled;
+enum ObservationStatus {
+  registered,
+  preliminary,
+  finalised,
+  amended,
+  cancelled;
 
   /// FHIR uses the American spelling `final`, which is a Dart keyword, so the
   /// enum constant is [finalised] and the wire value is mapped here.
   String get fhirCode => this == ObservationStatus.finalised ? 'final' : name;
 
   static ObservationStatus fromFhir(String? code) => switch (code) {
-        'registered' => ObservationStatus.registered,
-        'preliminary' => ObservationStatus.preliminary,
-        'final' => ObservationStatus.finalised,
-        'amended' => ObservationStatus.amended,
-        'cancelled' || 'entered-in-error' => ObservationStatus.cancelled,
-        _ => ObservationStatus.finalised,
-      };
+    'registered' => ObservationStatus.registered,
+    'preliminary' => ObservationStatus.preliminary,
+    'final' => ObservationStatus.finalised,
+    'amended' => ObservationStatus.amended,
+    'cancelled' || 'entered-in-error' => ObservationStatus.cancelled,
+    _ => ObservationStatus.finalised,
+  };
 }
 
 /// Administrative gender, as FHIR defines it.
@@ -208,33 +218,48 @@ enum AdministrativeGender {
   final LocalizedText display;
 
   static AdministrativeGender fromFhir(String? code) => switch (code) {
-        'male' => AdministrativeGender.male,
-        'female' => AdministrativeGender.female,
-        'other' => AdministrativeGender.other,
-        _ => AdministrativeGender.unknown,
-      };
+    'male' => AdministrativeGender.male,
+    'female' => AdministrativeGender.female,
+    'other' => AdministrativeGender.other,
+    _ => AdministrativeGender.unknown,
+  };
 }
 
 /// FHIR `Encounter.class` restricted to what this teaching hospital models.
 enum EncounterClass {
-  inpatient('IMP', LocalizedText(en: 'Inpatient', fr: 'Hospitalisation', nl: 'Opname')),
-  outpatient('AMB', LocalizedText(en: 'Outpatient', fr: 'Ambulatoire', nl: 'Ambulant')),
-  emergency('EMER', LocalizedText(en: 'Emergency', fr: 'Urgences', nl: 'Spoed')),
-  dayCare('SS', LocalizedText(en: 'Day care', fr: 'Hôpital de jour', nl: 'Dagziekenhuis')),
-  homeCare('HH', LocalizedText(en: 'Home care', fr: 'Soins à domicile', nl: 'Thuiszorg'));
+  inpatient(
+    'IMP',
+    LocalizedText(en: 'Inpatient', fr: 'Hospitalisation', nl: 'Opname'),
+  ),
+  outpatient(
+    'AMB',
+    LocalizedText(en: 'Outpatient', fr: 'Ambulatoire', nl: 'Ambulant'),
+  ),
+  emergency(
+    'EMER',
+    LocalizedText(en: 'Emergency', fr: 'Urgences', nl: 'Spoed'),
+  ),
+  dayCare(
+    'SS',
+    LocalizedText(en: 'Day care', fr: 'Hôpital de jour', nl: 'Dagziekenhuis'),
+  ),
+  homeCare(
+    'HH',
+    LocalizedText(en: 'Home care', fr: 'Soins à domicile', nl: 'Thuiszorg'),
+  );
 
   const EncounterClass(this.code, this.display);
   final String code;
   final LocalizedText display;
 
   static EncounterClass fromCode(String? code) => switch (code) {
-        'IMP' => EncounterClass.inpatient,
-        'AMB' => EncounterClass.outpatient,
-        'EMER' => EncounterClass.emergency,
-        'SS' => EncounterClass.dayCare,
-        'HH' => EncounterClass.homeCare,
-        _ => EncounterClass.inpatient,
-      };
+    'IMP' => EncounterClass.inpatient,
+    'AMB' => EncounterClass.outpatient,
+    'EMER' => EncounterClass.emergency,
+    'SS' => EncounterClass.dayCare,
+    'HH' => EncounterClass.homeCare,
+    _ => EncounterClass.inpatient,
+  };
 }
 
 /// FHIR `Encounter.status`, narrowed to the ADT lifecycle we simulate.
@@ -250,19 +275,19 @@ enum EncounterStatus {
 
   /// FHIR spells these in kebab-case.
   String get fhirCode => switch (this) {
-        EncounterStatus.inProgress => 'in-progress',
-        EncounterStatus.onLeave => 'onleave',
-        _ => name,
-      };
+    EncounterStatus.inProgress => 'in-progress',
+    EncounterStatus.onLeave => 'onleave',
+    _ => name,
+  };
 
   static EncounterStatus fromFhir(String? code) => switch (code) {
-        'planned' => EncounterStatus.planned,
-        'in-progress' || 'arrived' || 'triaged' => EncounterStatus.inProgress,
-        'onleave' => EncounterStatus.onLeave,
-        'finished' => EncounterStatus.finished,
-        'cancelled' || 'entered-in-error' => EncounterStatus.cancelled,
-        _ => EncounterStatus.planned,
-      };
+    'planned' => EncounterStatus.planned,
+    'in-progress' || 'arrived' || 'triaged' => EncounterStatus.inProgress,
+    'onleave' => EncounterStatus.onLeave,
+    'finished' => EncounterStatus.finished,
+    'cancelled' || 'entered-in-error' => EncounterStatus.cancelled,
+    _ => EncounterStatus.planned,
+  };
 
   bool get isActive =>
       this == EncounterStatus.inProgress || this == EncounterStatus.onLeave;
@@ -278,10 +303,7 @@ enum MovementType {
     'A02',
     LocalizedText(en: 'Transfer', fr: 'Transfert', nl: 'Overplaatsing'),
   ),
-  discharge(
-    'A03',
-    LocalizedText(en: 'Discharge', fr: 'Sortie', nl: 'Ontslag'),
-  ),
+  discharge('A03', LocalizedText(en: 'Discharge', fr: 'Sortie', nl: 'Ontslag')),
   cancelAdmission(
     'A11',
     LocalizedText(
@@ -303,9 +325,9 @@ enum MovementType {
   final LocalizedText display;
 
   static MovementType fromName(String value) => values.firstWhere(
-        (m) => m.name == value,
-        orElse: () => MovementType.admission,
-      );
+    (m) => m.name == value,
+    orElse: () => MovementType.admission,
+  );
 }
 
 /// Status of a physical bed in a ward.
@@ -336,23 +358,39 @@ enum PrescriptionStatus {
   String get fhirCode => this == PrescriptionStatus.onHold ? 'on-hold' : name;
 
   static PrescriptionStatus fromFhir(String? code) => switch (code) {
-        'draft' => PrescriptionStatus.draft,
-        'active' => PrescriptionStatus.active,
-        'on-hold' => PrescriptionStatus.onHold,
-        'completed' => PrescriptionStatus.completed,
-        'cancelled' || 'stopped' => PrescriptionStatus.cancelled,
-        _ => PrescriptionStatus.draft,
-      };
+    'draft' => PrescriptionStatus.draft,
+    'active' => PrescriptionStatus.active,
+    'on-hold' => PrescriptionStatus.onHold,
+    'completed' => PrescriptionStatus.completed,
+    'cancelled' || 'stopped' => PrescriptionStatus.cancelled,
+    _ => PrescriptionStatus.draft,
+  };
 }
 
 /// Route of administration (SNOMED CT).
 enum MedicationRoute {
   oral('26643006', LocalizedText(en: 'Oral', fr: 'Orale', nl: 'Oraal')),
-  intravenous('47625008', LocalizedText(en: 'Intravenous', fr: 'Intraveineuse', nl: 'Intraveneus')),
-  subcutaneous('34206005', LocalizedText(en: 'Subcutaneous', fr: 'Sous-cutanée', nl: 'Subcutaan')),
-  intramuscular('78421000', LocalizedText(en: 'Intramuscular', fr: 'Intramusculaire', nl: 'Intramusculair')),
+  intravenous(
+    '47625008',
+    LocalizedText(en: 'Intravenous', fr: 'Intraveineuse', nl: 'Intraveneus'),
+  ),
+  subcutaneous(
+    '34206005',
+    LocalizedText(en: 'Subcutaneous', fr: 'Sous-cutanée', nl: 'Subcutaan'),
+  ),
+  intramuscular(
+    '78421000',
+    LocalizedText(
+      en: 'Intramuscular',
+      fr: 'Intramusculaire',
+      nl: 'Intramusculair',
+    ),
+  ),
   topical('6064005', LocalizedText(en: 'Topical', fr: 'Topique', nl: 'Lokaal')),
-  inhalation('447694001', LocalizedText(en: 'Inhalation', fr: 'Inhalation', nl: 'Inhalatie')),
+  inhalation(
+    '447694001',
+    LocalizedText(en: 'Inhalation', fr: 'Inhalation', nl: 'Inhalatie'),
+  ),
   rectal('12130007', LocalizedText(en: 'Rectal', fr: 'Rectale', nl: 'Rectaal'));
 
   const MedicationRoute(this.snomedCode, this.display);
@@ -360,15 +398,21 @@ enum MedicationRoute {
   final LocalizedText display;
 
   static MedicationRoute fromName(String value) => values.firstWhere(
-        (r) => r.name == value,
-        orElse: () => MedicationRoute.oral,
-      );
+    (r) => r.name == value,
+    orElse: () => MedicationRoute.oral,
+  );
 }
 
 /// Status of a dispensing event in the pharmacy cabinet.
 enum DispenseStatus {
   requested(LocalizedText(en: 'Requested', fr: 'Demandée', nl: 'Aangevraagd')),
-  preparation(LocalizedText(en: 'In preparation', fr: 'En préparation', nl: 'In bereiding')),
+  preparation(
+    LocalizedText(
+      en: 'In preparation',
+      fr: 'En préparation',
+      nl: 'In bereiding',
+    ),
+  ),
   dispensed(LocalizedText(en: 'Dispensed', fr: 'Délivrée', nl: 'Afgeleverd')),
   refused(LocalizedText(en: 'Refused', fr: 'Refusée', nl: 'Geweigerd')),
   returned(LocalizedText(en: 'Returned', fr: 'Retournée', nl: 'Geretourneerd'));
@@ -377,33 +421,63 @@ enum DispenseStatus {
   final LocalizedText display;
 
   String get fhirCode => switch (this) {
-        DispenseStatus.requested => 'preparation',
-        DispenseStatus.preparation => 'in-progress',
-        DispenseStatus.dispensed => 'completed',
-        DispenseStatus.refused => 'cancelled',
-        DispenseStatus.returned => 'stopped',
-      };
+    DispenseStatus.requested => 'preparation',
+    DispenseStatus.preparation => 'in-progress',
+    DispenseStatus.dispensed => 'completed',
+    DispenseStatus.refused => 'cancelled',
+    DispenseStatus.returned => 'stopped',
+  };
 
   static DispenseStatus fromName(String value) => values.firstWhere(
-        (s) => s.name == value,
-        orElse: () => DispenseStatus.requested,
-      );
+    (s) => s.name == value,
+    orElse: () => DispenseStatus.requested,
+  );
 }
 
 /// Kind of clinical note. Drives the icon and the default template.
 enum NoteType {
-  admission(LocalizedText(en: 'Admission note', fr: "Note d'admission", nl: 'Opnamenotitie')),
-  progress(LocalizedText(en: 'Progress note', fr: 'Note de suivi', nl: 'Voortgangsnotitie')),
-  nursing(LocalizedText(en: 'Nursing note', fr: 'Note infirmière', nl: 'Verpleegkundige notitie')),
-  consultation(LocalizedText(en: 'Consultation', fr: 'Consultation', nl: 'Consult')),
-  observation(LocalizedText(en: 'Observation', fr: 'Observation', nl: 'Observatie')),
-  discharge(LocalizedText(en: 'Discharge summary', fr: 'Rapport de sortie', nl: 'Ontslagbrief'));
+  admission(
+    LocalizedText(
+      en: 'Admission note',
+      fr: "Note d'admission",
+      nl: 'Opnamenotitie',
+    ),
+  ),
+  progress(
+    LocalizedText(
+      en: 'Progress note',
+      fr: 'Note de suivi',
+      nl: 'Voortgangsnotitie',
+    ),
+  ),
+  nursing(
+    LocalizedText(
+      en: 'Nursing note',
+      fr: 'Note infirmière',
+      nl: 'Verpleegkundige notitie',
+    ),
+  ),
+  consultation(
+    LocalizedText(en: 'Consultation', fr: 'Consultation', nl: 'Consult'),
+  ),
+  observation(
+    LocalizedText(en: 'Observation', fr: 'Observation', nl: 'Observatie'),
+  ),
+  discharge(
+    LocalizedText(
+      en: 'Discharge summary',
+      fr: 'Rapport de sortie',
+      nl: 'Ontslagbrief',
+    ),
+  );
 
   const NoteType(this.display);
   final LocalizedText display;
 
-  static NoteType fromName(String value) =>
-      values.firstWhere((t) => t.name == value, orElse: () => NoteType.progress);
+  static NoteType fromName(String value) => values.firstWhere(
+    (t) => t.name == value,
+    orElse: () => NoteType.progress,
+  );
 }
 
 /// How severe an allergy reaction is expected to be (FHIR `criticality`).
@@ -411,7 +485,11 @@ enum AllergyCriticality {
   low(LocalizedText(en: 'Low risk', fr: 'Risque faible', nl: 'Laag risico')),
   high(LocalizedText(en: 'High risk', fr: 'Risque élevé', nl: 'Hoog risico')),
   unableToAssess(
-    LocalizedText(en: 'Unable to assess', fr: 'Non évaluable', nl: 'Niet te beoordelen'),
+    LocalizedText(
+      en: 'Unable to assess',
+      fr: 'Non évaluable',
+      nl: 'Niet te beoordelen',
+    ),
   );
 
   const AllergyCriticality(this.display);
@@ -421,8 +499,8 @@ enum AllergyCriticality {
       this == AllergyCriticality.unableToAssess ? 'unable-to-assess' : name;
 
   static AllergyCriticality fromFhir(String? code) => switch (code) {
-        'low' => AllergyCriticality.low,
-        'high' => AllergyCriticality.high,
-        _ => AllergyCriticality.unableToAssess,
-      };
+    'low' => AllergyCriticality.low,
+    'high' => AllergyCriticality.high,
+    _ => AllergyCriticality.unableToAssess,
+  };
 }

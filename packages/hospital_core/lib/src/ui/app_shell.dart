@@ -75,8 +75,9 @@ class _AppShellState extends State<AppShell> {
             Flexible(
               child: Text(
                 widget.title,
-                style: theme.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w700),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -167,8 +168,9 @@ class _UserMenu extends StatelessWidget {
             children: <Widget>[
               Text(
                 user.displayName,
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(fontWeight: FontWeight.w700),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               Text(
                 user.role.display.forLanguage(language),

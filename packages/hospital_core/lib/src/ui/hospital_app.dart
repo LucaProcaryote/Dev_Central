@@ -66,7 +66,8 @@ class _MiniHospitalAppState extends State<MiniHospitalApp> {
   void initState() {
     super.initState();
     _repository = widget.repositoryOverride ?? createRepository(widget.config);
-    _auth = widget.authOverride ??
+    _auth =
+        widget.authOverride ??
         (widget.config.usesFirebaseAuth
             ? FirebaseAuthService()
             : DemoAuthService());
@@ -111,7 +112,9 @@ class _MiniHospitalAppState extends State<MiniHospitalApp> {
     return MultiProvider(
       providers: [
         Provider<AppConfig>.value(value: widget.config),
-        ChangeNotifierProvider<LocaleController>.value(value: _localeController),
+        ChangeNotifierProvider<LocaleController>.value(
+          value: _localeController,
+        ),
         ChangeNotifierProvider<AuthService>.value(value: _auth),
         ChangeNotifierProvider<HospitalRepository>.value(value: _repository),
       ],

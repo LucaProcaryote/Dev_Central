@@ -26,48 +26,46 @@ class Ward {
   final String? phoneExtension;
 
   factory Ward.fromJson(Map<String, dynamic> json) => Ward(
-        id: asString(json['id']),
-        code: asString(json['code']),
-        name: LocalizedText.fromJson(json['name']),
-        floor: asInt(json['floor']),
-        specialty: LocalizedText.fromJson(json['specialty']),
-        phoneExtension:
-            asStringOrNull(json['phone_extension'] ?? json['phoneExtension']),
-      );
+    id: asString(json['id']),
+    code: asString(json['code']),
+    name: LocalizedText.fromJson(json['name']),
+    floor: asInt(json['floor']),
+    specialty: LocalizedText.fromJson(json['specialty']),
+    phoneExtension: asStringOrNull(
+      json['phone_extension'] ?? json['phoneExtension'],
+    ),
+  );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'code': code,
-        'name': name.toJson(),
-        'floor': floor,
-        'specialty': specialty.toJson(),
-        'phone_extension': phoneExtension,
-      };
+    'id': id,
+    'code': code,
+    'name': name.toJson(),
+    'floor': floor,
+    'specialty': specialty.toJson(),
+    'phone_extension': phoneExtension,
+  };
 
   Map<String, dynamic> toFhir() => pruneNulls(<String, dynamic>{
-        'resourceType': 'Location',
-        'id': id,
-        'identifier': <dynamic>[
-          <String, dynamic>{
-            'system': CodeSystems.localWard,
-            'value': code,
-          }
-        ],
-        'status': 'active',
-        'name': name.en,
-        'alias': <dynamic>[name.fr, name.nl],
-        'mode': 'instance',
-        'physicalType': <String, dynamic>{
-          'coding': <dynamic>[
-            <String, dynamic>{
-              'system':
-                  'http://terminology.hl7.org/CodeSystem/location-physical-type',
-              'code': 'wi',
-              'display': 'Wing',
-            }
-          ],
+    'resourceType': 'Location',
+    'id': id,
+    'identifier': <dynamic>[
+      <String, dynamic>{'system': CodeSystems.localWard, 'value': code},
+    ],
+    'status': 'active',
+    'name': name.en,
+    'alias': <dynamic>[name.fr, name.nl],
+    'mode': 'instance',
+    'physicalType': <String, dynamic>{
+      'coding': <dynamic>[
+        <String, dynamic>{
+          'system':
+              'http://terminology.hl7.org/CodeSystem/location-physical-type',
+          'code': 'wi',
+          'display': 'Wing',
         },
-      });
+      ],
+    },
+  });
 }
 
 /// A room inside a ward.
@@ -88,18 +86,18 @@ class Room {
   final bool isIsolation;
 
   factory Room.fromJson(Map<String, dynamic> json) => Room(
-        id: asString(json['id']),
-        wardId: asString(json['ward_id'] ?? json['wardId']),
-        number: asString(json['number']),
-        isIsolation: asBool(json['is_isolation'] ?? json['isIsolation']),
-      );
+    id: asString(json['id']),
+    wardId: asString(json['ward_id'] ?? json['wardId']),
+    number: asString(json['number']),
+    isIsolation: asBool(json['is_isolation'] ?? json['isIsolation']),
+  );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'ward_id': wardId,
-        'number': number,
-        'is_isolation': isIsolation,
-      };
+    'id': id,
+    'ward_id': wardId,
+    'number': number,
+    'is_isolation': isIsolation,
+  };
 }
 
 /// A physical bed - the unit of capacity the ADT application allocates.
@@ -134,77 +132,82 @@ class Bed {
     String? currentEncounterId,
     String? currentPatientId,
     bool clearOccupant = false,
-  }) =>
-      Bed(
-        id: id,
-        roomId: roomId,
-        wardId: wardId,
-        label: label,
-        status: status ?? this.status,
-        currentEncounterId:
-            clearOccupant ? null : (currentEncounterId ?? this.currentEncounterId),
-        currentPatientId:
-            clearOccupant ? null : (currentPatientId ?? this.currentPatientId),
-      );
+  }) => Bed(
+    id: id,
+    roomId: roomId,
+    wardId: wardId,
+    label: label,
+    status: status ?? this.status,
+    currentEncounterId: clearOccupant
+        ? null
+        : (currentEncounterId ?? this.currentEncounterId),
+    currentPatientId: clearOccupant
+        ? null
+        : (currentPatientId ?? this.currentPatientId),
+  );
 
   factory Bed.fromJson(Map<String, dynamic> json) => Bed(
-        id: asString(json['id']),
-        roomId: asString(json['room_id'] ?? json['roomId']),
-        wardId: asString(json['ward_id'] ?? json['wardId']),
-        label: asString(json['label']),
-        status: BedStatus.fromName(asString(json['status'], fallback: 'free')),
-        currentEncounterId: asStringOrNull(
-          json['current_encounter_id'] ?? json['currentEncounterId'],
-        ),
-        currentPatientId: asStringOrNull(
-          json['current_patient_id'] ?? json['currentPatientId'],
-        ),
-      );
+    id: asString(json['id']),
+    roomId: asString(json['room_id'] ?? json['roomId']),
+    wardId: asString(json['ward_id'] ?? json['wardId']),
+    label: asString(json['label']),
+    status: BedStatus.fromName(asString(json['status'], fallback: 'free')),
+    currentEncounterId: asStringOrNull(
+      json['current_encounter_id'] ?? json['currentEncounterId'],
+    ),
+    currentPatientId: asStringOrNull(
+      json['current_patient_id'] ?? json['currentPatientId'],
+    ),
+  );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'room_id': roomId,
-        'ward_id': wardId,
-        'label': label,
-        'status': status.name,
-        'current_encounter_id': currentEncounterId,
-        'current_patient_id': currentPatientId,
-      };
+    'id': id,
+    'room_id': roomId,
+    'ward_id': wardId,
+    'label': label,
+    'status': status.name,
+    'current_encounter_id': currentEncounterId,
+    'current_patient_id': currentPatientId,
+  };
 
   Map<String, dynamic> toFhir() => pruneNulls(<String, dynamic>{
-        'resourceType': 'Location',
-        'id': id,
-        'status': status == BedStatus.blocked ? 'inactive' : 'active',
-        'name': label,
-        'mode': 'instance',
-        'operationalStatus': <String, dynamic>{
-          'system': 'http://terminology.hl7.org/CodeSystem/v2-0116',
-          'code': switch (status) {
-            BedStatus.free => 'U', // Unoccupied
-            BedStatus.occupied => 'O', // Occupied
-            BedStatus.cleaning => 'K', // Contaminated / housekeeping
-            BedStatus.blocked => 'C', // Closed
-          },
+    'resourceType': 'Location',
+    'id': id,
+    'status': status == BedStatus.blocked ? 'inactive' : 'active',
+    'name': label,
+    'mode': 'instance',
+    'operationalStatus': <String, dynamic>{
+      'system': 'http://terminology.hl7.org/CodeSystem/v2-0116',
+      'code': switch (status) {
+        BedStatus.free => 'U', // Unoccupied
+        BedStatus.occupied => 'O', // Occupied
+        BedStatus.cleaning => 'K', // Contaminated / housekeeping
+        BedStatus.blocked => 'C', // Closed
+      },
+    },
+    'physicalType': <String, dynamic>{
+      'coding': <dynamic>[
+        <String, dynamic>{
+          'system':
+              'http://terminology.hl7.org/CodeSystem/location-physical-type',
+          'code': 'bd',
+          'display': 'Bed',
         },
-        'physicalType': <String, dynamic>{
-          'coding': <dynamic>[
-            <String, dynamic>{
-              'system':
-                  'http://terminology.hl7.org/CodeSystem/location-physical-type',
-              'code': 'bd',
-              'display': 'Bed',
-            }
-          ],
-        },
-        'partOf': <String, dynamic>{'reference': 'Location/$roomId'},
-      });
+      ],
+    },
+    'partOf': <String, dynamic>{'reference': 'Location/$roomId'},
+  });
 }
 
 /// A bed together with the room and ward it belongs to - what the bed board
 /// and the transfer picker actually need in one object.
 @immutable
 class BedPlacement {
-  const BedPlacement({required this.bed, required this.room, required this.ward});
+  const BedPlacement({
+    required this.bed,
+    required this.room,
+    required this.ward,
+  });
 
   final Bed bed;
   final Room room;

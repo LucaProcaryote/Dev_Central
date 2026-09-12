@@ -160,25 +160,140 @@ Firebase Data Connect service alone does not remove it.
 
 ---
 
-## 3. Hosting the applications (optional)
+## 3. Hosting
 
-To give the students URLs instead of local builds:
+Five applications, five URLs, one Firebase project. Everything needed is
+already checked in: `firebase.json` and `.firebaserc` in each repository, a
+deploy script, and a GitHub Actions workflow.
+
+| Application | URL |
+|---|---|
+| EHR | `https://my-hospital-2026-ehr.web.app` |
+| ADT | `https://my-hospital-2026-adt.web.app` |
+| PHARM | `https://my-hospital-2026-pharm.web.app` |
+| EAI | `https://my-hospital-2026-eai.web.app` |
+| Devices | `https://my-hospital-2026-dev.web.app` |
+
+### One-off setup
+
+```bash
+npm install -g firebase-tools
+firebase login
+
+cd Dev_Central
+./tools/create_hosting_sites.sh
+```
+
+A Firebase project has one default site and any number of extra ones. The
+mini-hospital uses five, so each application has its own URL and can be
+redeployed without touching the others.
+
+Site ids are globally unique across all of Firebase Hosting. If
+`create_hosting_sites.sh` reports one as taken, pick another id and change it
+in that repository's `.firebaserc` and in `tools/deploy_hosting.sh`.
+
+### Deploy
+
+All five, from a directory holding all five checkouts:
+
+```bash
+cd Dev_Central
+./tools/deploy_all_hosting.sh
+```
+
+Or one at a time, from inside any repository:
 
 ```bash
 cd EHR
-flutter build web --release --dart-define=AUTH=firebase --dart-define=BACKEND=restApi \
-  --dart-define=API_BASE=https://your-api-host
-firebase deploy --only hosting --project my-hospital-2026
+./tools/deploy_hosting.sh
 ```
 
-If you do this, the back end has to be reachable from the browser too, and
-**every CORS setting in this project is currently wide open**. That is right
-for a classroom laptop and wrong for anything on the public internet. Narrow
-`Access-Control-Allow-Origin` in `infrastructure/server/lib/src/api.dart` and
-`HAPI_FHIR_CORS_ALLOWED_ORIGIN_PATTERNS` in the compose file before exposing
-anything.
+### What the hosted build talks to
 
----
+**Nothing on localhost.** A page served from `web.app` cannot reach a database
+on a student's laptop, so the deployed build uses the in-memory dataset by
+default: every visitor gets their own complete hospital in their own browser,
+with no infrastructure at all. For a class that is often exactly right — send
+five links and start the lab.
+
+Any of it can be redirected per visitor with a query string, without
+rebuilding:
+
+| Parameter | Example |
+|---|---|
+| `?device=` | `…-dev.web.app/?device=DEV3` |
+| `?backend=` | `?backend=restApi` |
+| `?api=` | `?api=https://lab-api.example` |
+| `?fhir=` | `?fhir=https://fhir.example/fhir` |
+| `?eai=` | `?eai=https://eai.example` |
+| `?auth=` | `?auth=firebase` |
+
+That is what makes one hosted device simulator serve ten students:
+
+```
+https://my-hospital-2026-dev.web.app/?device=DEV1     → student 1
+https://my-hospital-2026-dev.web.app/?device=DEV2     → student 2
+…
+```
+
+To compile a different default in instead:
+
+```bash
+./tools/deploy_hosting.sh --backend restApi --api https://your-api-host
+./tools/deploy_hosting.sh --auth firebase        # needs firebase_options.dart
+```
+
+### Deploying from GitHub
+
+Each repository has `.github/workflows/deploy-hosting.yml`, which publishes on
+every push to `main` and can also be run by hand with a chosen backend and auth
+mode.
+
+It needs one repository secret, **`FIREBASE_SERVICE_ACCOUNT`**:
+
+1. Google Cloud console → IAM & Admin → Service accounts, in the
+   `my-hospital-2026` project.
+2. Create one, give it the **Firebase Hosting Admin** role.
+3. Keys → Add key → JSON.
+4. Paste the whole file into the repository's
+   Settings → Secrets and variables → Actions.
+
+The same secret goes in all five repositories. `ci.yml` runs the analyser,
+formatter and tests on every push and needs no secret at all.
+
+### Two things the web build needs, and why
+
+Both are already applied; this is so you know why they are there.
+
+**CanvasKit is self-hosted.** `flutter build web` bundles the CanvasKit
+renderer into `build/web/canvaskit/` — and then, by default, fetches it from
+`https://www.gstatic.com/flutter-canvaskit/…` at runtime anyway. On a campus or
+hospital network that blocks gstatic, the result is a blank white page with
+nothing on screen to explain it. Every build here passes
+`--no-web-resources-cdn`, which uses the bundled copy we are hosting regardless.
+
+**The browser locale is normalised.** Some Linux desktops report a POSIX-style
+locale such as `en-US@posix`. `Intl.Locale` rejects that, Flutter's engine does
+not guard against it, and the application dies during start-up with
+*"Incorrect locale information provided"* — again, a blank page. A short script
+at the top of each `web/index.html` cleans the value before Flutter reads it.
+Worth knowing about if you ever see a lab machine where one browser works and
+another does not.
+
+### Before exposing any of this publicly
+
+**Every CORS setting in this project is wide open.** The API server sends
+`Access-Control-Allow-Origin: *` and HAPI FHIR is configured the same way. That
+is right for a classroom laptop and wrong for anything reachable from the
+internet.
+
+If you put the back end on a public host, narrow both first:
+
+- `infrastructure/server/lib/src/api.dart` — the `_corsHeaders` map
+- `infrastructure/docker-compose.yml` — `HAPI_FHIR_CORS_ALLOWED_ORIGIN_PATTERNS`
+
+And add the hosting domains to Firebase Auth's authorised-domains list, or
+sign-in will be rejected from them.
 
 ## Costs
 

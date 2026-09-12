@@ -31,15 +31,13 @@ class SharedPreferencesLocaleStore implements LocalePreferenceStore {
 
   @override
   Future<String?> read() async {
-    final preferences =
-        await SharedPreferences.getInstance().timeout(timeout);
+    final preferences = await SharedPreferences.getInstance().timeout(timeout);
     return preferences.getString(_key);
   }
 
   @override
   Future<void> write(String languageCode) async {
-    final preferences =
-        await SharedPreferences.getInstance().timeout(timeout);
+    final preferences = await SharedPreferences.getInstance().timeout(timeout);
     await preferences.setString(_key, languageCode);
   }
 }
@@ -66,8 +64,8 @@ class InMemoryLocaleStore implements LocalePreferenceStore {
 /// while the patient's documents stay French.
 class LocaleController extends ChangeNotifier {
   LocaleController({Locale? initial, LocalePreferenceStore? store})
-      : _locale = initial ?? SupportedLocales.english,
-        _store = store ?? const SharedPreferencesLocaleStore();
+    : _locale = initial ?? SupportedLocales.english,
+      _store = store ?? const SharedPreferencesLocaleStore();
 
   final LocalePreferenceStore _store;
 
@@ -107,10 +105,11 @@ class LocaleController extends ChangeNotifier {
   /// Cycles EN -> FR -> NL -> EN, for the compact toolbar button.
   Future<void> cycle() async {
     final index = SupportedLocales.all.indexOf(_locale);
-    final next = SupportedLocales.all[(index + 1) % SupportedLocales.all.length];
+    final next =
+        SupportedLocales.all[(index + 1) % SupportedLocales.all.length];
     await setLocale(next);
   }
 
-  static bool _isSupported(String languageCode) => SupportedLocales.all
-      .any((locale) => locale.languageCode == languageCode);
+  static bool _isSupported(String languageCode) =>
+      SupportedLocales.all.any((locale) => locale.languageCode == languageCode);
 }

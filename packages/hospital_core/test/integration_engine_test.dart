@@ -9,36 +9,38 @@ class _RecordingContext {
   final List<String> postedUrls = <String>[];
 
   FlowExecutionContext build({Patient? patient}) => FlowExecutionContext(
-        lookupPatient: (_) async => patient,
-        writeToFhirStore: (resource) async {
-          stored.add(resource);
-          return resource['id']?.toString() ?? 'generated';
-        },
-        deliverToApplication: (app, payload) async {
-          delivered.add((app: app, payload: payload));
-        },
-        postToUrl: (url, _) async => postedUrls.add(url),
-      );
+    lookupPatient: (_) async => patient,
+    writeToFhirStore: (resource) async {
+      stored.add(resource);
+      return resource['id']?.toString() ?? 'generated';
+    },
+    deliverToApplication: (app, payload) async {
+      delivered.add((app: app, payload: payload));
+    },
+    postToUrl: (url, _) async => postedUrls.add(url),
+  );
 }
 
-IntegrationMessage _message(Map<String, dynamic> payload, {String type = 'Observation'}) =>
-    IntegrationMessage(
-      id: 'msg-1',
-      messageType: type,
-      sourceApp: 'DEV1',
-      payload: payload,
-      status: MessageStatus.received,
-      receivedAt: DateTime.utc(2026, 9, 12, 10),
-    );
+IntegrationMessage _message(
+  Map<String, dynamic> payload, {
+  String type = 'Observation',
+}) => IntegrationMessage(
+  id: 'msg-1',
+  messageType: type,
+  sourceApp: 'DEV1',
+  payload: payload,
+  status: MessageStatus.received,
+  receivedAt: DateTime.utc(2026, 9, 12, 10),
+);
 
 Map<String, dynamic> _spo2(double value) => Observation(
-      id: 'obs-test',
-      patientId: 'pat-001',
-      type: VitalSignType.oxygenSaturation,
-      value: value,
-      effectiveDateTime: DateTime.utc(2026, 9, 12, 10),
-      deviceId: 'DEV3',
-    ).toFhir();
+  id: 'obs-test',
+  patientId: 'pat-001',
+  type: VitalSignType.oxygenSaturation,
+  value: value,
+  effectiveDateTime: DateTime.utc(2026, 9, 12, 10),
+  deviceId: 'DEV3',
+).toFhir();
 
 void main() {
   final seed = HospitalSeed.build(now: DateTime.utc(2026, 9, 12, 10));
@@ -49,7 +51,7 @@ void main() {
       'subject': <String, dynamic>{'reference': 'Patient/pat-001'},
       'code': <String, dynamic>{
         'coding': <dynamic>[
-          <String, dynamic>{'code': '2708-6'}
+          <String, dynamic>{'code': '2708-6'},
         ],
       },
       'valueQuantity': <String, dynamic>{'value': 91.0},
@@ -97,22 +99,29 @@ void main() {
       expect(FieldTransform.uppercase.apply('abc', null), 'ABC');
       expect(FieldTransform.lowercase.apply('ABC', null), 'abc');
       expect(FieldTransform.trim.apply('  x  ', null), 'x');
-      expect(FieldTransform.dateOnly.apply('2026-09-12T10:30:00Z', null),
-          '2026-09-12');
+      expect(
+        FieldTransform.dateOnly.apply('2026-09-12T10:30:00Z', null),
+        '2026-09-12',
+      );
       expect(FieldTransform.toNumber.apply('42.5', null), 42.5);
       expect(FieldTransform.constant.apply('ignored', 'fixed'), 'fixed');
       expect(FieldTransform.prefix.apply('001', 'MRN'), 'MRN001');
       expect(FieldTransform.suffix.apply('12', ' kg'), '12 kg');
-      expect(FieldTransform.stripPrefix.apply('Patient/pat-001', 'Patient/'),
-          'pat-001');
+      expect(
+        FieldTransform.stripPrefix.apply('Patient/pat-001', 'Patient/'),
+        'pat-001',
+      );
       expect(FieldTransform.defaultIfEmpty.apply('', 'unknown'), 'unknown');
       expect(FieldTransform.defaultIfEmpty.apply('given', 'unknown'), 'given');
     });
 
     test('transforms tolerate null input rather than throwing', () {
       for (final transform in FieldTransform.values) {
-        expect(() => transform.apply(null, 'arg'), returnsNormally,
-            reason: '${transform.name} threw on null');
+        expect(
+          () => transform.apply(null, 'arg'),
+          returnsNormally,
+          reason: '${transform.name} threw on null',
+        );
       }
     });
 
@@ -120,7 +129,10 @@ void main() {
       expect(FilterOperator.equals.evaluate('a', 'a'), isTrue);
       expect(FilterOperator.notEquals.evaluate('a', 'b'), isTrue);
       expect(FilterOperator.contains.evaluate('abcdef', 'cde'), isTrue);
-      expect(FilterOperator.startsWith.evaluate('Patient/1', 'Patient/'), isTrue);
+      expect(
+        FilterOperator.startsWith.evaluate('Patient/1', 'Patient/'),
+        isTrue,
+      );
       expect(FilterOperator.exists.evaluate('x', ''), isTrue);
       expect(FilterOperator.exists.evaluate(null, ''), isFalse);
       expect(FilterOperator.notExists.evaluate(null, ''), isTrue);
@@ -142,9 +154,13 @@ void main() {
       expect(result.status, MessageStatus.filtered);
       expect(recorder.delivered, isEmpty);
       // The trace must still explain why it stopped.
-      expect(result.trace.any((s) => s.status == MessageStatus.filtered), isTrue);
-      final dropped =
-          result.trace.firstWhere((s) => s.status == MessageStatus.filtered);
+      expect(
+        result.trace.any((s) => s.status == MessageStatus.filtered),
+        isTrue,
+      );
+      final dropped = result.trace.firstWhere(
+        (s) => s.status == MessageStatus.filtered,
+      );
       expect(dropped.detail, contains('92'));
     });
 
@@ -192,19 +208,25 @@ void main() {
       expect(readPath(enriched, 'resourceType'), 'Observation');
     });
 
-    test('the validator rejects a resource missing a required element', () async {
-      final flow = seed.flows.firstWhere((f) => f.id == 'flow-vitals');
-      final recorder = _RecordingContext();
-      final engine = FlowEngine(recorder.build());
+    test(
+      'the validator rejects a resource missing a required element',
+      () async {
+        final flow = seed.flows.firstWhere((f) => f.id == 'flow-vitals');
+        final recorder = _RecordingContext();
+        final engine = FlowEngine(recorder.build());
 
-      final broken = Map<String, dynamic>.from(_spo2(95))..remove('subject');
-      final result = await engine.run(flow, _message(broken));
+        final broken = Map<String, dynamic>.from(_spo2(95))..remove('subject');
+        final result = await engine.run(flow, _message(broken));
 
-      expect(result.status, MessageStatus.failed);
-      expect(result.error, contains('subject'));
-      expect(recorder.stored, isEmpty,
-          reason: 'nothing may reach the FHIR store after a validation failure');
-    });
+        expect(result.status, MessageStatus.failed);
+        expect(result.error, contains('subject'));
+        expect(
+          recorder.stored,
+          isEmpty,
+          reason: 'nothing may reach the FHIR store after a validation failure',
+        );
+      },
+    );
 
     test('the validator rejects a payload that is not FHIR at all', () async {
       final flow = seed.flows.firstWhere((f) => f.id == 'flow-vitals');
@@ -232,10 +254,10 @@ void main() {
         final engine = FlowEngine(recorder.build());
         final result = await engine.run(
           flow,
-          _message(
-            <String, dynamic>{'type': entry.key, 'patient_id': 'pat-001'},
-            type: 'ADT',
-          ),
+          _message(<String, dynamic>{
+            'type': entry.key,
+            'patient_id': 'pat-001',
+          }, type: 'ADT'),
         );
         expect(result.status, MessageStatus.delivered);
         expect(recorder.delivered, hasLength(1));
@@ -263,7 +285,13 @@ void main() {
         isEnabled: true,
         updatedAt: DateTime.utc(2026, 9, 12),
         nodes: const <FlowNode>[
-          FlowNode(id: 'a', type: FlowNodeType.httpSource, label: 'In', x: 0, y: 0),
+          FlowNode(
+            id: 'a',
+            type: FlowNodeType.httpSource,
+            label: 'In',
+            x: 0,
+            y: 0,
+          ),
           FlowNode(id: 'b', type: FlowNodeType.mapper, label: 'B', x: 1, y: 0),
           FlowNode(id: 'c', type: FlowNodeType.mapper, label: 'C', x: 2, y: 0),
         ],
@@ -291,7 +319,13 @@ void main() {
         isEnabled: true,
         updatedAt: DateTime.utc(2026, 9, 12),
         nodes: const <FlowNode>[
-          FlowNode(id: 'x', type: FlowNodeType.logDestination, label: 'Log', x: 0, y: 0),
+          FlowNode(
+            id: 'x',
+            type: FlowNodeType.logDestination,
+            label: 'Log',
+            x: 0,
+            y: 0,
+          ),
         ],
         connections: const <FlowConnection>[],
       );
@@ -306,8 +340,11 @@ void main() {
   group('flow validation', () {
     test('the seeded flows are all structurally valid', () {
       for (final flow in seed.flows) {
-        expect(flow.validate(), isEmpty,
-            reason: '${flow.id}: ${flow.validate().map((i) => i.message.en)}');
+        expect(
+          flow.validate(),
+          isEmpty,
+          reason: '${flow.id}: ${flow.validate().map((i) => i.message.en)}',
+        );
       }
     });
 
@@ -335,8 +372,20 @@ void main() {
         isEnabled: true,
         updatedAt: DateTime.utc(2026, 9, 12),
         nodes: const <FlowNode>[
-          FlowNode(id: 'a', type: FlowNodeType.httpSource, label: 'In', x: 0, y: 0),
-          FlowNode(id: 'b', type: FlowNodeType.logDestination, label: 'Log', x: 1, y: 0),
+          FlowNode(
+            id: 'a',
+            type: FlowNodeType.httpSource,
+            label: 'In',
+            x: 0,
+            y: 0,
+          ),
+          FlowNode(
+            id: 'b',
+            type: FlowNodeType.logDestination,
+            label: 'Log',
+            x: 1,
+            y: 0,
+          ),
         ],
         connections: const <FlowConnection>[],
       );

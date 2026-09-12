@@ -34,7 +34,7 @@ class ApiException implements Exception {
 /// real hospital application has, which is the point.
 class RestHospitalRepository extends HospitalRepository {
   RestHospitalRepository({required this.baseUrl, http.Client? client})
-      : _client = client ?? http.Client();
+    : _client = client ?? http.Client();
 
   /// e.g. `http://localhost:8081`.
   final String baseUrl;
@@ -50,18 +50,23 @@ class RestHospitalRepository extends HospitalRepository {
     await _get('/health');
   }
 
-  Uri _uri(String path, [Map<String, String?> query = const <String, String?>{}]) {
+  Uri _uri(
+    String path, [
+    Map<String, String?> query = const <String, String?>{},
+  ]) {
     final filtered = <String, String>{};
     query.forEach((key, value) {
       if (value != null && value.isNotEmpty) filtered[key] = value;
     });
-    return Uri.parse('$baseUrl$path').replace(
-      queryParameters: filtered.isEmpty ? null : filtered,
-    );
+    return Uri.parse(
+      '$baseUrl$path',
+    ).replace(queryParameters: filtered.isEmpty ? null : filtered);
   }
 
-  Future<dynamic> _get(String path,
-      [Map<String, String?> query = const <String, String?>{}]) async {
+  Future<dynamic> _get(
+    String path, [
+    Map<String, String?> query = const <String, String?>{},
+  ]) async {
     final response = await _client.get(
       _uri(path, query),
       headers: const <String, String>{'Accept': 'application/json'},
@@ -112,10 +117,9 @@ class RestHospitalRepository extends HospitalRepository {
   // ---- Patients ------------------------------------------------------------
 
   @override
-  Future<List<Patient>> listPatients({String? query}) async =>
-      _rows(await _get('/patients', <String, String?>{'query': query}))
-          .map(Patient.fromJson)
-          .toList();
+  Future<List<Patient>> listPatients({String? query}) async => _rows(
+    await _get('/patients', <String, String?>{'query': query}),
+  ).map(Patient.fromJson).toList();
 
   @override
   Future<Patient?> findPatient(String id) async {
@@ -138,8 +142,8 @@ class RestHospitalRepository extends HospitalRepository {
 
   @override
   Future<Patient> savePatient(Patient patient) async => Patient.fromJson(
-        _row(await _send('PUT', '/patients/${patient.id}', patient.toJson()))!,
-      );
+    _row(await _send('PUT', '/patients/${patient.id}', patient.toJson()))!,
+  );
 
   // ---- Locations -----------------------------------------------------------
 
@@ -148,17 +152,18 @@ class RestHospitalRepository extends HospitalRepository {
       _rows(await _get('/wards')).map(Ward.fromJson).toList();
 
   @override
-  Future<List<Room>> listRooms({String? wardId}) async =>
-      _rows(await _get('/rooms', <String, String?>{'wardId': wardId}))
-          .map(Room.fromJson)
-          .toList();
+  Future<List<Room>> listRooms({String? wardId}) async => _rows(
+    await _get('/rooms', <String, String?>{'wardId': wardId}),
+  ).map(Room.fromJson).toList();
 
   @override
   Future<List<Bed>> listBeds({String? wardId, BedStatus? status}) async =>
-      _rows(await _get('/beds', <String, String?>{
-        'wardId': wardId,
-        'status': status?.name,
-      })).map(Bed.fromJson).toList();
+      _rows(
+        await _get('/beds', <String, String?>{
+          'wardId': wardId,
+          'status': status?.name,
+        }),
+      ).map(Bed.fromJson).toList();
 
   @override
   Future<Bed?> findBed(String id) async {
@@ -195,12 +200,13 @@ class RestHospitalRepository extends HospitalRepository {
     String? patientId,
     String? wardId,
     bool activeOnly = false,
-  }) async =>
-      _rows(await _get('/encounters', <String, String?>{
-        'patientId': patientId,
-        'wardId': wardId,
-        'active': activeOnly ? 'true' : null,
-      })).map(Encounter.fromJson).toList();
+  }) async => _rows(
+    await _get('/encounters', <String, String?>{
+      'patientId': patientId,
+      'wardId': wardId,
+      'active': activeOnly ? 'true' : null,
+    }),
+  ).map(Encounter.fromJson).toList();
 
   @override
   Future<Encounter?> findEncounter(String id) async {
@@ -210,33 +216,38 @@ class RestHospitalRepository extends HospitalRepository {
 
   @override
   Future<Encounter?> activeEncounterFor(String patientId) async {
-    final encounters =
-        await listEncounters(patientId: patientId, activeOnly: true);
+    final encounters = await listEncounters(
+      patientId: patientId,
+      activeOnly: true,
+    );
     return encounters.isEmpty ? null : encounters.first;
   }
 
   @override
   Future<Encounter> saveEncounter(Encounter encounter) async =>
-      Encounter.fromJson(_row(
-        await _send('PUT', '/encounters/${encounter.id}', encounter.toJson()),
-      )!);
+      Encounter.fromJson(
+        _row(
+          await _send('PUT', '/encounters/${encounter.id}', encounter.toJson()),
+        )!,
+      );
 
   @override
   Future<List<Movement>> listMovements({
     String? encounterId,
     String? patientId,
     int limit = 100,
-  }) async =>
-      _rows(await _get('/movements', <String, String?>{
-        'encounterId': encounterId,
-        'patientId': patientId,
-        'limit': '$limit',
-      })).map(Movement.fromJson).toList();
+  }) async => _rows(
+    await _get('/movements', <String, String?>{
+      'encounterId': encounterId,
+      'patientId': patientId,
+      'limit': '$limit',
+    }),
+  ).map(Movement.fromJson).toList();
 
   @override
   Future<Movement> addMovement(Movement movement) async => Movement.fromJson(
-        _row(await _send('POST', '/movements', movement.toJson()))!,
-      );
+    _row(await _send('POST', '/movements', movement.toJson()))!,
+  );
 
   // ---- Observations --------------------------------------------------------
 
@@ -247,14 +258,15 @@ class RestHospitalRepository extends HospitalRepository {
     VitalSignType? type,
     DateTime? since,
     int limit = 500,
-  }) async =>
-      _rows(await _get('/observations', <String, String?>{
-        'patientId': patientId,
-        'encounterId': encounterId,
-        'type': type?.name,
-        'since': since?.toIso8601String(),
-        'limit': '$limit',
-      })).map(Observation.fromJson).toList();
+  }) async => _rows(
+    await _get('/observations', <String, String?>{
+      'patientId': patientId,
+      'encounterId': encounterId,
+      'type': type?.name,
+      'since': since?.toIso8601String(),
+      'limit': '$limit',
+    }),
+  ).map(Observation.fromJson).toList();
 
   @override
   Future<Observation> addObservation(Observation observation) async =>
@@ -276,22 +288,22 @@ class RestHospitalRepository extends HospitalRepository {
   // ---- Prescriptions -------------------------------------------------------
 
   @override
-  Future<List<Medication>> listFormulary({String? query}) async =>
-      _rows(await _get('/formulary', <String, String?>{'query': query}))
-          .map(Medication.fromJson)
-          .toList();
+  Future<List<Medication>> listFormulary({String? query}) async => _rows(
+    await _get('/formulary', <String, String?>{'query': query}),
+  ).map(Medication.fromJson).toList();
 
   @override
   Future<List<Prescription>> listPrescriptions({
     String? patientId,
     String? encounterId,
     bool activeOnly = false,
-  }) async =>
-      _rows(await _get('/prescriptions', <String, String?>{
-        'patientId': patientId,
-        'encounterId': encounterId,
-        'active': activeOnly ? 'true' : null,
-      })).map(Prescription.fromJson).toList();
+  }) async => _rows(
+    await _get('/prescriptions', <String, String?>{
+      'patientId': patientId,
+      'encounterId': encounterId,
+      'active': activeOnly ? 'true' : null,
+    }),
+  ).map(Prescription.fromJson).toList();
 
   @override
   Future<Prescription?> findPrescription(String id) async {
@@ -301,11 +313,15 @@ class RestHospitalRepository extends HospitalRepository {
 
   @override
   Future<Prescription> savePrescription(Prescription prescription) async =>
-      Prescription.fromJson(_row(await _send(
-        'PUT',
-        '/prescriptions/${prescription.id}',
-        prescription.toJson(),
-      ))!);
+      Prescription.fromJson(
+        _row(
+          await _send(
+            'PUT',
+            '/prescriptions/${prescription.id}',
+            prescription.toJson(),
+          ),
+        )!,
+      );
 
   @override
   Future<List<Dispense>> listDispenses({
@@ -314,27 +330,27 @@ class RestHospitalRepository extends HospitalRepository {
     String? cabinetId,
     DispenseStatus? status,
     int limit = 200,
-  }) async =>
-      _rows(await _get('/dispenses', <String, String?>{
-        'patientId': patientId,
-        'prescriptionId': prescriptionId,
-        'cabinetId': cabinetId,
-        'status': status?.name,
-        'limit': '$limit',
-      })).map(Dispense.fromJson).toList();
+  }) async => _rows(
+    await _get('/dispenses', <String, String?>{
+      'patientId': patientId,
+      'prescriptionId': prescriptionId,
+      'cabinetId': cabinetId,
+      'status': status?.name,
+      'limit': '$limit',
+    }),
+  ).map(Dispense.fromJson).toList();
 
   @override
   Future<Dispense> saveDispense(Dispense dispense) async => Dispense.fromJson(
-        _row(await _send('PUT', '/dispenses/${dispense.id}', dispense.toJson()))!,
-      );
+    _row(await _send('PUT', '/dispenses/${dispense.id}', dispense.toJson()))!,
+  );
 
   // ---- Pharmacy stock ------------------------------------------------------
 
   @override
-  Future<List<Cabinet>> listCabinets({String? wardId}) async =>
-      _rows(await _get('/cabinets', <String, String?>{'wardId': wardId}))
-          .map(Cabinet.fromJson)
-          .toList();
+  Future<List<Cabinet>> listCabinets({String? wardId}) async => _rows(
+    await _get('/cabinets', <String, String?>{'wardId': wardId}),
+  ).map(Cabinet.fromJson).toList();
 
   @override
   Future<Cabinet?> findCabinet(String id) async {
@@ -344,15 +360,17 @@ class RestHospitalRepository extends HospitalRepository {
 
   @override
   Future<Cabinet> saveCabinet(Cabinet cabinet) async => Cabinet.fromJson(
-        _row(await _send('PUT', '/cabinets/${cabinet.id}', cabinet.toJson()))!,
-      );
+    _row(await _send('PUT', '/cabinets/${cabinet.id}', cabinet.toJson()))!,
+  );
 
   @override
   Future<List<StockItem>> listStock({String? cabinetId, String? query}) async =>
-      _rows(await _get('/stock', <String, String?>{
-        'cabinetId': cabinetId,
-        'query': query,
-      })).map(StockItem.fromJson).toList();
+      _rows(
+        await _get('/stock', <String, String?>{
+          'cabinetId': cabinetId,
+          'query': query,
+        }),
+      ).map(StockItem.fromJson).toList();
 
   @override
   Future<StockItem?> findStockItem(String id) async {
@@ -362,16 +380,15 @@ class RestHospitalRepository extends HospitalRepository {
 
   @override
   Future<StockItem> saveStockItem(StockItem item) async => StockItem.fromJson(
-        _row(await _send('PUT', '/stock/${item.id}', item.toJson()))!,
-      );
+    _row(await _send('PUT', '/stock/${item.id}', item.toJson()))!,
+  );
 
   // ---- Devices -------------------------------------------------------------
 
   @override
-  Future<List<MedicalDevice>> listDevices({String? wardId}) async =>
-      _rows(await _get('/devices', <String, String?>{'wardId': wardId}))
-          .map(MedicalDevice.fromJson)
-          .toList();
+  Future<List<MedicalDevice>> listDevices({String? wardId}) async => _rows(
+    await _get('/devices', <String, String?>{'wardId': wardId}),
+  ).map(MedicalDevice.fromJson).toList();
 
   @override
   Future<MedicalDevice?> findDeviceByCode(String code) async {
@@ -392,15 +409,17 @@ class RestHospitalRepository extends HospitalRepository {
     String? patientId,
     String? encounterId,
     NoteType? type,
-  }) async =>
-      _rows(await _get('/notes', <String, String?>{
-        'patientId': patientId,
-        'encounterId': encounterId,
-        'type': type?.name,
-      })).map(ClinicalNote.fromJson).toList();
+  }) async => _rows(
+    await _get('/notes', <String, String?>{
+      'patientId': patientId,
+      'encounterId': encounterId,
+      'type': type?.name,
+    }),
+  ).map(ClinicalNote.fromJson).toList();
 
   @override
-  Future<ClinicalNote> saveNote(ClinicalNote note) async => ClinicalNote.fromJson(
+  Future<ClinicalNote> saveNote(ClinicalNote note) async =>
+      ClinicalNote.fromJson(
         _row(await _send('PUT', '/notes/${note.id}', note.toJson()))!,
       );
 
@@ -437,12 +456,13 @@ class RestHospitalRepository extends HospitalRepository {
     String? flowId,
     MessageStatus? status,
     int limit = 100,
-  }) async =>
-      _rows(await _get('/messages', <String, String?>{
-        'flowId': flowId,
-        'status': status?.name,
-        'limit': '$limit',
-      })).map(IntegrationMessage.fromJson).toList();
+  }) async => _rows(
+    await _get('/messages', <String, String?>{
+      'flowId': flowId,
+      'status': status?.name,
+      'limit': '$limit',
+    }),
+  ).map(IntegrationMessage.fromJson).toList();
 
   @override
   Future<IntegrationMessage> saveMessage(IntegrationMessage message) async =>

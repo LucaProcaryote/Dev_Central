@@ -22,7 +22,9 @@ class BackendBanner extends StatelessWidget {
     final theme = Theme.of(context);
 
     // A real backend needs no explanation; only the memory mode is surprising.
-    if (config.backendMode != BackendMode.memory) return const SizedBox.shrink();
+    if (config.backendMode != BackendMode.memory) {
+      return const SizedBox.shrink();
+    }
 
     final color = HospitalTheme.warningOf(context);
     return Material(

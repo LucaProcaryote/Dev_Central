@@ -167,9 +167,7 @@ const Map<String, _Profile> _profiles = <String, _Profile>{
       VitalSignType.diastolicBloodPressure: 84,
       VitalSignType.bodyWeight: 71.2,
     },
-    trends: <VitalSignType, double>{
-      VitalSignType.heartRate: -32,
-    },
+    trends: <VitalSignType, double>{VitalSignType.heartRate: -32},
   ),
   'pat-016': _Profile(
     baselines: <VitalSignType, double>{
@@ -250,8 +248,10 @@ List<Observation> buildSeedObservations(
     // three days of readings, but the values in that window must reflect six
     // days of treatment, not three. Conflating the two made long stays look
     // like they had only just been admitted.
-    final hoursSinceAdmission =
-        now.difference(encounter.admissionDate).inHours.clamp(1, 100000);
+    final hoursSinceAdmission = now
+        .difference(encounter.admissionDate)
+        .inHours
+        .clamp(1, 100000);
     final windowHours = hoursSinceAdmission > 72 ? 72 : hoursSinceAdmission;
     final random = _Lcg(encounter.patientId.hashCode.abs() % 100000 + 7);
 
@@ -262,11 +262,16 @@ List<Observation> buildSeedObservations(
 
       // Daily cadence for weight and activity, four-hourly for the rest.
       final intervalHours =
-          (type == VitalSignType.bodyWeight || type == VitalSignType.activitySteps)
-              ? 24
-              : 4;
+          (type == VitalSignType.bodyWeight ||
+              type == VitalSignType.activitySteps)
+          ? 24
+          : 4;
 
-      for (var hoursAgo = windowHours; hoursAgo >= 0; hoursAgo -= intervalHours) {
+      for (
+        var hoursAgo = windowHours;
+        hoursAgo >= 0;
+        hoursAgo -= intervalHours
+      ) {
         // Days of treatment completed at the moment of this reading.
         final elapsedDays = (hoursSinceAdmission - hoursAgo) / 24.0;
         final drift = perDay * elapsedDays;
@@ -299,16 +304,18 @@ List<Observation> buildSeedObservations(
         value = double.parse(value.toStringAsFixed(type.decimals));
         counter++;
 
-        observations.add(Observation(
-          id: 'obs-${counter.toString().padLeft(5, '0')}',
-          patientId: encounter.patientId,
-          encounterId: encounter.id,
-          type: type,
-          value: value,
-          effectiveDateTime: now.subtract(Duration(hours: hoursAgo)),
-          deviceId: device,
-          performer: device == null ? 'Marie Lambert' : null,
-        ));
+        observations.add(
+          Observation(
+            id: 'obs-${counter.toString().padLeft(5, '0')}',
+            patientId: encounter.patientId,
+            encounterId: encounter.id,
+            type: type,
+            value: value,
+            effectiveDateTime: now.subtract(Duration(hours: hoursAgo)),
+            deviceId: device,
+            performer: device == null ? 'Marie Lambert' : null,
+          ),
+        );
       }
     }
   }

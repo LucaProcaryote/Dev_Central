@@ -63,45 +63,55 @@ class SafetyChecks {
         allergy.substance.nl.toLowerCase(),
       ];
 
-      final matches = names.any((name) => substances.any((substance) =>
-          substance.length >= 4 &&
-          (name.contains(substance) || substance.contains(name))));
+      final matches = names.any(
+        (name) => substances.any(
+          (substance) =>
+              substance.length >= 4 &&
+              (name.contains(substance) || substance.contains(name)),
+        ),
+      );
 
       // Beta-lactams cross-react: a penicillin allergy is a reason to think
       // twice about any of them, not only about penicillin itself.
-      final crossReacts = _isBetaLactam(medication) &&
+      final crossReacts =
+          _isBetaLactam(medication) &&
           substances.any((s) => s.contains('penicill'));
 
       if (!matches && !crossReacts) continue;
 
-      alerts.add(SafetyAlert(
-        severity: allergy.criticality == AllergyCriticality.high
-            ? SafetySeverity.blocking
-            : SafetySeverity.warning,
-        title: LocalizedText(
-          en: 'Allergy: ${allergy.substance.en}',
-          fr: 'Allergie : ${allergy.substance.fr}',
-          nl: 'Allergie: ${allergy.substance.nl}',
+      alerts.add(
+        SafetyAlert(
+          severity: allergy.criticality == AllergyCriticality.high
+              ? SafetySeverity.blocking
+              : SafetySeverity.warning,
+          title: LocalizedText(
+            en: 'Allergy: ${allergy.substance.en}',
+            fr: 'Allergie : ${allergy.substance.fr}',
+            nl: 'Allergie: ${allergy.substance.nl}',
+          ),
+          detail: crossReacts && !matches
+              ? LocalizedText(
+                  en:
+                      '${medication.name.en} is a beta-lactam and may '
+                      'cross-react with the recorded penicillin allergy '
+                      '(${allergy.reaction.en}).',
+                  fr:
+                      '${medication.name.fr} est un bêta-lactame et peut '
+                      'présenter une réaction croisée avec l\'allergie '
+                      'documentée à la pénicilline (${allergy.reaction.fr}).',
+                  nl:
+                      '${medication.name.nl} is een bèta-lactam en kan '
+                      'kruisreageren met de geregistreerde penicilline-allergie '
+                      '(${allergy.reaction.nl}).',
+                )
+              : LocalizedText(
+                  en: 'Recorded reaction: ${allergy.reaction.en}.',
+                  fr: 'Réaction documentée : ${allergy.reaction.fr}.',
+                  nl: 'Geregistreerde reactie: ${allergy.reaction.nl}.',
+                ),
+          blocker: DispenseBlocker.allergyConflict,
         ),
-        detail: crossReacts && !matches
-            ? LocalizedText(
-                en: '${medication.name.en} is a beta-lactam and may '
-                    'cross-react with the recorded penicillin allergy '
-                    '(${allergy.reaction.en}).',
-                fr: '${medication.name.fr} est un bêta-lactame et peut '
-                    'présenter une réaction croisée avec l\'allergie '
-                    'documentée à la pénicilline (${allergy.reaction.fr}).',
-                nl: '${medication.name.nl} is een bèta-lactam en kan '
-                    'kruisreageren met de geregistreerde penicilline-allergie '
-                    '(${allergy.reaction.nl}).',
-              )
-            : LocalizedText(
-                en: 'Recorded reaction: ${allergy.reaction.en}.',
-                fr: 'Réaction documentée : ${allergy.reaction.fr}.',
-                nl: 'Geregistreerde reactie: ${allergy.reaction.nl}.',
-              ),
-        blocker: DispenseBlocker.allergyConflict,
-      ));
+      );
     }
     return alerts;
   }
@@ -125,103 +135,117 @@ class SafetyChecks {
     final alerts = <SafetyAlert>[];
 
     if (cabinet.isLocked) {
-      alerts.add(const SafetyAlert(
-        severity: SafetySeverity.blocking,
-        title: LocalizedText(
-          en: 'Cabinet locked',
-          fr: 'Armoire verrouillée',
-          nl: 'Kast vergrendeld',
+      alerts.add(
+        const SafetyAlert(
+          severity: SafetySeverity.blocking,
+          title: LocalizedText(
+            en: 'Cabinet locked',
+            fr: 'Armoire verrouillée',
+            nl: 'Kast vergrendeld',
+          ),
+          detail: LocalizedText(
+            en: 'Unlock the cabinet before dispensing.',
+            fr: 'Déverrouillez l\'armoire avant de délivrer.',
+            nl: 'Ontgrendel de kast voordat u aflevert.',
+          ),
+          blocker: DispenseBlocker.cabinetLocked,
         ),
-        detail: LocalizedText(
-          en: 'Unlock the cabinet before dispensing.',
-          fr: 'Déverrouillez l\'armoire avant de délivrer.',
-          nl: 'Ontgrendel de kast voordat u aflevert.',
-        ),
-        blocker: DispenseBlocker.cabinetLocked,
-      ));
+      );
     }
 
     if (prescription.status != PrescriptionStatus.active) {
-      alerts.add(const SafetyAlert(
-        severity: SafetySeverity.blocking,
-        title: LocalizedText(
-          en: 'Prescription not active',
-          fr: 'Prescription non active',
-          nl: 'Voorschrift niet actief',
+      alerts.add(
+        const SafetyAlert(
+          severity: SafetySeverity.blocking,
+          title: LocalizedText(
+            en: 'Prescription not active',
+            fr: 'Prescription non active',
+            nl: 'Voorschrift niet actief',
+          ),
+          detail: LocalizedText(
+            en: 'Only an active prescription can be dispensed against.',
+            fr: 'Seule une prescription active peut donner lieu à une délivrance.',
+            nl: 'Alleen tegen een actief voorschrift kan worden afgeleverd.',
+          ),
+          blocker: DispenseBlocker.prescriptionNotActive,
         ),
-        detail: LocalizedText(
-          en: 'Only an active prescription can be dispensed against.',
-          fr: 'Seule une prescription active peut donner lieu à une délivrance.',
-          nl: 'Alleen tegen een actief voorschrift kan worden afgeleverd.',
-        ),
-        blocker: DispenseBlocker.prescriptionNotActive,
-      ));
+      );
     }
 
     if (stock == null || stock.quantityOnHand <= 0) {
-      alerts.add(const SafetyAlert(
-        severity: SafetySeverity.blocking,
-        title: LocalizedText(
-          en: 'Out of stock',
-          fr: 'Rupture de stock',
-          nl: 'Niet op voorraad',
-        ),
-        detail: LocalizedText(
-          en: 'The slot is empty. Restock before dispensing.',
-          fr: 'L\'emplacement est vide. Réapprovisionnez avant de délivrer.',
-          nl: 'Het vak is leeg. Vul aan voordat u aflevert.',
-        ),
-        blocker: DispenseBlocker.outOfStock,
-      ));
-    } else {
-      if (stock.isExpired) {
-        alerts.add(const SafetyAlert(
+      alerts.add(
+        const SafetyAlert(
           severity: SafetySeverity.blocking,
           title: LocalizedText(
-            en: 'Expired lot',
-            fr: 'Lot périmé',
-            nl: 'Vervallen lot',
+            en: 'Out of stock',
+            fr: 'Rupture de stock',
+            nl: 'Niet op voorraad',
           ),
           detail: LocalizedText(
-            en: 'This lot is past its expiry date and must be withdrawn.',
-            fr: 'Ce lot a dépassé sa date de péremption et doit être retiré.',
-            nl: 'Dit lot is over de vervaldatum en moet worden teruggenomen.',
+            en: 'The slot is empty. Restock before dispensing.',
+            fr: 'L\'emplacement est vide. Réapprovisionnez avant de délivrer.',
+            nl: 'Het vak is leeg. Vul aan voordat u aflevert.',
           ),
-          blocker: DispenseBlocker.expiredLot,
-        ));
+          blocker: DispenseBlocker.outOfStock,
+        ),
+      );
+    } else {
+      if (stock.isExpired) {
+        alerts.add(
+          const SafetyAlert(
+            severity: SafetySeverity.blocking,
+            title: LocalizedText(
+              en: 'Expired lot',
+              fr: 'Lot périmé',
+              nl: 'Vervallen lot',
+            ),
+            detail: LocalizedText(
+              en: 'This lot is past its expiry date and must be withdrawn.',
+              fr: 'Ce lot a dépassé sa date de péremption et doit être retiré.',
+              nl: 'Dit lot is over de vervaldatum en moet worden teruggenomen.',
+            ),
+            blocker: DispenseBlocker.expiredLot,
+          ),
+        );
       } else if (stock.isNearExpiry) {
-        alerts.add(const SafetyAlert(
-          severity: SafetySeverity.advisory,
-          title: LocalizedText(
-            en: 'Expires soon',
-            fr: 'Périme bientôt',
-            nl: 'Vervalt binnenkort',
+        alerts.add(
+          const SafetyAlert(
+            severity: SafetySeverity.advisory,
+            title: LocalizedText(
+              en: 'Expires soon',
+              fr: 'Périme bientôt',
+              nl: 'Vervalt binnenkort',
+            ),
+            detail: LocalizedText(
+              en: 'Use this lot first.',
+              fr: 'Utilisez ce lot en priorité.',
+              nl: 'Gebruik dit lot als eerste.',
+            ),
           ),
-          detail: LocalizedText(
-            en: 'Use this lot first.',
-            fr: 'Utilisez ce lot en priorité.',
-            nl: 'Gebruik dit lot als eerste.',
-          ),
-        ));
+        );
       }
 
       if (quantity > stock.quantityOnHand) {
-        alerts.add(SafetyAlert(
-          severity: SafetySeverity.blocking,
-          title: const LocalizedText(
-            en: 'Not enough stock',
-            fr: 'Stock insuffisant',
-            nl: 'Onvoldoende voorraad',
+        alerts.add(
+          SafetyAlert(
+            severity: SafetySeverity.blocking,
+            title: const LocalizedText(
+              en: 'Not enough stock',
+              fr: 'Stock insuffisant',
+              nl: 'Onvoldoende voorraad',
+            ),
+            detail: LocalizedText(
+              en: 'Only ${stock.quantityOnHand} left in slot ${stock.slot}.',
+              fr:
+                  'Il ne reste que ${stock.quantityOnHand} dans '
+                  'l\'emplacement ${stock.slot}.',
+              nl:
+                  'Er zijn er nog maar ${stock.quantityOnHand} in vak '
+                  '${stock.slot}.',
+            ),
+            blocker: DispenseBlocker.outOfStock,
           ),
-          detail: LocalizedText(
-            en: 'Only ${stock.quantityOnHand} left in slot ${stock.slot}.',
-            fr: 'Il ne reste que ${stock.quantityOnHand} dans '
-                'l\'emplacement ${stock.slot}.',
-            nl: 'Er zijn er nog maar ${stock.quantityOnHand} in vak '
-                '${stock.slot}.',
-          ),
-          blocker: DispenseBlocker.outOfStock,
-        ));
+        );
       }
     }
 
@@ -230,20 +254,22 @@ class SafetyChecks {
     );
 
     if (prescription.medication.isControlled) {
-      alerts.add(const SafetyAlert(
-        severity: SafetySeverity.warning,
-        title: LocalizedText(
-          en: 'Controlled substance',
-          fr: 'Stupéfiant',
-          nl: 'Verdovend middel',
+      alerts.add(
+        const SafetyAlert(
+          severity: SafetySeverity.warning,
+          title: LocalizedText(
+            en: 'Controlled substance',
+            fr: 'Stupéfiant',
+            nl: 'Verdovend middel',
+          ),
+          detail: LocalizedText(
+            en: 'A witness must countersign this release.',
+            fr: 'Un témoin doit contresigner cette délivrance.',
+            nl: 'Een getuige moet deze aflevering medeondertekenen.',
+          ),
+          blocker: DispenseBlocker.controlledSubstanceNeedsWitness,
         ),
-        detail: LocalizedText(
-          en: 'A witness must countersign this release.',
-          fr: 'Un témoin doit contresigner cette délivrance.',
-          nl: 'Een getuige moet deze aflevering medeondertekenen.',
-        ),
-        blocker: DispenseBlocker.controlledSubstanceNeedsWitness,
-      ));
+      );
     }
 
     return alerts;

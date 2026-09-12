@@ -34,8 +34,8 @@ class SimulatorController extends ChangeNotifier {
     required this.publisher,
     required this.deviceCode,
     Uuid? uuid,
-  })  : _uuid = uuid ?? const Uuid(),
-        _generator = SignalGenerator(scenario: SimulationScenario.stable);
+  }) : _uuid = uuid ?? const Uuid(),
+       _generator = SignalGenerator(scenario: SimulationScenario.stable);
 
   final HospitalRepository repository;
 
@@ -77,7 +77,8 @@ class SimulatorController extends ChangeNotifier {
   /// Most recent readings, newest first, capped so a simulator left running
   /// overnight does not grow without bound.
   final List<PublishedReading> _outbox = <PublishedReading>[];
-  List<PublishedReading> get outbox => List<PublishedReading>.unmodifiable(_outbox);
+  List<PublishedReading> get outbox =>
+      List<PublishedReading>.unmodifiable(_outbox);
   static const int _outboxLimit = 200;
 
   Map<VitalSignType, double> get currentValues => _generator.current;
@@ -96,8 +97,9 @@ class SimulatorController extends ChangeNotifier {
   /// Points the simulator at a different patient, and follows the bed.
   Future<void> assignPatient(Patient? patient) async {
     _patient = patient;
-    _encounter =
-        patient == null ? null : await repository.activeEncounterFor(patient.id);
+    _encounter = patient == null
+        ? null
+        : await repository.activeEncounterFor(patient.id);
     final device = _device;
     if (device != null) {
       _device = await repository.saveDevice(
@@ -162,10 +164,9 @@ class SimulatorController extends ChangeNotifier {
   Future<void> _markDeviceActive() async {
     final device = _device;
     if (device == null) return;
-    _device = await repository.saveDevice(device.copyWith(
-      status: DeviceStatus.active,
-      lastSeenAt: DateTime.now(),
-    ));
+    _device = await repository.saveDevice(
+      device.copyWith(status: DeviceStatus.active, lastSeenAt: DateTime.now()),
+    );
   }
 
   Future<void> _tick() async {
@@ -234,15 +235,17 @@ class SimulatorController extends ChangeNotifier {
     if (device == null || patient == null) return null;
 
     _generator.setValue(type, value);
-    final entry = await _emit(Observation(
-      id: 'obs-${_uuid.v4()}',
-      patientId: patient.id,
-      encounterId: _encounter?.id,
-      type: type,
-      value: value,
-      effectiveDateTime: DateTime.now(),
-      deviceId: device.code,
-    ));
+    final entry = await _emit(
+      Observation(
+        id: 'obs-${_uuid.v4()}',
+        patientId: patient.id,
+        encounterId: _encounter?.id,
+        type: type,
+        value: value,
+        effectiveDateTime: DateTime.now(),
+        deviceId: device.code,
+      ),
+    );
     notifyListeners();
     return entry;
   }
@@ -261,15 +264,17 @@ class SimulatorController extends ChangeNotifier {
 
     var count = 0;
     for (final reading in readings) {
-      await _emit(Observation(
-        id: 'obs-${_uuid.v4()}',
-        patientId: patient.id,
-        encounterId: _encounter?.id,
-        type: reading.type,
-        value: reading.value,
-        effectiveDateTime: reading.at,
-        deviceId: sourceCode,
-      ));
+      await _emit(
+        Observation(
+          id: 'obs-${_uuid.v4()}',
+          patientId: patient.id,
+          encounterId: _encounter?.id,
+          type: reading.type,
+          value: reading.value,
+          effectiveDateTime: reading.at,
+          deviceId: sourceCode,
+        ),
+      );
       count++;
     }
     notifyListeners();

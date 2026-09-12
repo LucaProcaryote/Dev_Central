@@ -142,29 +142,29 @@ class HospitalUser {
       wardIds.isEmpty || wardIds.contains(wardId);
 
   factory HospitalUser.fromJson(Map<String, dynamic> json) => HospitalUser(
-        uid: asString(json['uid'] ?? json['id']),
-        email: asString(json['email']),
-        displayName: asString(json['display_name'] ?? json['displayName']),
-        role: UserRole.fromName(asString(json['role'], fallback: 'student')),
-        wardIds: asStringList(json['ward_ids'] ?? json['wardIds']),
-        preferredLanguage: asString(
-          json['preferred_language'] ?? json['preferredLanguage'],
-          fallback: 'en',
-        ),
-        photoUrl: asStringOrNull(json['photo_url'] ?? json['photoUrl']),
-        registrationNumber: asStringOrNull(
-          json['registration_number'] ?? json['registrationNumber'],
-        ),
-      );
+    uid: asString(json['uid'] ?? json['id']),
+    email: asString(json['email']),
+    displayName: asString(json['display_name'] ?? json['displayName']),
+    role: UserRole.fromName(asString(json['role'], fallback: 'student')),
+    wardIds: asStringList(json['ward_ids'] ?? json['wardIds']),
+    preferredLanguage: asString(
+      json['preferred_language'] ?? json['preferredLanguage'],
+      fallback: 'en',
+    ),
+    photoUrl: asStringOrNull(json['photo_url'] ?? json['photoUrl']),
+    registrationNumber: asStringOrNull(
+      json['registration_number'] ?? json['registrationNumber'],
+    ),
+  );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'uid': uid,
-        'email': email,
-        'display_name': displayName,
-        'role': role.name,
-        'ward_ids': wardIds,
-        'preferred_language': preferredLanguage,
-        'photo_url': photoUrl,
-        'registration_number': registrationNumber,
-      };
+    'uid': uid,
+    'email': email,
+    'display_name': displayName,
+    'role': role.name,
+    'ward_ids': wardIds,
+    'preferred_language': preferredLanguage,
+    'photo_url': photoUrl,
+    'registration_number': registrationNumber,
+  };
 }

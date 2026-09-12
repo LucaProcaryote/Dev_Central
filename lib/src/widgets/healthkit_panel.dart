@@ -27,8 +27,8 @@ class _HealthKitPanelState extends State<HealthKitPanel> {
 
   /// HealthKit's own type identifiers, mapped onto the LOINC-coded vitals the
   /// hospital speaks. This little table is the whole integration.
-  static const Map<String, VitalSignType> _healthKitTypes =
-      <String, VitalSignType>{
+  static const Map<String, VitalSignType>
+  _healthKitTypes = <String, VitalSignType>{
     'HKQuantityTypeIdentifierHeartRate': VitalSignType.heartRate,
     'HKQuantityTypeIdentifierOxygenSaturation': VitalSignType.oxygenSaturation,
     'HKQuantityTypeIdentifierBodyTemperature': VitalSignType.bodyTemperature,
@@ -82,7 +82,8 @@ class _HealthKitPanelState extends State<HealthKitPanel> {
       readings.add((
         type: type,
         value: double.parse(value.toStringAsFixed(type.decimals)),
-        at: asDateTimeOrNull(entry['date'] ?? entry['startDate']) ??
+        at:
+            asDateTimeOrNull(entry['date'] ?? entry['startDate']) ??
             DateTime.now(),
       ));
     }
@@ -108,9 +109,9 @@ class _HealthKitPanelState extends State<HealthKitPanel> {
     }
 
     final count = await controller.ingest(readings);
-    messenger.showSnackBar(SnackBar(
-      content: Text(l10n.devicePublishedCount(count)),
-    ));
+    messenger.showSnackBar(
+      SnackBar(content: Text(l10n.devicePublishedCount(count))),
+    );
   }
 
   @override
@@ -129,10 +130,7 @@ class _HealthKitPanelState extends State<HealthKitPanel> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(
-            l10n.deviceHealthKitBody,
-            style: theme.textTheme.bodySmall,
-          ),
+          Text(l10n.deviceHealthKitBody, style: theme.textTheme.bodySmall),
           if (_expanded) ...<Widget>[
             Gap.h8,
             Text(

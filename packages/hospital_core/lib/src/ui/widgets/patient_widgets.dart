@@ -172,10 +172,11 @@ class PatientIdentityBar extends StatelessWidget {
                   Flexible(
                     child: Text(
                       patient.fullName,
-                      style: (dense
-                              ? theme.textTheme.titleSmall
-                              : theme.textTheme.titleMedium)
-                          ?.copyWith(fontWeight: FontWeight.w700),
+                      style:
+                          (dense
+                                  ? theme.textTheme.titleSmall
+                                  : theme.textTheme.titleMedium)
+                              ?.copyWith(fontWeight: FontWeight.w700),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),

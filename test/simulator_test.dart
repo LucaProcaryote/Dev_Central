@@ -39,10 +39,15 @@ void main() {
         scenario: SimulationScenario.stable,
         seed: 7,
       );
-      var previous = generator.next(VitalSignType.heartRate, const Duration(seconds: 5));
+      var previous = generator.next(
+        VitalSignType.heartRate,
+        const Duration(seconds: 5),
+      );
       for (var i = 0; i < 200; i++) {
-        final value =
-            generator.next(VitalSignType.heartRate, const Duration(seconds: 5));
+        final value = generator.next(
+          VitalSignType.heartRate,
+          const Duration(seconds: 5),
+        );
         // A stable patient's heart rate must not jump twenty beats between
         // consecutive five-second samples.
         expect((value - previous).abs(), lessThan(10));
@@ -60,16 +65,23 @@ void main() {
 
       // Twenty simulated minutes.
       for (var i = 0; i < 40; i++) {
-        generator.next(VitalSignType.oxygenSaturation, const Duration(seconds: 30));
+        generator.next(
+          VitalSignType.oxygenSaturation,
+          const Duration(seconds: 30),
+        );
         generator.next(VitalSignType.heartRate, const Duration(seconds: 30));
       }
 
       // Saturation down, heart rate up - they must move together, in the
       // directions a deteriorating patient actually goes.
-      expect(generator.current[VitalSignType.oxygenSaturation]!,
-          lessThan(startSpo2 - 5));
-      expect(generator.current[VitalSignType.heartRate]!,
-          greaterThan(startHr + 10));
+      expect(
+        generator.current[VitalSignType.oxygenSaturation]!,
+        lessThan(startSpo2 - 5),
+      );
+      expect(
+        generator.current[VitalSignType.heartRate]!,
+        greaterThan(startHr + 10),
+      );
     });
 
     test('recovery moves them back', () {
@@ -82,10 +94,16 @@ void main() {
         seed: 11,
       );
       for (var i = 0; i < 40; i++) {
-        generator.next(VitalSignType.oxygenSaturation, const Duration(seconds: 30));
+        generator.next(
+          VitalSignType.oxygenSaturation,
+          const Duration(seconds: 30),
+        );
         generator.next(VitalSignType.heartRate, const Duration(seconds: 30));
       }
-      expect(generator.current[VitalSignType.oxygenSaturation]!, greaterThan(88));
+      expect(
+        generator.current[VitalSignType.oxygenSaturation]!,
+        greaterThan(88),
+      );
       expect(generator.current[VitalSignType.heartRate]!, lessThan(120));
     });
 
@@ -95,20 +113,27 @@ void main() {
         var min = double.infinity;
         var max = double.negativeInfinity;
         for (var i = 0; i < 300; i++) {
-          final value =
-              generator.next(VitalSignType.heartRate, const Duration(seconds: 2));
+          final value = generator.next(
+            VitalSignType.heartRate,
+            const Duration(seconds: 2),
+          );
           min = value < min ? value : min;
           max = value > max ? value : max;
         }
         return max - min;
       }
 
-      expect(spread(SimulationScenario.artefact),
-          greaterThan(spread(SimulationScenario.stable)));
+      expect(
+        spread(SimulationScenario.artefact),
+        greaterThan(spread(SimulationScenario.stable)),
+      );
     });
 
     test('a device only emits the measurements it can take', () {
-      final generator = SignalGenerator(scenario: SimulationScenario.stable, seed: 1);
+      final generator = SignalGenerator(
+        scenario: SimulationScenario.stable,
+        seed: 1,
+      );
       const device = MedicalDevice(
         id: 'd',
         code: 'DEV3',
@@ -168,8 +193,10 @@ void main() {
         type: VitalSignType.oxygenSaturation,
       );
 
-      final entry =
-          await controller.sendManual(VitalSignType.oxygenSaturation, 86);
+      final entry = await controller.sendManual(
+        VitalSignType.oxygenSaturation,
+        86,
+      );
 
       expect(entry, isNotNull);
       expect(entry!.observation.value, 86);
@@ -207,16 +234,15 @@ void main() {
     });
 
     test('an Apple Watch export lands as ordinary observations', () async {
-      final count = await controller.ingest(
-        <({VitalSignType type, double value, DateTime at})>[
-          (type: VitalSignType.heartRate, value: 68, at: now),
-          (
-            type: VitalSignType.activitySteps,
-            value: 4210,
-            at: now.subtract(const Duration(hours: 1)),
-          ),
-        ],
-      );
+      final count = await controller
+          .ingest(<({VitalSignType type, double value, DateTime at})>[
+            (type: VitalSignType.heartRate, value: 68, at: now),
+            (
+              type: VitalSignType.activitySteps,
+              value: 4210,
+              at: now.subtract(const Duration(hours: 1)),
+            ),
+          ]);
 
       expect(count, 2);
       final stored = await repository.listObservations(patientId: 'pat-002');
@@ -227,19 +253,22 @@ void main() {
       expect(watch.first.toFhir()['resourceType'], 'Observation');
     });
 
-    test('the outbox is capped so a long run does not grow without bound',
-        () async {
-      for (var i = 0; i < 260; i++) {
-        await controller.sendManual(VitalSignType.heartRate, 70 + (i % 20));
-      }
-      expect(controller.outbox.length, lessThanOrEqualTo(200));
-      // Newest first.
-      expect(
-        controller.outbox.first.observation.effectiveDateTime
-            .isAfter(controller.outbox.last.observation.effectiveDateTime),
-        isTrue,
-      );
-    });
+    test(
+      'the outbox is capped so a long run does not grow without bound',
+      () async {
+        for (var i = 0; i < 260; i++) {
+          await controller.sendManual(VitalSignType.heartRate, 70 + (i % 20));
+        }
+        expect(controller.outbox.length, lessThanOrEqualTo(200));
+        // Newest first.
+        expect(
+          controller.outbox.first.observation.effectiveDateTime.isAfter(
+            controller.outbox.last.observation.effectiveDateTime,
+          ),
+          isTrue,
+        );
+      },
+    );
 
     test('changing the interval takes effect without restarting', () {
       controller.setInterval(const Duration(seconds: 20));

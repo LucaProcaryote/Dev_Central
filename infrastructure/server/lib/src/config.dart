@@ -34,19 +34,21 @@ class ServerConfig {
 
   static const Map<String, ({int port, String database})> defaults =
       <String, ({int port, String database})>{
-    'EHR': (port: 8081, database: 'EHR_DB'),
-    'ADT': (port: 8082, database: 'ADT_DB'),
-    'PHARM': (port: 8083, database: 'PHARM_DB'),
-    'EAI': (port: 8084, database: 'EAI_DB'),
-    'DEV': (port: 8085, database: 'DEV_DB'),
-  };
+        'EHR': (port: 8081, database: 'EHR_DB'),
+        'ADT': (port: 8082, database: 'ADT_DB'),
+        'PHARM': (port: 8083, database: 'PHARM_DB'),
+        'EAI': (port: 8084, database: 'EAI_DB'),
+        'DEV': (port: 8085, database: 'DEV_DB'),
+      };
 
   static ArgParser parser() => ArgParser()
-    ..addOption('app',
-        abbr: 'a',
-        help: 'Which application to serve',
-        allowed: defaults.keys,
-        defaultsTo: 'EHR')
+    ..addOption(
+      'app',
+      abbr: 'a',
+      help: 'Which application to serve',
+      allowed: defaults.keys,
+      defaultsTo: 'EHR',
+    )
     ..addOption('port', abbr: 'p', help: 'Port to listen on (default: per app)')
     ..addOption('host', defaultsTo: '0.0.0.0')
     ..addOption('db-host', defaultsTo: 'localhost')

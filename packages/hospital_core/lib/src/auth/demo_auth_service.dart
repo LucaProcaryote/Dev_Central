@@ -10,7 +10,7 @@ import 'auth_service.dart';
 /// mistakes it for real security.
 class DemoAuthService extends AuthService {
   DemoAuthService({List<HospitalUser>? accounts})
-      : _accounts = accounts ?? seedUsers;
+    : _accounts = accounts ?? seedUsers;
 
   final List<HospitalUser> _accounts;
 

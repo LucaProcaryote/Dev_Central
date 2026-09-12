@@ -78,8 +78,9 @@ class _VitalTrendChartState extends State<VitalTrendChart> {
             Expanded(
               child: Text(
                 widget.type.display.forLanguage(language),
-                style: theme.textTheme.titleSmall
-                    ?.copyWith(fontWeight: FontWeight.w700),
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -118,14 +119,16 @@ class _VitalTrendChartState extends State<VitalTrendChart> {
           height: widget.height,
           child: LayoutBuilder(
             builder: (context, constraints) => MouseRegion(
-              onHover: (event) => _updateHover(event.localPosition, constraints, series),
+              onHover: (event) =>
+                  _updateHover(event.localPosition, constraints, series),
               onExit: (_) => setState(() => _hoveredIndex = null),
               child: GestureDetector(
                 onTapDown: (details) =>
                     _updateHover(details.localPosition, constraints, series),
                 onHorizontalDragUpdate: (details) =>
                     _updateHover(details.localPosition, constraints, series),
-                onHorizontalDragEnd: (_) => setState(() => _hoveredIndex = null),
+                onHorizontalDragEnd: (_) =>
+                    setState(() => _hoveredIndex = null),
                 child: CustomPaint(
                   size: Size(constraints.maxWidth, widget.height),
                   painter: _VitalChartPainter(
@@ -136,7 +139,9 @@ class _VitalTrendChartState extends State<VitalTrendChart> {
                     lineColor: HospitalTheme.seriesOf(context),
                     abnormalColor: HospitalTheme.criticalOf(context),
                     gridColor: theme.colorScheme.outlineVariant,
-                    bandColor: theme.colorScheme.onSurface.withValues(alpha: 0.05),
+                    bandColor: theme.colorScheme.onSurface.withValues(
+                      alpha: 0.05,
+                    ),
                     surfaceColor: theme.colorScheme.surface,
                     labelStyle: theme.textTheme.labelSmall!.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
@@ -155,13 +160,12 @@ class _VitalTrendChartState extends State<VitalTrendChart> {
                 abnormalCount == 0
                     ? l10n.vitalsObservationCount(series.length)
                     : '${l10n.vitalsObservationCount(series.length)} · '
-                        '$abnormalCount ${l10n.vitalsAbnormal.toLowerCase()}',
+                          '$abnormalCount ${l10n.vitalsAbnormal.toLowerCase()}',
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: abnormalCount == 0
                       ? theme.colorScheme.onSurfaceVariant
                       : HospitalTheme.criticalOf(context),
-                  fontWeight:
-                      abnormalCount == 0 ? null : FontWeight.w600,
+                  fontWeight: abnormalCount == 0 ? null : FontWeight.w600,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -255,7 +259,9 @@ class _VitalChartPainter extends CustomPainter {
       minValue = minValue < type.normalLow ? minValue : type.normalLow;
       maxValue = maxValue > type.normalHigh ? maxValue : type.normalHigh;
     }
-    final span = (maxValue - minValue).abs() < 0.0001 ? 1.0 : maxValue - minValue;
+    final span = (maxValue - minValue).abs() < 0.0001
+        ? 1.0
+        : maxValue - minValue;
     final low = minValue - span * 0.12;
     final high = maxValue + span * 0.12;
 
@@ -268,9 +274,12 @@ class _VitalChartPainter extends CustomPainter {
 
     // ---- Normal range band, behind everything ----
     if (showNormalBand) {
-      final bandTop = yFor(type.normalHigh).clamp(plotRect.top, plotRect.bottom);
-      final bandBottom =
-          yFor(type.normalLow).clamp(plotRect.top, plotRect.bottom);
+      final bandTop = yFor(
+        type.normalHigh,
+      ).clamp(plotRect.top, plotRect.bottom);
+      final bandBottom = yFor(
+        type.normalLow,
+      ).clamp(plotRect.top, plotRect.bottom);
       canvas.drawRect(
         Rect.fromLTRB(plotRect.left, bandTop, plotRect.right, bandBottom),
         Paint()..color = bandColor,
@@ -284,7 +293,11 @@ class _VitalChartPainter extends CustomPainter {
     for (var i = 0; i <= 2; i++) {
       final value = low + (high - low) * (i / 2);
       final y = yFor(value);
-      canvas.drawLine(Offset(plotRect.left, y), Offset(plotRect.right, y), gridPaint);
+      canvas.drawLine(
+        Offset(plotRect.left, y),
+        Offset(plotRect.right, y),
+        gridPaint,
+      );
       _paintText(
         canvas,
         value.toStringAsFixed(type.decimals),
@@ -353,8 +366,7 @@ class _VitalChartPainter extends CustomPainter {
       canvas.drawCircle(
         centre,
         5,
-        Paint()
-          ..color = series[index].isAbnormal ? abnormalColor : lineColor,
+        Paint()..color = series[index].isAbnormal ? abnormalColor : lineColor,
       );
     }
 
@@ -462,7 +474,11 @@ class VitalTile extends StatelessWidget {
                     ),
                   ),
                   if (isAbnormal)
-                    Icon(Icons.warning_amber_rounded, size: 16, color: statusColor),
+                    Icon(
+                      Icons.warning_amber_rounded,
+                      size: 16,
+                      color: statusColor,
+                    ),
                 ],
               ),
               Gap.h8,
@@ -514,7 +530,9 @@ class VitalTile extends StatelessWidget {
                   isAbnormal
                       ? '${l10n.vitalsAbnormal} · ${Formats.ago(context, reading.effectiveDateTime)}'
                       : Formats.ago(context, reading.effectiveDateTime),
-                  style: theme.textTheme.labelSmall?.copyWith(color: statusColor),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: statusColor,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -542,7 +560,9 @@ class _SparklinePainter extends CustomPainter {
       minValue = value < minValue ? value : minValue;
       maxValue = value > maxValue ? value : maxValue;
     }
-    final span = (maxValue - minValue).abs() < 0.0001 ? 1.0 : maxValue - minValue;
+    final span = (maxValue - minValue).abs() < 0.0001
+        ? 1.0
+        : maxValue - minValue;
 
     final path = Path();
     for (var i = 0; i < values.length; i++) {
@@ -565,8 +585,7 @@ class _SparklinePainter extends CustomPainter {
     );
     // Anchor the eye at the most recent value.
     final lastX = size.width;
-    final lastY =
-        size.height - ((values.last - minValue) / span) * size.height;
+    final lastY = size.height - ((values.last - minValue) / span) * size.height;
     canvas.drawCircle(Offset(lastX - 2, lastY), 2.5, Paint()..color = color);
   }
 

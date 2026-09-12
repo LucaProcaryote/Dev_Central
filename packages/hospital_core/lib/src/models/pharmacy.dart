@@ -31,33 +31,33 @@ class Cabinet {
   final double? temperatureCelsius;
 
   Cabinet copyWith({bool? isLocked, double? temperatureCelsius}) => Cabinet(
-        id: id,
-        code: code,
-        name: name,
-        wardId: wardId,
-        isLocked: isLocked ?? this.isLocked,
-        temperatureCelsius: temperatureCelsius ?? this.temperatureCelsius,
-      );
+    id: id,
+    code: code,
+    name: name,
+    wardId: wardId,
+    isLocked: isLocked ?? this.isLocked,
+    temperatureCelsius: temperatureCelsius ?? this.temperatureCelsius,
+  );
 
   factory Cabinet.fromJson(Map<String, dynamic> json) => Cabinet(
-        id: asString(json['id']),
-        code: asString(json['code']),
-        name: LocalizedText.fromJson(json['name']),
-        wardId: asString(json['ward_id'] ?? json['wardId']),
-        isLocked: asBool(json['is_locked'] ?? json['isLocked'], fallback: true),
-        temperatureCelsius: asDoubleOrNull(
-          json['temperature_celsius'] ?? json['temperatureCelsius'],
-        ),
-      );
+    id: asString(json['id']),
+    code: asString(json['code']),
+    name: LocalizedText.fromJson(json['name']),
+    wardId: asString(json['ward_id'] ?? json['wardId']),
+    isLocked: asBool(json['is_locked'] ?? json['isLocked'], fallback: true),
+    temperatureCelsius: asDoubleOrNull(
+      json['temperature_celsius'] ?? json['temperatureCelsius'],
+    ),
+  );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'code': code,
-        'name': name.toJson(),
-        'ward_id': wardId,
-        'is_locked': isLocked,
-        'temperature_celsius': temperatureCelsius,
-      };
+    'id': id,
+    'code': code,
+    'name': name.toJson(),
+    'ward_id': wardId,
+    'is_locked': isLocked,
+    'temperature_celsius': temperatureCelsius,
+  };
 }
 
 /// One drawer/slot of a cabinet, holding a quantity of one medication.
@@ -101,42 +101,41 @@ class StockItem {
       !isExpired && expiryDate.difference(DateTime.now()).inDays <= 30;
 
   StockItem copyWith({int? quantityOnHand, bool? isDrawerOpen}) => StockItem(
-        id: id,
-        cabinetId: cabinetId,
-        slot: slot,
-        medication: medication,
-        quantityOnHand: quantityOnHand ?? this.quantityOnHand,
-        parLevel: parLevel,
-        expiryDate: expiryDate,
-        lotNumber: lotNumber,
-        isDrawerOpen: isDrawerOpen ?? this.isDrawerOpen,
-      );
+    id: id,
+    cabinetId: cabinetId,
+    slot: slot,
+    medication: medication,
+    quantityOnHand: quantityOnHand ?? this.quantityOnHand,
+    parLevel: parLevel,
+    expiryDate: expiryDate,
+    lotNumber: lotNumber,
+    isDrawerOpen: isDrawerOpen ?? this.isDrawerOpen,
+  );
 
   factory StockItem.fromJson(Map<String, dynamic> json) => StockItem(
-        id: asString(json['id']),
-        cabinetId: asString(json['cabinet_id'] ?? json['cabinetId']),
-        slot: asString(json['slot']),
-        medication: Medication.fromJson(
-          (json['medication'] as Map?)?.cast<String, dynamic>() ??
-              const <String, dynamic>{},
-        ),
-        quantityOnHand:
-            asInt(json['quantity_on_hand'] ?? json['quantityOnHand']),
-        parLevel: asInt(json['par_level'] ?? json['parLevel']),
-        expiryDate: asDateTime(json['expiry_date'] ?? json['expiryDate']),
-        lotNumber: asString(json['lot_number'] ?? json['lotNumber']),
-      );
+    id: asString(json['id']),
+    cabinetId: asString(json['cabinet_id'] ?? json['cabinetId']),
+    slot: asString(json['slot']),
+    medication: Medication.fromJson(
+      (json['medication'] as Map?)?.cast<String, dynamic>() ??
+          const <String, dynamic>{},
+    ),
+    quantityOnHand: asInt(json['quantity_on_hand'] ?? json['quantityOnHand']),
+    parLevel: asInt(json['par_level'] ?? json['parLevel']),
+    expiryDate: asDateTime(json['expiry_date'] ?? json['expiryDate']),
+    lotNumber: asString(json['lot_number'] ?? json['lotNumber']),
+  );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'cabinet_id': cabinetId,
-        'slot': slot,
-        'medication': medication.toJson(),
-        'quantity_on_hand': quantityOnHand,
-        'par_level': parLevel,
-        'expiry_date': expiryDate.toIso8601String(),
-        'lot_number': lotNumber,
-      };
+    'id': id,
+    'cabinet_id': cabinetId,
+    'slot': slot,
+    'medication': medication.toJson(),
+    'quantity_on_hand': quantityOnHand,
+    'par_level': parLevel,
+    'expiry_date': expiryDate.toIso8601String(),
+    'lot_number': lotNumber,
+  };
 }
 
 /// Why a dispense request cannot be honoured. Returned by the pharmacy service

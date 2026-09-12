@@ -17,7 +17,11 @@ class FhirException implements Exception {
 
 /// A page of search results.
 class FhirBundle {
-  const FhirBundle({required this.resources, required this.total, this.nextUrl});
+  const FhirBundle({
+    required this.resources,
+    required this.total,
+    this.nextUrl,
+  });
 
   final List<Map<String, dynamic>> resources;
 
@@ -36,7 +40,7 @@ class FhirBundle {
 /// actual resources, and a heavy object layer would hide them.
 class FhirClient {
   FhirClient({required this.baseUrl, http.Client? client})
-      : _client = client ?? http.Client();
+    : _client = client ?? http.Client();
 
   /// Base URL of the FHIR endpoint, e.g. `http://localhost:8080/fhir`.
   final String baseUrl;
@@ -77,10 +81,7 @@ class FhirClient {
     int count = 50,
   }) async {
     final uri = Uri.parse('$baseUrl/$resourceType').replace(
-      queryParameters: <String, String>{
-        ...parameters,
-        '_count': '$count',
-      },
+      queryParameters: <String, String>{...parameters, '_count': '$count'},
     );
     final response = await _client.get(uri, headers: _headers);
     final bundle = _decodeResource(response);

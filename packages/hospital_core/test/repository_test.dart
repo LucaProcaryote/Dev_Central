@@ -68,7 +68,12 @@ void main() {
     });
 
     test('observations can be filtered by type and time', () async {
-      final since = DateTime.utc(2026, 9, 12, 10).subtract(const Duration(hours: 12));
+      final since = DateTime.utc(
+        2026,
+        9,
+        12,
+        10,
+      ).subtract(const Duration(hours: 12));
       final recent = await repository.listObservations(
         patientId: 'pat-008',
         type: VitalSignType.heartRate,
@@ -80,8 +85,9 @@ void main() {
     });
 
     test('resolvePlacement gives bed, room and ward together', () async {
-      final encounter = (await repository.listEncounters(activeOnly: true))
-          .firstWhere((e) => e.bedId != null);
+      final encounter = (await repository.listEncounters(
+        activeOnly: true,
+      )).firstWhere((e) => e.bedId != null);
       final placement = (await repository.resolvePlacement(encounter.bedId!))!;
 
       expect(placement.bed.id, encounter.bedId);
@@ -92,17 +98,23 @@ void main() {
 
     test('the formulary is searchable in all three languages', () async {
       expect(
-        (await repository.listFormulary(query: 'paracetamol')).map((m) => m.code),
+        (await repository.listFormulary(
+          query: 'paracetamol',
+        )).map((m) => m.code),
         contains('MED-0101'),
       );
       // French spelling of ibuprofen.
       expect(
-        (await repository.listFormulary(query: 'ibuprofène')).map((m) => m.code),
+        (await repository.listFormulary(
+          query: 'ibuprofène',
+        )).map((m) => m.code),
         contains('MED-0102'),
       );
       // Dutch spelling of ceftriaxone.
       expect(
-        (await repository.listFormulary(query: 'ceftriaxon')).map((m) => m.code),
+        (await repository.listFormulary(
+          query: 'ceftriaxon',
+        )).map((m) => m.code),
         contains('MED-0116'),
       );
       // ATC code lookup.
@@ -122,22 +134,26 @@ void main() {
 
       final after = await repository.listPatients();
       expect(after.length, before.length);
-      expect((await repository.findPatient(patient.id))!.phone,
-          '+32 2 000 00 00');
+      expect(
+        (await repository.findPatient(patient.id))!.phone,
+        '+32 2 000 00 00',
+      );
     });
 
     test('saving a new record appends it', () async {
       final before = await repository.listNotes(patientId: 'pat-001');
-      await repository.saveNote(ClinicalNote(
-        id: 'note-new',
-        patientId: 'pat-001',
-        type: NoteType.progress,
-        title: 'Test',
-        body: 'Body',
-        authorName: 'Tester',
-        authorRole: 'Student',
-        createdAt: DateTime.utc(2026, 9, 12, 11),
-      ));
+      await repository.saveNote(
+        ClinicalNote(
+          id: 'note-new',
+          patientId: 'pat-001',
+          type: NoteType.progress,
+          title: 'Test',
+          body: 'Body',
+          authorName: 'Tester',
+          authorRole: 'Student',
+          createdAt: DateTime.utc(2026, 9, 12, 11),
+        ),
+      );
       final after = await repository.listNotes(patientId: 'pat-001');
       expect(after.length, before.length + 1);
       // Newest first.
@@ -156,64 +172,77 @@ void main() {
       repository.addListener(() => notifications++);
 
       await repository.saveBed(
-        (await repository.listBeds()).first.copyWith(status: BedStatus.cleaning),
+        (await repository.listBeds()).first.copyWith(
+          status: BedStatus.cleaning,
+        ),
       );
       expect(notifications, 1);
 
-      await repository.addObservation(Observation(
-        id: 'obs-new',
-        patientId: 'pat-001',
-        type: VitalSignType.heartRate,
-        value: 72,
-        effectiveDateTime: DateTime.utc(2026, 9, 12, 11),
-      ));
+      await repository.addObservation(
+        Observation(
+          id: 'obs-new',
+          patientId: 'pat-001',
+          type: VitalSignType.heartRate,
+          value: 72,
+          effectiveDateTime: DateTime.utc(2026, 9, 12, 11),
+        ),
+      );
       expect(notifications, 2);
     });
 
-    test('a full admission updates the encounter and the bed together',
-        () async {
-      // pat-007 is deliberately left unadmitted in the seed data.
-      expect(await repository.activeEncounterFor('pat-007'), isNull);
+    test(
+      'a full admission updates the encounter and the bed together',
+      () async {
+        // pat-007 is deliberately left unadmitted in the seed data.
+        expect(await repository.activeEncounterFor('pat-007'), isNull);
 
-      final freeBed = (await repository.listBeds(
-        wardId: 'ward-int',
-        status: BedStatus.free,
-      )).first;
+        final freeBed = (await repository.listBeds(
+          wardId: 'ward-int',
+          status: BedStatus.free,
+        )).first;
 
-      final encounter = Encounter(
-        id: 'enc-new',
-        patientId: 'pat-007',
-        status: EncounterStatus.inProgress,
-        encounterClass: EncounterClass.inpatient,
-        admissionDate: DateTime.utc(2026, 9, 12, 11),
-        wardId: freeBed.wardId,
-        roomId: freeBed.roomId,
-        bedId: freeBed.id,
-        reason: 'Test admission',
-      );
-      await repository.saveEncounter(encounter);
-      await repository.saveBed(freeBed.copyWith(
-        status: BedStatus.occupied,
-        currentEncounterId: encounter.id,
-        currentPatientId: 'pat-007',
-      ));
-      await repository.addMovement(Movement(
-        id: 'mv-new',
-        encounterId: encounter.id,
-        patientId: 'pat-007',
-        type: MovementType.admission,
-        occurredAt: DateTime.utc(2026, 9, 12, 11),
-        performedBy: 'Tester',
-        toWardId: freeBed.wardId,
-        toBedId: freeBed.id,
-      ));
+        final encounter = Encounter(
+          id: 'enc-new',
+          patientId: 'pat-007',
+          status: EncounterStatus.inProgress,
+          encounterClass: EncounterClass.inpatient,
+          admissionDate: DateTime.utc(2026, 9, 12, 11),
+          wardId: freeBed.wardId,
+          roomId: freeBed.roomId,
+          bedId: freeBed.id,
+          reason: 'Test admission',
+        );
+        await repository.saveEncounter(encounter);
+        await repository.saveBed(
+          freeBed.copyWith(
+            status: BedStatus.occupied,
+            currentEncounterId: encounter.id,
+            currentPatientId: 'pat-007',
+          ),
+        );
+        await repository.addMovement(
+          Movement(
+            id: 'mv-new',
+            encounterId: encounter.id,
+            patientId: 'pat-007',
+            type: MovementType.admission,
+            occurredAt: DateTime.utc(2026, 9, 12, 11),
+            performedBy: 'Tester',
+            toWardId: freeBed.wardId,
+            toBedId: freeBed.id,
+          ),
+        );
 
-      expect((await repository.activeEncounterFor('pat-007'))?.id, 'enc-new');
-      expect((await repository.findBed(freeBed.id))!.status, BedStatus.occupied);
-      expect(
-        (await repository.listMovements(patientId: 'pat-007')).single.type,
-        MovementType.admission,
-      );
-    });
+        expect((await repository.activeEncounterFor('pat-007'))?.id, 'enc-new');
+        expect(
+          (await repository.findBed(freeBed.id))!.status,
+          BedStatus.occupied,
+        );
+        expect(
+          (await repository.listMovements(patientId: 'pat-007')).single.type,
+          MovementType.admission,
+        );
+      },
+    );
   });
 }

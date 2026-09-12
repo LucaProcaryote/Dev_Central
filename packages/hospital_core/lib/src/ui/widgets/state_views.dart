@@ -75,7 +75,8 @@ class ErrorView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = HospitalLocalizations.of(context);
-    final isNetwork = error.toString().toLowerCase().contains('socket') ||
+    final isNetwork =
+        error.toString().toLowerCase().contains('socket') ||
         error.toString().toLowerCase().contains('connection') ||
         error.toString().toLowerCase().contains('failed host');
 
@@ -85,11 +86,7 @@ class ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(
-              Icons.error_outline,
-              size: 44,
-              color: theme.colorScheme.error,
-            ),
+            Icon(Icons.error_outline, size: 44, color: theme.colorScheme.error),
             Gap.h16,
             Text(
               isNetwork ? l10n.errorNetwork : l10n.errorGeneric,
@@ -156,8 +153,11 @@ class StatusChip extends StatelessWidget {
           ],
           Text(
             label,
-            style: (dense ? theme.textTheme.labelSmall : theme.textTheme.labelMedium)
-                ?.copyWith(color: color, fontWeight: FontWeight.w600),
+            style:
+                (dense
+                        ? theme.textTheme.labelSmall
+                        : theme.textTheme.labelMedium)
+                    ?.copyWith(color: color, fontWeight: FontWeight.w600),
           ),
         ],
       ),

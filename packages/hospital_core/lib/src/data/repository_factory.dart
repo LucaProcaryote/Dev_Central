@@ -10,9 +10,11 @@ import 'rest/rest_repository.dart';
 /// generated gateway presents exactly the routes [RestHospitalRepository]
 /// already calls. That keeps one client implementation for both cloud and
 /// local PostgreSQL instead of two that drift apart.
-HospitalRepository createRepository(AppConfig config) => switch (config.backendMode) {
+HospitalRepository createRepository(AppConfig config) =>
+    switch (config.backendMode) {
       BackendMode.memory => MemoryHospitalRepository(),
       BackendMode.restApi => RestHospitalRepository(baseUrl: config.apiBaseUrl),
-      BackendMode.dataConnect =>
-        RestHospitalRepository(baseUrl: config.apiBaseUrl),
+      BackendMode.dataConnect => RestHospitalRepository(
+        baseUrl: config.apiBaseUrl,
+      ),
     };

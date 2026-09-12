@@ -14,7 +14,9 @@ class FleetScreen extends StatelessWidget {
     final language = Localizations.localeOf(context).languageCode;
     final theme = Theme.of(context);
 
-    return RepositoryBuilder<({List<MedicalDevice> devices, Map<String, Patient> patients})>(
+    return RepositoryBuilder<
+      ({List<MedicalDevice> devices, Map<String, Patient> patients})
+    >(
       query: (repository) async {
         final devices = await repository.listDevices();
         final patients = <String, Patient>{};
@@ -65,29 +67,30 @@ class FleetScreen extends StatelessWidget {
                       : data.patients[device.assignedPatientId];
 
                   final (Color color, String label) = switch (device.status) {
-                    DeviceStatus.active => device.isStale
-                        ? (
-                            HospitalTheme.warningOf(context),
-                            '${device.status.display.forLanguage(language)} '
-                                '· ${l10n.deviceLastSeen} '
-                                '${Formats.ago(context, device.lastSeenAt!)}'
-                          )
-                        : (
-                            HospitalTheme.successOf(context),
-                            device.status.display.forLanguage(language)
-                          ),
+                    DeviceStatus.active =>
+                      device.isStale
+                          ? (
+                              HospitalTheme.warningOf(context),
+                              '${device.status.display.forLanguage(language)} '
+                                  '· ${l10n.deviceLastSeen} '
+                                  '${Formats.ago(context, device.lastSeenAt!)}',
+                            )
+                          : (
+                              HospitalTheme.successOf(context),
+                              device.status.display.forLanguage(language),
+                            ),
                     DeviceStatus.standby => (
-                        HospitalTheme.infoOf(context),
-                        device.status.display.forLanguage(language)
-                      ),
+                      HospitalTheme.infoOf(context),
+                      device.status.display.forLanguage(language),
+                    ),
                     DeviceStatus.maintenance => (
-                        HospitalTheme.warningOf(context),
-                        device.status.display.forLanguage(language)
-                      ),
+                      HospitalTheme.warningOf(context),
+                      device.status.display.forLanguage(language),
+                    ),
                     DeviceStatus.offline => (
-                        theme.colorScheme.outline,
-                        device.status.display.forLanguage(language)
-                      ),
+                      theme.colorScheme.outline,
+                      device.status.display.forLanguage(language),
+                    ),
                   };
 
                   return ListTile(
@@ -98,8 +101,10 @@ class FleetScreen extends StatelessWidget {
                         device.code.replaceAll(RegExp('[^0-9]'), '').isEmpty
                             ? device.code.substring(0, 2)
                             : device.code.replaceAll(RegExp('[^0-9]'), ''),
-                        style: theme.textTheme.labelMedium
-                            ?.copyWith(color: color, fontWeight: FontWeight.w700),
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: color,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                     title: Row(

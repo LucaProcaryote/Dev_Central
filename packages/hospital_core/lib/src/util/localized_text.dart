@@ -13,10 +13,7 @@ class LocalizedText {
 
   /// Convenience for content that is identical in all three languages, such as
   /// a proper noun or an international unit.
-  const LocalizedText.same(String value)
-      : en = value,
-        fr = value,
-        nl = value;
+  const LocalizedText.same(String value) : en = value, fr = value, nl = value;
 
   final String en;
   final String fr;
@@ -24,17 +21,16 @@ class LocalizedText {
 
   /// Returns the variant for [languageCode], falling back to English.
   String forLanguage(String languageCode) => switch (languageCode) {
-        'fr' => fr,
-        'nl' => nl,
-        _ => en,
-      };
+    'fr' => fr,
+    'nl' => nl,
+    _ => en,
+  };
 
   /// Returns the variant matching [locale], falling back to English.
   String forLocale(Locale locale) => forLanguage(locale.languageCode);
 
   /// Resolves against the ambient locale of [context].
-  String of(BuildContext context) =>
-      forLocale(Localizations.localeOf(context));
+  String of(BuildContext context) => forLocale(Localizations.localeOf(context));
 
   factory LocalizedText.fromJson(Object? json) {
     if (json == null) return const LocalizedText.same('');
@@ -48,11 +44,18 @@ class LocalizedText {
     );
   }
 
-  Map<String, String> toJson() => <String, String>{'en': en, 'fr': fr, 'nl': nl};
+  Map<String, String> toJson() => <String, String>{
+    'en': en,
+    'fr': fr,
+    'nl': nl,
+  };
 
   @override
   bool operator ==(Object other) =>
-      other is LocalizedText && other.en == en && other.fr == fr && other.nl == nl;
+      other is LocalizedText &&
+      other.en == en &&
+      other.fr == fr &&
+      other.nl == nl;
 
   @override
   int get hashCode => Object.hash(en, fr, nl);

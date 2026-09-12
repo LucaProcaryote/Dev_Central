@@ -83,12 +83,13 @@ class HospitalApi {
   static const Map<String, String> _corsHeaders = <String, String>{
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Origin, Content-Type, Accept, Authorization',
+    'Access-Control-Allow-Headers':
+        'Origin, Content-Type, Accept, Authorization',
     'Access-Control-Max-Age': '86400',
   };
 
-  static Handler Function(Handler) get _cors => (Handler inner) =>
-      (Request request) async {
+  static Handler Function(Handler) get _cors =>
+      (Handler inner) => (Request request) async {
         if (request.method == 'OPTIONS') {
           return Response.ok(null, headers: _corsHeaders);
         }
@@ -103,31 +104,31 @@ class HospitalApi {
   /// schema doing its job, and the client needs to be told which rule it broke.
   /// Passing the raw driver message through ("Severity.error 23505: duplicate
   /// key value violates unique constraint …") tells a student nothing.
-  static Handler Function(Handler) get _errors => (Handler inner) =>
-      (Request request) async {
+  static Handler Function(Handler) get _errors =>
+      (Handler inner) => (Request request) async {
         try {
           return await inner(request);
         } on ServerException catch (error) {
           final mapped = _describeDatabaseError(error);
           // ignore: avoid_print
-          print('   ${request.method} ${request.requestedUri.path} → '
-              '${mapped.status}: ${mapped.message}');
-          return _json(
-            <String, dynamic>{
-              'error': mapped.message,
-              'constraint': error.constraintName,
-              'code': error.code,
-            },
-            status: mapped.status,
+          print(
+            '   ${request.method} ${request.requestedUri.path} → '
+            '${mapped.status}: ${mapped.message}',
           );
+          return _json(<String, dynamic>{
+            'error': mapped.message,
+            'constraint': error.constraintName,
+            'code': error.code,
+          }, status: mapped.status);
         } on FormatException catch (error) {
-          return _json(
-            <String, dynamic>{'error': 'Malformed request body: ${error.message}'},
-            status: 400,
-          );
+          return _json(<String, dynamic>{
+            'error': 'Malformed request body: ${error.message}',
+          }, status: 400);
         } catch (error, stack) {
           // ignore: avoid_print
-          print('!! ${request.method} ${request.requestedUri.path}: $error\n$stack');
+          print(
+            '!! ${request.method} ${request.requestedUri.path}: $error\n$stack',
+          );
           return _json(<String, dynamic>{'error': '$error'}, status: 500);
         }
       };
@@ -151,8 +152,7 @@ class HospitalApi {
           'That drawer already holds a different product.',
       'stock_items_cabinet_id_medication_code_key':
           'That product already has a drawer in this cabinet.',
-      'patients_mrn_key':
-          'That medical record number is already in use.',
+      'patients_mrn_key': 'That medical record number is already in use.',
       'patients_national_number_key':
           'That national register number is already in use.',
       'wards_code_key': 'That ward code is already in use.',
@@ -163,8 +163,7 @@ class HospitalApi {
     const unprocessable = <String, String>{
       'bed_occupancy_consistent':
           'An occupied bed must name its occupant, and a free bed must not.',
-      'encounter_period_ordered':
-          'A stay cannot end before it began.',
+      'encounter_period_ordered': 'A stay cannot end before it began.',
       'encounter_discharge_consistent':
           'A finished stay needs a discharge date.',
       'prescription_period_ordered':
@@ -190,20 +189,23 @@ class HospitalApi {
     return switch (error.code) {
       // unique_violation, foreign_key_violation
       '23505' => (
-          status: 409,
-          message: 'That record already exists${constraint.isEmpty ? '' : ' ($constraint)'}.'
-        ),
+        status: 409,
+        message:
+            'That record already exists${constraint.isEmpty ? '' : ' ($constraint)'}.',
+      ),
       '23503' => (
-          status: 409,
-          message: 'It refers to something that does not exist'
-              '${constraint.isEmpty ? '' : ' ($constraint)'}.'
-        ),
+        status: 409,
+        message:
+            'It refers to something that does not exist'
+            '${constraint.isEmpty ? '' : ' ($constraint)'}.',
+      ),
       // check_violation, not_null_violation
       '23514' => (
-          status: 422,
-          message: 'The value breaks a rule the database enforces'
-              '${constraint.isEmpty ? '' : ' ($constraint)'}.'
-        ),
+        status: 422,
+        message:
+            'The value breaks a rule the database enforces'
+            '${constraint.isEmpty ? '' : ' ($constraint)'}.',
+      ),
       '23502' => (status: 422, message: 'A required field was missing.'),
       _ => (status: 500, message: error.message),
     };
@@ -212,12 +214,12 @@ class HospitalApi {
   // ---- Helpers -------------------------------------------------------------
 
   static Response _json(Object? body, {int status = 200}) => Response(
-        status,
-        body: jsonEncode(body),
-        headers: const <String, String>{
-          'Content-Type': 'application/json; charset=utf-8',
-        },
-      );
+    status,
+    body: jsonEncode(body),
+    headers: const <String, String>{
+      'Content-Type': 'application/json; charset=utf-8',
+    },
+  );
 
   static Response _notFound() =>
       _json(<String, dynamic>{'error': 'not found'}, status: 404);
@@ -246,10 +248,10 @@ class HospitalApi {
   // ---- Handlers ------------------------------------------------------------
 
   Future<Response> _health(Request request) async => _json(<String, dynamic>{
-        'status': await store.isHealthy() ? 'ok' : 'degraded',
-        'app': app,
-        'time': DateTime.now().toIso8601String(),
-      });
+    'status': await store.isHealthy() ? 'ok' : 'degraded',
+    'app': app,
+    'time': DateTime.now().toIso8601String(),
+  });
 
   Future<Response> _listPatients(Request request) async =>
       _json(await store.listPatients(query: _query(request, 'query')));
@@ -266,11 +268,12 @@ class HospitalApi {
     return patient == null ? _notFound() : _json(patient);
   }
 
-  Future<Response> _savePatient(Request request, String id) async =>
-      _json(await store.savePatient(<String, dynamic>{
-        ...await _body(request),
-        'id': id,
-      }));
+  Future<Response> _savePatient(Request request, String id) async => _json(
+    await store.savePatient(<String, dynamic>{
+      ...await _body(request),
+      'id': id,
+    }),
+  );
 
   Future<Response> _listWards(Request request) async =>
       _json(await store.listWards());
@@ -278,58 +281,62 @@ class HospitalApi {
   Future<Response> _listRooms(Request request) async =>
       _json(await store.listRooms(wardId: _query(request, 'wardId')));
 
-  Future<Response> _listBeds(Request request) async => _json(await store.listBeds(
-        wardId: _query(request, 'wardId'),
-        status: _query(request, 'status'),
-      ));
+  Future<Response> _listBeds(Request request) async => _json(
+    await store.listBeds(
+      wardId: _query(request, 'wardId'),
+      status: _query(request, 'status'),
+    ),
+  );
 
   Future<Response> _findBed(Request request, String id) async {
     final bed = await store.findBed(id);
     return bed == null ? _notFound() : _json(bed);
   }
 
-  Future<Response> _saveBed(Request request, String id) async =>
-      _json(await store.saveBed(<String, dynamic>{
-        ...await _body(request),
-        'id': id,
-      }));
+  Future<Response> _saveBed(Request request, String id) async => _json(
+    await store.saveBed(<String, dynamic>{...await _body(request), 'id': id}),
+  );
 
-  Future<Response> _listEncounters(Request request) async =>
-      _json(await store.listEncounters(
-        patientId: _query(request, 'patientId'),
-        wardId: _query(request, 'wardId'),
-        activeOnly: _flag(request, 'active'),
-      ));
+  Future<Response> _listEncounters(Request request) async => _json(
+    await store.listEncounters(
+      patientId: _query(request, 'patientId'),
+      wardId: _query(request, 'wardId'),
+      activeOnly: _flag(request, 'active'),
+    ),
+  );
 
   Future<Response> _findEncounter(Request request, String id) async {
     final encounter = await store.findEncounter(id);
     return encounter == null ? _notFound() : _json(encounter);
   }
 
-  Future<Response> _saveEncounter(Request request, String id) async =>
-      _json(await store.saveEncounter(<String, dynamic>{
-        ...await _body(request),
-        'id': id,
-      }));
+  Future<Response> _saveEncounter(Request request, String id) async => _json(
+    await store.saveEncounter(<String, dynamic>{
+      ...await _body(request),
+      'id': id,
+    }),
+  );
 
-  Future<Response> _listMovements(Request request) async =>
-      _json(await store.listMovements(
-        encounterId: _query(request, 'encounterId'),
-        patientId: _query(request, 'patientId'),
-        limit: _limit(request, 100),
-      ));
+  Future<Response> _listMovements(Request request) async => _json(
+    await store.listMovements(
+      encounterId: _query(request, 'encounterId'),
+      patientId: _query(request, 'patientId'),
+      limit: _limit(request, 100),
+    ),
+  );
 
   Future<Response> _addMovement(Request request) async =>
       _json(await store.addMovement(await _body(request)));
 
-  Future<Response> _listObservations(Request request) async =>
-      _json(await store.listObservations(
-        patientId: _query(request, 'patientId'),
-        encounterId: _query(request, 'encounterId'),
-        type: _query(request, 'type'),
-        since: DateTime.tryParse(_query(request, 'since') ?? ''),
-        limit: _limit(request, 500),
-      ));
+  Future<Response> _listObservations(Request request) async => _json(
+    await store.listObservations(
+      patientId: _query(request, 'patientId'),
+      encounterId: _query(request, 'encounterId'),
+      type: _query(request, 'type'),
+      since: DateTime.tryParse(_query(request, 'since') ?? ''),
+      limit: _limit(request, 500),
+    ),
+  );
 
   Future<Response> _addObservation(Request request) async =>
       _json(await store.addObservation(await _body(request)));
@@ -340,38 +347,42 @@ class HospitalApi {
   Future<Response> _listFormulary(Request request) async =>
       _json(await store.listFormulary(query: _query(request, 'query')));
 
-  Future<Response> _listPrescriptions(Request request) async =>
-      _json(await store.listPrescriptions(
-        patientId: _query(request, 'patientId'),
-        encounterId: _query(request, 'encounterId'),
-        activeOnly: _flag(request, 'active'),
-      ));
+  Future<Response> _listPrescriptions(Request request) async => _json(
+    await store.listPrescriptions(
+      patientId: _query(request, 'patientId'),
+      encounterId: _query(request, 'encounterId'),
+      activeOnly: _flag(request, 'active'),
+    ),
+  );
 
   Future<Response> _findPrescription(Request request, String id) async {
     final prescription = await store.findPrescription(id);
     return prescription == null ? _notFound() : _json(prescription);
   }
 
-  Future<Response> _savePrescription(Request request, String id) async =>
-      _json(await store.savePrescription(<String, dynamic>{
-        ...await _body(request),
-        'id': id,
-      }));
+  Future<Response> _savePrescription(Request request, String id) async => _json(
+    await store.savePrescription(<String, dynamic>{
+      ...await _body(request),
+      'id': id,
+    }),
+  );
 
-  Future<Response> _listDispenses(Request request) async =>
-      _json(await store.listDispenses(
-        patientId: _query(request, 'patientId'),
-        prescriptionId: _query(request, 'prescriptionId'),
-        cabinetId: _query(request, 'cabinetId'),
-        status: _query(request, 'status'),
-        limit: _limit(request, 200),
-      ));
+  Future<Response> _listDispenses(Request request) async => _json(
+    await store.listDispenses(
+      patientId: _query(request, 'patientId'),
+      prescriptionId: _query(request, 'prescriptionId'),
+      cabinetId: _query(request, 'cabinetId'),
+      status: _query(request, 'status'),
+      limit: _limit(request, 200),
+    ),
+  );
 
-  Future<Response> _saveDispense(Request request, String id) async =>
-      _json(await store.saveDispense(<String, dynamic>{
-        ...await _body(request),
-        'id': id,
-      }));
+  Future<Response> _saveDispense(Request request, String id) async => _json(
+    await store.saveDispense(<String, dynamic>{
+      ...await _body(request),
+      'id': id,
+    }),
+  );
 
   Future<Response> _listCabinets(Request request) async =>
       _json(await store.listCabinets(wardId: _query(request, 'wardId')));
@@ -381,27 +392,31 @@ class HospitalApi {
     return cabinet == null ? _notFound() : _json(cabinet);
   }
 
-  Future<Response> _saveCabinet(Request request, String id) async =>
-      _json(await store.saveCabinet(<String, dynamic>{
-        ...await _body(request),
-        'id': id,
-      }));
+  Future<Response> _saveCabinet(Request request, String id) async => _json(
+    await store.saveCabinet(<String, dynamic>{
+      ...await _body(request),
+      'id': id,
+    }),
+  );
 
-  Future<Response> _listStock(Request request) async => _json(await store.listStock(
-        cabinetId: _query(request, 'cabinetId'),
-        query: _query(request, 'query'),
-      ));
+  Future<Response> _listStock(Request request) async => _json(
+    await store.listStock(
+      cabinetId: _query(request, 'cabinetId'),
+      query: _query(request, 'query'),
+    ),
+  );
 
   Future<Response> _findStockItem(Request request, String id) async {
     final item = await store.findStockItem(id);
     return item == null ? _notFound() : _json(item);
   }
 
-  Future<Response> _saveStockItem(Request request, String id) async =>
-      _json(await store.saveStockItem(<String, dynamic>{
-        ...await _body(request),
-        'id': id,
-      }));
+  Future<Response> _saveStockItem(Request request, String id) async => _json(
+    await store.saveStockItem(<String, dynamic>{
+      ...await _body(request),
+      'id': id,
+    }),
+  );
 
   Future<Response> _listDevices(Request request) async =>
       _json(await store.listDevices(wardId: _query(request, 'wardId')));
@@ -411,23 +426,24 @@ class HospitalApi {
     return device == null ? _notFound() : _json(device);
   }
 
-  Future<Response> _saveDevice(Request request, String id) async =>
-      _json(await store.saveDevice(<String, dynamic>{
-        ...await _body(request),
-        'id': id,
-      }));
+  Future<Response> _saveDevice(Request request, String id) async => _json(
+    await store.saveDevice(<String, dynamic>{
+      ...await _body(request),
+      'id': id,
+    }),
+  );
 
-  Future<Response> _listNotes(Request request) async => _json(await store.listNotes(
-        patientId: _query(request, 'patientId'),
-        encounterId: _query(request, 'encounterId'),
-        type: _query(request, 'type'),
-      ));
+  Future<Response> _listNotes(Request request) async => _json(
+    await store.listNotes(
+      patientId: _query(request, 'patientId'),
+      encounterId: _query(request, 'encounterId'),
+      type: _query(request, 'type'),
+    ),
+  );
 
-  Future<Response> _saveNote(Request request, String id) async =>
-      _json(await store.saveNote(<String, dynamic>{
-        ...await _body(request),
-        'id': id,
-      }));
+  Future<Response> _saveNote(Request request, String id) async => _json(
+    await store.saveNote(<String, dynamic>{...await _body(request), 'id': id}),
+  );
 
   Future<Response> _deleteNote(Request request, String id) async {
     await store.deleteNote(id);
@@ -442,29 +458,29 @@ class HospitalApi {
     return flow == null ? _notFound() : _json(flow);
   }
 
-  Future<Response> _saveFlow(Request request, String id) async =>
-      _json(await store.saveFlow(<String, dynamic>{
-        ...await _body(request),
-        'id': id,
-      }));
+  Future<Response> _saveFlow(Request request, String id) async => _json(
+    await store.saveFlow(<String, dynamic>{...await _body(request), 'id': id}),
+  );
 
   Future<Response> _deleteFlow(Request request, String id) async {
     await store.deleteFlow(id);
     return Response(204);
   }
 
-  Future<Response> _listMessages(Request request) async =>
-      _json(await store.listMessages(
-        flowId: _query(request, 'flowId'),
-        status: _query(request, 'status'),
-        limit: _limit(request, 100),
-      ));
+  Future<Response> _listMessages(Request request) async => _json(
+    await store.listMessages(
+      flowId: _query(request, 'flowId'),
+      status: _query(request, 'status'),
+      limit: _limit(request, 100),
+    ),
+  );
 
-  Future<Response> _saveMessage(Request request, String id) async =>
-      _json(await store.saveMessage(<String, dynamic>{
-        ...await _body(request),
-        'id': id,
-      }));
+  Future<Response> _saveMessage(Request request, String id) async => _json(
+    await store.saveMessage(<String, dynamic>{
+      ...await _body(request),
+      'id': id,
+    }),
+  );
 
   /// Accepts an event from another application and records it.
   ///
@@ -474,7 +490,8 @@ class HospitalApi {
   /// EAI application's business.
   Future<Response> _receiveMessage(Request request) async {
     final body = await _body(request);
-    final id = body['id']?.toString() ??
+    final id =
+        body['id']?.toString() ??
         'msg-${DateTime.now().microsecondsSinceEpoch}';
 
     final stored = await store.saveMessage(<String, dynamic>{
