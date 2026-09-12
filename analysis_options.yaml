@@ -3,6 +3,10 @@ include: package:flutter_lints/flutter.yaml
 analyzer:
   exclude:
     - packages/**
+    # The API server is a plain Dart package with its own dependencies and its
+    # own CI job. Analysing it from here would need its pub cache too, which
+    # this Flutter package does not have.
+    - infrastructure/**
     - build/**
     - android/**
     - ios/**
