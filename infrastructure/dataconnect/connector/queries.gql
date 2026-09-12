@@ -1,0 +1,131 @@
+# The reads the applications perform, as Data Connect operations.
+#
+# Each one corresponds to a method on `HospitalRepository`, so the three
+# backends - in-memory, the local REST API, and this - answer the same
+# questions. @auth is set per operation: Data Connect refuses anything not
+# explicitly allowed, which is the right default and worth pointing out.
+
+query ListPatients($search: String) @auth(level: USER) {
+  patients(
+    where: {
+      _or: [
+        { familyName: { contains: $search } }
+        { givenName: { contains: $search } }
+        { mrn: { contains: $search } }
+      ]
+    }
+    orderBy: [{ familyName: ASC }, { givenName: ASC }]
+  ) {
+    id mrn nationalNumber familyName givenName gender birthDate
+    address phone email preferredLanguage bloodGroup generalPractitioner
+    deceasedDate
+  }
+}
+
+query GetPatient($id: String!) @auth(level: USER) {
+  patient(key: { id: $id }) {
+    id mrn nationalNumber familyName givenName gender birthDate
+    address phone email preferredLanguage bloodGroup generalPractitioner
+    deceasedDate
+  }
+}
+
+query ListAllergies($patientId: String!) @auth(level: USER) {
+  allergies(where: { patient: { id: { eq: $patientId } } }) {
+    id substance reaction criticality recordedDate
+  }
+}
+
+query ListWards @auth(level: USER) {
+  wards(orderBy: [{ floor: ASC }, { code: ASC }]) {
+    id code name floor specialty phoneExtension
+  }
+}
+
+query ListBeds($wardId: String) @auth(level: USER) {
+  beds(where: { ward: { id: { eq: $wardId } } }, orderBy: [{ label: ASC }]) {
+    id label status currentEncounterId currentPatientId
+    room { id number isIsolation }
+    ward { id code name }
+  }
+}
+
+query ListActiveEncounters @auth(level: USER) {
+  encounters(
+    where: { status: { in: ["in-progress", "onleave"] } }
+    orderBy: [{ admissionDate: DESC }]
+  ) {
+    id status encounterClass admissionDate dischargeDate
+    wardId roomId bedId reason visitNumber attendingPractitioner
+    patient { id mrn familyName givenName }
+  }
+}
+
+query ListObservations($patientId: String!, $since: Timestamp) @auth(level: USER) {
+  observations(
+    where: {
+      patient: { id: { eq: $patientId } }
+      effectiveDateTime: { ge: $since }
+    }
+    orderBy: [{ effectiveDateTime: DESC }]
+    limit: 2000
+  ) {
+    id type value unit effectiveDateTime deviceId performer status encounterId
+  }
+}
+
+query ListActivePrescriptions($patientId: String!) @auth(level: USER) {
+  prescriptions(
+    where: { patient: { id: { eq: $patientId } }, status: { eq: "active" } }
+    orderBy: [{ startDate: DESC }]
+  ) {
+    id medicationCode medication doseQuantity doseUnit frequencyPerDay
+    route startDate endDate prescriber status isPrn indication instructions
+  }
+}
+
+query ListDispensingQueue($cabinetId: String) @auth(level: USER) {
+  dispenses(
+    where: { status: { eq: "requested" }, cabinetId: { eq: $cabinetId } }
+    orderBy: [{ requestedAt: ASC }]
+  ) {
+    id quantity status requestedAt cabinetId slot
+    patient { id mrn familyName givenName }
+    prescription { id medication doseQuantity doseUnit route }
+  }
+}
+
+query ListStock($cabinetId: String!) @auth(level: USER) {
+  stockItems(
+    where: { cabinet: { id: { eq: $cabinetId } } }
+    orderBy: [{ slot: ASC }]
+  ) {
+    id slot medicationCode medication quantityOnHand parLevel
+    expiryDate lotNumber
+  }
+}
+
+query ListNotes($patientId: String!) @auth(level: USER) {
+  clinicalNotes(
+    where: { patient: { id: { eq: $patientId } } }
+    orderBy: [{ createdAt: DESC }]
+  ) {
+    id type title body authorName authorRole createdAt updatedAt
+    isSigned language encounterId
+  }
+}
+
+query ListFlows @auth(level: USER) {
+  integrationFlows(orderBy: [{ updatedAt: DESC }]) {
+    id name description isEnabled nodes connections updatedAt
+    messagesProcessed messagesFailed
+  }
+}
+
+query ListDevices @auth(level: USER) {
+  devices(orderBy: [{ code: ASC }]) {
+    id code kind manufacturer model serialNumber status
+    assignedPatientId assignedBedId wardId lastSeenAt batteryPercent
+    ownerStudent
+  }
+}

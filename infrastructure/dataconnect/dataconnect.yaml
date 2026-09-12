@@ -1,0 +1,22 @@
+# Firebase Data Connect - the cloud path for the mini-hospital's PostgreSQL.
+#
+# Data Connect is Firebase's PostgreSQL offering: a managed Cloud SQL instance
+# with a generated, typed API in front of it. It is the only way to get real
+# PostgreSQL out of Firebase, and it needs the Blaze (pay-as-you-go) plan.
+#
+# The local docker-compose stack is the default for the course precisely so
+# nobody has to enable billing to attend a lab. Switch to this when you want
+# the hospital to outlive the laptop it was demonstrated on.
+specVersion: "v1"
+serviceId: "mini-hospital"
+location: "europe-west1"
+
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "hospital"
+      cloudSql:
+        instanceId: "mini-hospital-2026-sql"
+
+connectorDirs: ["./connector"]

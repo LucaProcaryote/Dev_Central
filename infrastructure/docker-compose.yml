@@ -1,0 +1,154 @@
+# The whole mini-hospital back end: one PostgreSQL holding five databases, one
+# API per application, and the HAPI FHIR repository.
+#
+#   docker compose up -d
+#   docker compose logs -f
+#   docker compose down -v          # -v also wipes the data
+#
+# The Flutter applications are not in here. They are run from their own
+# repositories with `flutter run -d chrome --dart-define=BACKEND=restApi`,
+# because a student needs hot reload far more than they need another container.
+name: mini-hospital
+
+x-api: &api
+  build:
+    context: ./server
+  restart: unless-stopped
+  depends_on:
+    postgres:
+      condition: service_healthy
+  environment: &api-env
+    DB_HOST: postgres
+    DB_PORT: 5432
+    DB_USER: hospital
+    DB_PASSWORD: hospital
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mini-hospital-postgres
+    environment:
+      POSTGRES_USER: hospital
+      # Fictive data on a classroom network. Change it for anything else.
+      POSTGRES_PASSWORD: hospital
+      POSTGRES_DB: postgres
+    ports:
+      # Exposed so students can point psql or a GUI at it and look around;
+      # reading the tables directly is part of the exercise.
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      # Everything in this directory runs once, in name order, on first boot.
+      - ./db/00-databases.sh:/docker-entrypoint-initdb.d/00-databases.sh:ro
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hospital -d EHR_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  ehr-api:
+    <<: *api
+    container_name: mini-hospital-ehr-api
+    environment:
+      <<: *api-env
+      APP: EHR
+      DB_NAME: EHR_DB
+      PORT: 8081
+    ports: ["8081:8081"]
+
+  adt-api:
+    <<: *api
+    container_name: mini-hospital-adt-api
+    environment:
+      <<: *api-env
+      APP: ADT
+      DB_NAME: ADT_DB
+      PORT: 8082
+    ports: ["8082:8082"]
+
+  pharm-api:
+    <<: *api
+    container_name: mini-hospital-pharm-api
+    environment:
+      <<: *api-env
+      APP: PHARM
+      DB_NAME: PHARM_DB
+      PORT: 8083
+    ports: ["8083:8083"]
+
+  eai-api:
+    <<: *api
+    container_name: mini-hospital-eai-api
+    environment:
+      <<: *api-env
+      APP: EAI
+      DB_NAME: EAI_DB
+      PORT: 8084
+    ports: ["8084:8084"]
+
+  dev-api:
+    <<: *api
+    container_name: mini-hospital-dev-api
+    environment:
+      <<: *api-env
+      APP: DEV
+      DB_NAME: DEV_DB
+      PORT: 8085
+    ports: ["8085:8085"]
+
+  # The FHIR repository has its own database: HAPI manages that schema itself
+  # and must not share one with the applications.
+  fhir-db:
+    image: postgres:16-alpine
+    container_name: mini-hospital-fhir-db
+    environment:
+      POSTGRES_DB: hapi
+      POSTGRES_USER: hapi
+      POSTGRES_PASSWORD: hapi
+    volumes:
+      - fhir-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hapi -d hapi"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  fhir:
+    image: hapiproject/hapi:v7.4.0
+    container_name: mini-hospital-fhir
+    depends_on:
+      fhir-db:
+        condition: service_healthy
+    ports: ["8080:8080"]
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://fhir-db:5432/hapi
+      SPRING_DATASOURCE_USERNAME: hapi
+      SPRING_DATASOURCE_PASSWORD: hapi
+      SPRING_DATASOURCE_DRIVERCLASSNAME: org.postgresql.Driver
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgres94Dialect
+      HAPI_FHIR_FHIR_VERSION: R4
+      HAPI_FHIR_SERVER_ADDRESS: http://localhost:8080/fhir
+      HAPI_FHIR_ALLOW_EXTERNAL_REFERENCES: "true"
+      HAPI_FHIR_ENFORCE_REFERENTIAL_INTEGRITY_ON_WRITE: "false"
+      HAPI_FHIR_ENFORCE_REFERENTIAL_INTEGRITY_ON_DELETE: "false"
+      HAPI_FHIR_ALLOW_MULTIPLE_DELETE: "true"
+      HAPI_FHIR_REUSE_CACHED_SEARCH_RESULTS_MILLIS: "0"
+      # The browser refuses to talk to it at all without this, because the
+      # Flutter applications are served from a different origin.
+      HAPI_FHIR_CORS_ALLOWED_ORIGIN_PATTERNS: "*"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8080/fhir/metadata || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 40
+      # HAPI builds its schema on first boot, which takes a couple of minutes.
+      start_period: 120s
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  fhir-db-data:

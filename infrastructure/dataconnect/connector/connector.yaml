@@ -1,0 +1,5 @@
+connectorId: "hospital"
+generate:
+  dartSdk:
+    outputDir: "../../../generated/dataconnect"
+    package: "hospital_dataconnect"

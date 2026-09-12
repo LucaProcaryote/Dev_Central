@@ -3,12 +3,15 @@
 Part of **Mini-Hospital 2026**, a teaching hospital built for the course on
 hospital, e-health and connected-medical-device informatics.
 
-This repository is two things:
+This repository is three things:
 
 1. the **device simulator** — one Flutter application that becomes `DEV1`
    through `DEV10` depending on how it is launched;
 2. the **canonical copy of `hospital_core`**, the shared package every other
-   application vendors.
+   application vendors;
+3. the **shared infrastructure** in `infrastructure/` — the PostgreSQL schema
+   and seed, the API server, the HAPI FHIR repository and the Firebase Data
+   Connect definitions.
 
 ## Run your device
 
@@ -126,6 +129,19 @@ then in each other repository:
 ./tools/sync_core.sh
 ```
 
+## The back end
+
+Everything the five applications share lives in
+[`infrastructure/`](infrastructure/README.md):
+
+```bash
+cd infrastructure
+docker compose up -d      # PostgreSQL, five APIs, HAPI FHIR
+```
+
+Then run any application with `--dart-define=BACKEND=restApi`. Without it they
+use the in-memory dataset and need nothing at all.
+
 ## Configuration
 
 | Define | Values | Default |
@@ -138,7 +154,11 @@ then in each other repository:
 
 ```bash
 flutter test                                 # 13 simulator tests
-cd packages/hospital_core && flutter test    # 55 core tests
+cd packages/hospital_core && flutter test    # 56 core tests
+
+# The schema enforces its rules (18 assertions, rolled back afterwards)
+psql -h localhost -U hospital -d EHR_DB -v ON_ERROR_STOP=1 \
+  -f infrastructure/db/test_schema.sql
 ```
 
 The simulator tests run every scenario for two thousand samples and assert the
