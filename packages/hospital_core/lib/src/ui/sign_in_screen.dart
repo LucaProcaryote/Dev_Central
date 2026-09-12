@@ -5,6 +5,7 @@ import '../auth/auth_service.dart';
 import '../config/app_config.dart';
 import '../l10n/generated/hospital_localizations.dart';
 import '../models/hospital_user.dart';
+import 'app_badge.dart';
 import 'theme.dart';
 import 'widgets/language_selector.dart';
 
@@ -97,11 +98,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 children: <Widget>[
                   Row(
                     children: <Widget>[
-                      Icon(
-                        Icons.local_hospital_rounded,
-                        color: theme.colorScheme.primary,
-                        size: 32,
-                      ),
+                      AppBadge(app: config.app, size: 44),
                       Gap.w16,
                       Expanded(
                         child: Column(
