@@ -72,8 +72,9 @@ jobs:
         with:
           sdk: stable
       - run: dart pub get
-      - run: dart format --output=none --set-exit-if-changed bin lib
+      - run: dart format --output=none --set-exit-if-changed bin lib test
       - run: dart analyze
+      - run: dart test
 
       - name: Apply the schema and seed
         working-directory: .

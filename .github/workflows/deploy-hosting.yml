@@ -89,11 +89,28 @@ jobs:
       - run: flutter pub get
 
       - name: Build for the web
+        env:
+          # Set this repository variable once the Cloud Run API is deployed
+          # (Settings -> Secrets and variables -> Actions -> Variables) and the
+          # hosted build talks to the real PostgreSQL. Without it every visitor
+          # gets their own in-browser hospital, which is the right default for
+          # a page that cannot reach anything on a student's localhost.
+          API_BASE: ${{ vars.API_BASE }}
         run: |
+          backend="${{ inputs.backend }}"
+          if [ -z "$backend" ]; then
+            if [ -n "$API_BASE" ]; then backend=restApi; else backend=memory; fi
+          fi
+
           # Self-host CanvasKit: see tools/deploy_hosting.sh for why.
-          flutter build web --release --no-web-resources-cdn \
-            --dart-define=BACKEND="${{ inputs.backend || 'memory' }}" \
+          defines=(
+            --dart-define=BACKEND="$backend"
             --dart-define=AUTH="${{ inputs.auth || 'demo' }}"
+          )
+          [ -n "$API_BASE" ] && defines+=(--dart-define=API_BASE="$API_BASE")
+
+          echo "backend: $backend"
+          flutter build web --release --no-web-resources-cdn "${defines[@]}"
 
       - name: Deploy
         uses: FirebaseExtended/action-hosting-deploy@v0

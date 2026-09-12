@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
+import 'package:postgres/postgres.dart';
 
 /// Which application this instance is serving, and how to reach its database.
 ///
@@ -18,6 +19,7 @@ class ServerConfig {
     required this.databaseName,
     required this.databaseUser,
     required this.databasePassword,
+    required this.databaseSsl,
   });
 
   /// `EHR`, `ADT`, `PHARM`, `EAI` or `DEV`.
@@ -31,6 +33,22 @@ class ServerConfig {
   final String databaseName;
   final String databaseUser;
   final String databasePassword;
+
+  /// `disable` on a classroom network and over a unix socket, `require` when
+  /// the connection crosses a network we do not own.
+  final String databaseSsl;
+
+  /// A [databaseHost] beginning with `/` names a directory holding a unix
+  /// socket, the same convention `psql` and libpq use. Cloud Run mounts the
+  /// Cloud SQL socket that way, at
+  /// `/cloudsql/PROJECT:REGION:INSTANCE`.
+  bool get usesUnixSocket => databaseHost.startsWith('/');
+
+  /// What to hand the driver as its host: the socket file itself when
+  /// [usesUnixSocket], otherwise the hostname unchanged. PostgreSQL names the
+  /// socket after the port, which is why the port is part of the path.
+  String get databaseEndpointHost =>
+      usesUnixSocket ? '$databaseHost/.s.PGSQL.$databasePort' : databaseHost;
 
   static const Map<String, ({int port, String database})> defaults =
       <String, ({int port, String database})>{
@@ -56,13 +74,26 @@ class ServerConfig {
     ..addOption('db-name', help: 'Database name (default: per app)')
     ..addOption('db-user', defaultsTo: 'hospital')
     ..addOption('db-password', defaultsTo: 'hospital')
+    ..addOption(
+      'db-ssl',
+      help: 'TLS to the database',
+      allowed: <String>['disable', 'require', 'verifyFull'],
+      defaultsTo: 'disable',
+    )
     ..addFlag('help', abbr: 'h', negatable: false);
 
   /// Command-line arguments win, then environment variables, then the
   /// per-application defaults. Environment variables matter because that is
-  /// how docker-compose configures the five instances.
+  /// how docker-compose and Cloud Run configure the five instances.
+  ///
+  /// The precedence has to be read off [ArgResults.wasParsed] rather than off
+  /// a null value: every option here declares a `defaultsTo`, so `args[name]`
+  /// is never null and testing it would make the environment unreachable.
   factory ServerConfig.from(ArgResults args, Map<String, String> env) {
-    final app = (args['app'] as String? ?? env['APP'] ?? 'EHR').toUpperCase();
+    String? given(String option) =>
+        args.wasParsed(option) ? args[option] as String? : null;
+
+    final app = (given('app') ?? env['APP'] ?? 'EHR').toUpperCase();
     final fallback = defaults[app] ?? defaults['EHR']!;
 
     int intOf(String? value, int fallbackValue) =>
@@ -70,23 +101,25 @@ class ServerConfig {
 
     return ServerConfig(
       app: app,
-      port: intOf(args['port'] as String? ?? env['PORT'], fallback.port),
-      host: args['host'] as String? ?? env['HOST'] ?? '0.0.0.0',
-      databaseHost: args['db-host'] as String? ?? env['DB_HOST'] ?? 'localhost',
-      databasePort: intOf(args['db-port'] as String? ?? env['DB_PORT'], 5432),
-      databaseName:
-          args['db-name'] as String? ?? env['DB_NAME'] ?? fallback.database,
-      databaseUser: args['db-user'] as String? ?? env['DB_USER'] ?? 'hospital',
+      port: intOf(given('port') ?? env['PORT'], fallback.port),
+      host: given('host') ?? env['HOST'] ?? '0.0.0.0',
+      databaseHost: given('db-host') ?? env['DB_HOST'] ?? 'localhost',
+      databasePort: intOf(given('db-port') ?? env['DB_PORT'], 5432),
+      databaseName: given('db-name') ?? env['DB_NAME'] ?? fallback.database,
+      databaseUser: given('db-user') ?? env['DB_USER'] ?? 'hospital',
       databasePassword:
-          args['db-password'] as String? ?? env['DB_PASSWORD'] ?? 'hospital',
+          given('db-password') ?? env['DB_PASSWORD'] ?? 'hospital',
+      databaseSsl: given('db-ssl') ?? env['DB_SSL'] ?? 'disable',
     );
   }
 
   /// A description safe to print: the password is never included.
   @override
-  String toString() =>
-      '$app on $host:$port → postgres://$databaseUser@$databaseHost:'
-      '$databasePort/$databaseName';
+  String toString() => usesUnixSocket
+      ? '$app on $host:$port → $databaseUser@$databaseEndpointHost'
+            '/$databaseName (unix socket)'
+      : '$app on $host:$port → postgres://$databaseUser@$databaseHost:'
+            '$databasePort/$databaseName (ssl: $databaseSsl)';
 }
 
 /// Prints usage and exits.
@@ -97,3 +130,10 @@ Never usage(ArgParser parser, [String? error]) {
   stdout.writeln(parser.usage);
   exit(error == null ? 0 : 64);
 }
+
+/// Maps the `--db-ssl` value onto the driver's enum.
+SslMode sslModeFor(String value) => switch (value) {
+  'require' => SslMode.require,
+  'verifyFull' => SslMode.verifyFull,
+  _ => SslMode.disable,
+};

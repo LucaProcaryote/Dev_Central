@@ -23,11 +23,13 @@ Future<void> main(List<String> arguments) async {
   for (var attempt = 1; attempt <= 30; attempt++) {
     try {
       store = await HospitalStore.connect(
-        host: config.databaseHost,
+        host: config.databaseEndpointHost,
         port: config.databasePort,
         database: config.databaseName,
         username: config.databaseUser,
         password: config.databasePassword,
+        isUnixSocket: config.usesUnixSocket,
+        sslMode: sslModeFor(config.databaseSsl),
       );
       break;
     } catch (error) {

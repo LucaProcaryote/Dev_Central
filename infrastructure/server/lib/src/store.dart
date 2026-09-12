@@ -20,6 +20,8 @@ class HospitalStore {
     required String database,
     required String username,
     required String password,
+    bool isUnixSocket = false,
+    SslMode sslMode = SslMode.disable,
   }) async {
     final connection = await Connection.open(
       Endpoint(
@@ -28,9 +30,12 @@ class HospitalStore {
         database: database,
         username: username,
         password: password,
+        isUnixSocket: isUnixSocket,
       ),
-      // Plain TCP on a classroom network. Anything leaving a laptop needs TLS.
-      settings: const ConnectionSettings(sslMode: SslMode.disable),
+      // Plain TCP is right on a classroom network and on a unix socket, where
+      // the kernel is the boundary. A connection that crosses a network we do
+      // not own is given `--db-ssl require` instead.
+      settings: ConnectionSettings(sslMode: sslMode),
     );
     return HospitalStore(connection);
   }

@@ -120,28 +120,102 @@ default. Add any other host you serve the applications from.
 
 ---
 
-## 2. PostgreSQL in the cloud (optional)
+## 2. PostgreSQL in the cloud
 
 Only if you want the hospital to outlive the laptop it was demonstrated on.
+The local `docker-compose` stack is the course default precisely so nobody has
+to enable billing to attend a lab.
 
-**This requires the Blaze plan.** Data Connect provisions a Cloud SQL
-instance, and Cloud SQL is not free. A small instance is inexpensive, but it
-is not zero, and it will keep costing while it exists.
+**Firebase has no PostgreSQL of its own.** What is marketed as Firebase
+PostgreSQL is Cloud SQL underneath, reached either through Data Connect or
+directly. Both put a Cloud SQL instance in your project, and **both require
+the Blaze plan with billing enabled.** Cloud SQL bills by the hour whether or
+not anyone is connected.
+
+We go at Cloud SQL directly rather than through Data Connect, for one reason
+that matters clinically: Data Connect generates its own DDL from the GraphQL
+schema, so the CHECK constraints and partial unique indexes in
+`db/schema.sql` — the ones that make it impossible to put two patients in one
+bed, or to give a patient two active encounters — would not survive the trip.
+Those invariants belong in the database, not in application code that a
+student can bypass. `dataconnect/` is kept as a worked example of the other
+path; see the note at the end of this section.
+
+### Create it
 
 ```bash
-npm install -g firebase-tools
-firebase login
-cd Dev_Central/infrastructure
-firebase deploy --only dataconnect --project my-hospital-2026
+gcloud auth login
+cd Dev_Central
+./infrastructure/cloud/provision_cloud_sql.sh
 ```
 
-The schema and operations are in `infrastructure/dataconnect/`. Then:
+That script is idempotent, and it:
+
+1. enables the APIs (Cloud SQL Admin, Secret Manager, Cloud Run, Cloud Build,
+   Artifact Registry);
+2. generates a database password straight into Secret Manager — it is never
+   printed and never written to disk;
+3. creates the smallest real PostgreSQL 16 instance: shared core, zonal, 10 GB
+   HDD, no high availability, no backups, in `europe-west1`;
+4. creates the five databases — `EHR_DB`, `ADT_DB`, `PHARM_DB`, `EAI_DB`,
+   `DEV_DB`;
+5. runs `db/apply.sh` against each of them through the Cloud SQL Auth Proxy —
+   the same schema and the same twenty fictive patients the local stack and CI
+   use, so there is exactly one definition of the hospital.
+
+Pass `--schema-only` to skip the patients.
+
+### Put the API in front of it
 
 ```bash
-flutter run -d chrome --dart-define=BACKEND=dataConnect --dart-define=AUTH=firebase
+./infrastructure/cloud/deploy_api.sh
 ```
 
-Two things there are worth discussing with the students:
+Five Cloud Run services, one per application, all against the one instance. It
+prints the five URLs.
+
+The server reaches Cloud SQL over the **unix socket Cloud Run mounts** at
+`/cloudsql/PROJECT:REGION:INSTANCE`, with no Auth Proxy sidecar: a `DB_HOST`
+beginning with `/` is treated as a socket directory, the same convention
+`psql` uses, and the socket file is `<dir>/.s.PGSQL.<port>`. The database
+password arrives from Secret Manager as `DB_PASSWORD`; it is not baked into
+the image and does not appear in the service description.
+
+### Point the applications at it
+
+Per visitor, with no rebuild:
+
+```
+https://my-hospital-2026-ehr.web.app/?backend=restApi&api=<the EHR Cloud Run URL>
+```
+
+As the default for everyone: set an `API_BASE` **repository variable** in each
+repository (Settings → Secrets and variables → Actions → Variables) and push.
+The deploy workflow compiles it in and switches the backend to `restApi`
+automatically; with no such variable it keeps building the in-browser demo,
+which is the right default for a page that cannot reach a student's localhost.
+
+### Turning it off
+
+Cloud SQL charges while the instance exists, running or not.
+
+```bash
+gcloud sql instances patch mini-hospital-2026-sql --activation-policy NEVER   # stop
+gcloud sql instances patch mini-hospital-2026-sql --activation-policy ALWAYS  # start
+```
+
+A stopped instance bills only for its storage, so stopping it between labs is
+worth doing. When the course is over, delete it outright:
+
+```bash
+gcloud sql instances delete mini-hospital-2026-sql
+```
+
+### The Data Connect path, if you want to show it
+
+`infrastructure/dataconnect/` holds a schema and connector for Firebase Data
+Connect. It is not what the scripts above use, and two things about it are
+worth discussing with the students:
 
 - `dataconnect/schema/schema.gql` and `db/schema.sql` describe the same tables
   and must be kept in step **by hand**. That is part of what a managed backend
@@ -149,14 +223,8 @@ Two things there are worth discussing with the students:
 - Data Connect generates one mutation per table, so there is no single "admit
   patient" operation — the three writes an admission implies are composed on
   the client. That is exactly the transactional gap `AdtService` documents in
-  the ADT application, and it is a good place to talk about what a database
+  the ADT application, and a good place to talk about what a database
   transaction actually buys.
-
-### Turning it off
-
-Data Connect keeps charging while the Cloud SQL instance exists. When the
-course is over, delete the instance in the Google Cloud console — deleting the
-Firebase Data Connect service alone does not remove it.
 
 ---
 
