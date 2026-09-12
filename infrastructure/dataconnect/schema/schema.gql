@@ -1,0 +1,234 @@
+# Firebase Data Connect schema for Mini-Hospital 2026.
+#
+# This describes the same tables as db/schema.sql. Data Connect generates the
+# PostgreSQL DDL from these types, so the two must be kept in step by hand -
+# which is exactly the sort of duplication worth pointing out to students when
+# discussing what a managed backend buys you and what it costs.
+#
+# Types marked @table become tables; the `key` argument fixes the primary key
+# so the ids stay the ones the applications already use.
+
+type Ward @table(name: "wards", key: ["id"]) {
+  id: String!
+  code: String!
+  # Trilingual labels stay in one JSON column, as they do in db/schema.sql.
+  name: Any!
+  floor: Int!
+  specialty: Any
+  phoneExtension: String
+}
+
+type Room @table(name: "rooms", key: ["id"]) {
+  id: String!
+  ward: Ward!
+  number: String!
+  isIsolation: Boolean! @default(value: false)
+}
+
+type Bed @table(name: "beds", key: ["id"]) {
+  id: String!
+  room: Room!
+  ward: Ward!
+  label: String!
+  status: String! @default(value: "free")
+  currentEncounterId: String
+  currentPatientId: String
+}
+
+type Patient @table(name: "patients", key: ["id"]) {
+  id: String!
+  mrn: String! @unique
+  nationalNumber: String @unique
+  familyName: String!
+  givenName: String!
+  gender: String! @default(value: "unknown")
+  birthDate: Date!
+  address: Any
+  phone: String
+  email: String
+  preferredLanguage: String! @default(value: "fr")
+  bloodGroup: String
+  generalPractitioner: String
+  deceasedDate: Timestamp
+  photoUrl: String
+  createdAt: Timestamp! @default(expr: "request.time")
+  updatedAt: Timestamp! @default(expr: "request.time")
+}
+
+type Allergy @table(name: "allergies", key: ["id"]) {
+  id: String!
+  patient: Patient!
+  substance: Any!
+  reaction: Any
+  criticality: String! @default(value: "unable-to-assess")
+  recordedDate: Timestamp!
+}
+
+type Encounter @table(name: "encounters", key: ["id"]) {
+  id: String!
+  patient: Patient!
+  status: String!
+  encounterClass: String! @default(value: "IMP")
+  admissionDate: Timestamp!
+  dischargeDate: Timestamp
+  wardId: String
+  roomId: String
+  bedId: String
+  admittingPractitioner: String
+  attendingPractitioner: String
+  reason: String
+  dischargeDisposition: String
+  visitNumber: String
+}
+
+type Movement @table(name: "movements", key: ["id"]) {
+  id: String!
+  encounter: Encounter!
+  patient: Patient!
+  type: String!
+  occurredAt: Timestamp!
+  performedBy: String!
+  fromWardId: String
+  fromBedId: String
+  toWardId: String
+  toBedId: String
+  note: String
+}
+
+type Observation @table(name: "observations", key: ["id"]) {
+  id: String!
+  patient: Patient!
+  encounterId: String
+  type: String!
+  value: Float!
+  unit: String!
+  effectiveDateTime: Timestamp!
+  deviceId: String
+  performer: String
+  status: String! @default(value: "final")
+  note: String
+}
+
+type Medication @table(name: "medications", key: ["code"]) {
+  code: String!
+  name: Any!
+  form: Any
+  strength: String!
+  atcCode: String!
+  isControlled: Boolean! @default(value: false)
+}
+
+type Prescription @table(name: "prescriptions", key: ["id"]) {
+  id: String!
+  patient: Patient!
+  encounterId: String
+  medicationCode: String!
+  # The formulary entry is copied in, not only referenced, so a prescription
+  # stays readable exactly as written after the formulary changes.
+  medication: Any!
+  doseQuantity: Float!
+  doseUnit: String!
+  frequencyPerDay: Int!
+  route: String!
+  startDate: Timestamp!
+  endDate: Timestamp
+  prescriber: String!
+  status: String! @default(value: "draft")
+  isPrn: Boolean! @default(value: false)
+  indication: String
+  instructions: String
+}
+
+type ClinicalNote @table(name: "clinical_notes", key: ["id"]) {
+  id: String!
+  patient: Patient!
+  encounterId: String
+  type: String! @default(value: "progress")
+  title: String!
+  body: String!
+  authorName: String!
+  authorRole: String!
+  createdAt: Timestamp!
+  updatedAt: Timestamp
+  isSigned: Boolean! @default(value: false)
+  language: String! @default(value: "fr")
+}
+
+type Cabinet @table(name: "cabinets", key: ["id"]) {
+  id: String!
+  code: String! @unique
+  name: Any!
+  wardId: String!
+  isLocked: Boolean! @default(value: true)
+  temperatureCelsius: Float
+}
+
+type StockItem @table(name: "stock_items", key: ["id"]) {
+  id: String!
+  cabinet: Cabinet!
+  slot: String!
+  medicationCode: String!
+  medication: Any!
+  quantityOnHand: Int!
+  parLevel: Int!
+  expiryDate: Timestamp!
+  lotNumber: String!
+}
+
+type Dispense @table(name: "dispenses", key: ["id"]) {
+  id: String!
+  prescription: Prescription!
+  patient: Patient!
+  quantity: Float!
+  status: String! @default(value: "requested")
+  requestedAt: Timestamp!
+  dispensedAt: Timestamp
+  dispensedBy: String
+  cabinetId: String
+  slot: String
+  refusalReason: String
+  lotNumber: String
+}
+
+type Device @table(name: "devices", key: ["id"]) {
+  id: String!
+  code: String! @unique
+  kind: String!
+  manufacturer: String!
+  model: String!
+  serialNumber: String!
+  status: String! @default(value: "offline")
+  assignedPatientId: String
+  assignedBedId: String
+  wardId: String
+  lastSeenAt: Timestamp
+  batteryPercent: Int
+  ownerStudent: String
+}
+
+type IntegrationFlow @table(name: "integration_flows", key: ["id"]) {
+  id: String!
+  name: Any!
+  description: Any
+  isEnabled: Boolean! @default(value: true)
+  nodes: Any!
+  connections: Any!
+  updatedAt: Timestamp!
+  messagesProcessed: Int! @default(value: 0)
+  messagesFailed: Int! @default(value: 0)
+}
+
+type IntegrationMessage @table(name: "integration_messages", key: ["id"]) {
+  id: String!
+  messageType: String!
+  sourceApp: String!
+  targetApp: String
+  flowId: String
+  patientId: String
+  payload: Any!
+  trace: Any
+  status: String! @default(value: "received")
+  receivedAt: Timestamp!
+  processedAt: Timestamp
+  error: String
+}

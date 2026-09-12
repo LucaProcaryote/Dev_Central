@@ -1,0 +1,78 @@
+# Builds and publishes Dev_Central to Firebase Hosting.
+#
+# Needs one repository secret: FIREBASE_SERVICE_ACCOUNT, holding the JSON key
+# of a service account with the "Firebase Hosting Admin" role. Create it under
+# Google Cloud console → IAM → Service accounts, in the my-hospital-2026
+# project, then paste the whole JSON file into
+# Settings → Secrets and variables → Actions.
+#
+# The published build uses the in-memory dataset: a hosted page cannot reach
+# anything on a student's localhost. Point it at a real backend per visitor
+# with a query string instead:
+#
+#   https://my-hospital-2026-dev.web.app/?backend=restApi&api=https://your-api
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+  workflow_dispatch:
+    inputs:
+      backend:
+        description: "Backend mode compiled into the build"
+        default: memory
+        type: choice
+        options: [memory, restApi, dataConnect]
+      auth:
+        description: "Authentication mode"
+        default: demo
+        type: choice
+        options: [demo, firebase]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Without a service account there is nothing to deploy with, and a red
+    # cross on every fork would be noise rather than information.
+    if: github.event_name == 'workflow_dispatch' || github.repository_owner == 'LucaProcaryote'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check that a deploy credential is configured
+        env:
+          KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::No FIREBASE_SERVICE_ACCOUNT secret is set, so there is nothing to deploy with."
+            echo "::error::Create a service account with the Firebase Hosting Admin role in the"
+            echo "::error::my-hospital-2026 project, then paste its whole JSON key into"
+            echo "::error::Settings -> Secrets and variables -> Actions -> New repository secret."
+            echo "::error::The hosting sites must exist first: Dev_Central/tools/create_hosting_sites.sh"
+            exit 1
+          fi
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Build for the web
+        run: |
+          # Self-host CanvasKit: see tools/deploy_hosting.sh for why.
+          flutter build web --release --no-web-resources-cdn \
+            --dart-define=BACKEND="${{ inputs.backend || 'memory' }}" \
+            --dart-define=AUTH="${{ inputs.auth || 'demo' }}"
+
+      - name: Deploy
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: my-hospital-2026
+          target: dev
+          channelId: live

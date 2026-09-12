@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "my-hospital-2026"
+  },
+  "targets": {
+    "my-hospital-2026": {
+      "hosting": {
+        "dev": [
+          "my-hospital-2026-dev"
+        ]
+      }
+    }
+  }
+}

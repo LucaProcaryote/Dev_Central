@@ -1,0 +1,1713 @@
+{
+  "@@locale": "en",
+  "appTitleEhr": "Electronic Health Record",
+  "@appTitleEhr": {
+    "description": "Application titles: Electronic Health Record"
+  },
+  "appTitleAdt": "Admission, Transfer & Discharge",
+  "@appTitleAdt": {
+    "description": "Application titles: Admission, Transfer & Discharge"
+  },
+  "appTitlePharm": "Pharmacy Cabinet",
+  "@appTitlePharm": {
+    "description": "Application titles: Pharmacy Cabinet"
+  },
+  "appTitleEai": "Interoperability Server",
+  "@appTitleEai": {
+    "description": "Application titles: Interoperability Server"
+  },
+  "appTitleDevice": "Device Simulator",
+  "@appTitleDevice": {
+    "description": "Application titles: Device Simulator"
+  },
+  "hospitalName": "Mini-Hospital 2026",
+  "@hospitalName": {
+    "description": "Application titles: Mini-Hospital 2026"
+  },
+  "actionSave": "Save",
+  "@actionSave": {
+    "description": "Generic actions and labels: Save"
+  },
+  "actionCancel": "Cancel",
+  "@actionCancel": {
+    "description": "Generic actions and labels: Cancel"
+  },
+  "actionDelete": "Delete",
+  "@actionDelete": {
+    "description": "Generic actions and labels: Delete"
+  },
+  "actionEdit": "Edit",
+  "@actionEdit": {
+    "description": "Generic actions and labels: Edit"
+  },
+  "actionAdd": "Add",
+  "@actionAdd": {
+    "description": "Generic actions and labels: Add"
+  },
+  "actionClose": "Close",
+  "@actionClose": {
+    "description": "Generic actions and labels: Close"
+  },
+  "actionConfirm": "Confirm",
+  "@actionConfirm": {
+    "description": "Generic actions and labels: Confirm"
+  },
+  "actionBack": "Back",
+  "@actionBack": {
+    "description": "Generic actions and labels: Back"
+  },
+  "actionNext": "Next",
+  "@actionNext": {
+    "description": "Generic actions and labels: Next"
+  },
+  "actionRetry": "Retry",
+  "@actionRetry": {
+    "description": "Generic actions and labels: Retry"
+  },
+  "actionRefresh": "Refresh",
+  "@actionRefresh": {
+    "description": "Generic actions and labels: Refresh"
+  },
+  "actionSearch": "Search",
+  "@actionSearch": {
+    "description": "Generic actions and labels: Search"
+  },
+  "actionFilter": "Filter",
+  "@actionFilter": {
+    "description": "Generic actions and labels: Filter"
+  },
+  "actionClear": "Clear",
+  "@actionClear": {
+    "description": "Generic actions and labels: Clear"
+  },
+  "actionSelect": "Select",
+  "@actionSelect": {
+    "description": "Generic actions and labels: Select"
+  },
+  "actionView": "View",
+  "@actionView": {
+    "description": "Generic actions and labels: View"
+  },
+  "actionExport": "Export",
+  "@actionExport": {
+    "description": "Generic actions and labels: Export"
+  },
+  "actionCopy": "Copy",
+  "@actionCopy": {
+    "description": "Generic actions and labels: Copy"
+  },
+  "actionCopied": "Copied to clipboard",
+  "@actionCopied": {
+    "description": "Generic actions and labels: Copied to clipboard"
+  },
+  "actionSign": "Sign",
+  "@actionSign": {
+    "description": "Generic actions and labels: Sign"
+  },
+  "actionPrint": "Print",
+  "@actionPrint": {
+    "description": "Generic actions and labels: Print"
+  },
+  "labelYes": "Yes",
+  "@labelYes": {
+    "description": "Generic actions and labels: Yes"
+  },
+  "labelNo": "No",
+  "@labelNo": {
+    "description": "Generic actions and labels: No"
+  },
+  "labelAll": "All",
+  "@labelAll": {
+    "description": "Generic actions and labels: All"
+  },
+  "labelNone": "None",
+  "@labelNone": {
+    "description": "Generic actions and labels: None"
+  },
+  "labelStatus": "Status",
+  "@labelStatus": {
+    "description": "Generic actions and labels: Status"
+  },
+  "labelDate": "Date",
+  "@labelDate": {
+    "description": "Generic actions and labels: Date"
+  },
+  "labelTime": "Time",
+  "@labelTime": {
+    "description": "Generic actions and labels: Time"
+  },
+  "labelDetails": "Details",
+  "@labelDetails": {
+    "description": "Generic actions and labels: Details"
+  },
+  "labelActions": "Actions",
+  "@labelActions": {
+    "description": "Generic actions and labels: Actions"
+  },
+  "labelNotes": "Notes",
+  "@labelNotes": {
+    "description": "Generic actions and labels: Notes"
+  },
+  "labelReason": "Reason",
+  "@labelReason": {
+    "description": "Generic actions and labels: Reason"
+  },
+  "labelQuantity": "Quantity",
+  "@labelQuantity": {
+    "description": "Generic actions and labels: Quantity"
+  },
+  "labelUnknown": "Unknown",
+  "@labelUnknown": {
+    "description": "Generic actions and labels: Unknown"
+  },
+  "labelOptional": "optional",
+  "@labelOptional": {
+    "description": "Generic actions and labels: optional"
+  },
+  "labelRequired": "required",
+  "@labelRequired": {
+    "description": "Generic actions and labels: required"
+  },
+  "labelLoading": "Loading…",
+  "@labelLoading": {
+    "description": "Generic actions and labels: Loading…"
+  },
+  "labelNoResults": "No results",
+  "@labelNoResults": {
+    "description": "Generic actions and labels: No results"
+  },
+  "labelToday": "Today",
+  "@labelToday": {
+    "description": "Generic actions and labels: Today"
+  },
+  "labelYesterday": "Yesterday",
+  "@labelYesterday": {
+    "description": "Generic actions and labels: Yesterday"
+  },
+  "labelLanguage": "Language",
+  "@labelLanguage": {
+    "description": "Generic actions and labels: Language"
+  },
+  "labelTheme": "Theme",
+  "@labelTheme": {
+    "description": "Generic actions and labels: Theme"
+  },
+  "labelSettings": "Settings",
+  "@labelSettings": {
+    "description": "Generic actions and labels: Settings"
+  },
+  "labelAbout": "About",
+  "@labelAbout": {
+    "description": "Generic actions and labels: About"
+  },
+  "labelVersion": "Version",
+  "@labelVersion": {
+    "description": "Generic actions and labels: Version"
+  },
+  "labelFrom": "From",
+  "@labelFrom": {
+    "description": "Generic actions and labels: From"
+  },
+  "labelTo": "To",
+  "@labelTo": {
+    "description": "Generic actions and labels: To"
+  },
+  "labelBy": "by",
+  "@labelBy": {
+    "description": "Generic actions and labels: by"
+  },
+  "labelUnsavedChanges": "You have unsaved changes.",
+  "@labelUnsavedChanges": {
+    "description": "Generic actions and labels: You have unsaved changes."
+  },
+  "labelDiscardChanges": "Discard changes",
+  "@labelDiscardChanges": {
+    "description": "Generic actions and labels: Discard changes"
+  },
+  "errorGeneric": "Something went wrong.",
+  "@errorGeneric": {
+    "description": "Errors: Something went wrong."
+  },
+  "errorNetwork": "Cannot reach the server. Check that the backend is running.",
+  "@errorNetwork": {
+    "description": "Errors: Cannot reach the server. Check that the backend is running."
+  },
+  "errorNotFound": "Not found.",
+  "@errorNotFound": {
+    "description": "Errors: Not found."
+  },
+  "errorNotAllowed": "Your role does not allow this action.",
+  "@errorNotAllowed": {
+    "description": "Errors: Your role does not allow this action."
+  },
+  "errorFieldRequired": "This field is required.",
+  "@errorFieldRequired": {
+    "description": "Errors: This field is required."
+  },
+  "errorInvalidNumber": "Enter a valid number.",
+  "@errorInvalidNumber": {
+    "description": "Errors: Enter a valid number."
+  },
+  "authSignIn": "Sign in",
+  "@authSignIn": {
+    "description": "Authentication: Sign in"
+  },
+  "authSignOut": "Sign out",
+  "@authSignOut": {
+    "description": "Authentication: Sign out"
+  },
+  "authEmail": "E-mail address",
+  "@authEmail": {
+    "description": "Authentication: E-mail address"
+  },
+  "authPassword": "Password",
+  "@authPassword": {
+    "description": "Authentication: Password"
+  },
+  "authSignedInAs": "Signed in as {name}",
+  "@authSignedInAs": {
+    "description": "Authentication: Signed in as {name}",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "authDemoModeTitle": "Demo mode",
+  "@authDemoModeTitle": {
+    "description": "Authentication: Demo mode"
+  },
+  "authDemoModeBody": "No real authentication. Pick any account below; the password is not checked.",
+  "@authDemoModeBody": {
+    "description": "Authentication: No real authentication. Pick any account below; the password is not checked."
+  },
+  "authQuickSignIn": "Quick sign-in",
+  "@authQuickSignIn": {
+    "description": "Authentication: Quick sign-in"
+  },
+  "authErrorInvalidCredentials": "E-mail address or password is incorrect.",
+  "@authErrorInvalidCredentials": {
+    "description": "Authentication: E-mail address or password is incorrect."
+  },
+  "authErrorUserNotFound": "No account with that e-mail address.",
+  "@authErrorUserNotFound": {
+    "description": "Authentication: No account with that e-mail address."
+  },
+  "authErrorNetwork": "Cannot reach the authentication service.",
+  "@authErrorNetwork": {
+    "description": "Authentication: Cannot reach the authentication service."
+  },
+  "authErrorNotConfigured": "Firebase authentication is not configured for this build.",
+  "@authErrorNotConfigured": {
+    "description": "Authentication: Firebase authentication is not configured for this build."
+  },
+  "authRole": "Role",
+  "@authRole": {
+    "description": "Authentication: Role"
+  },
+  "patients": "Patients",
+  "@patients": {
+    "description": "Patient: Patients"
+  },
+  "patient": "Patient",
+  "@patient": {
+    "description": "Patient: Patient"
+  },
+  "patientFile": "Patient file",
+  "@patientFile": {
+    "description": "Patient: Patient file"
+  },
+  "patientSearchHint": "Search by name, MRN or national number",
+  "@patientSearchHint": {
+    "description": "Patient: Search by name, MRN or national number"
+  },
+  "patientMrn": "Medical record number",
+  "@patientMrn": {
+    "description": "Patient: Medical record number"
+  },
+  "patientMrnShort": "MRN",
+  "@patientMrnShort": {
+    "description": "Patient: MRN"
+  },
+  "patientNationalNumber": "National register number",
+  "@patientNationalNumber": {
+    "description": "Patient: National register number"
+  },
+  "patientDateOfBirth": "Date of birth",
+  "@patientDateOfBirth": {
+    "description": "Patient: Date of birth"
+  },
+  "patientAge": "Age",
+  "@patientAge": {
+    "description": "Patient: Age"
+  },
+  "patientAgeYears": "{years} years",
+  "@patientAgeYears": {
+    "description": "Patient: {years} years",
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "patientGender": "Gender",
+  "@patientGender": {
+    "description": "Patient: Gender"
+  },
+  "patientAddress": "Address",
+  "@patientAddress": {
+    "description": "Patient: Address"
+  },
+  "patientPhone": "Phone",
+  "@patientPhone": {
+    "description": "Patient: Phone"
+  },
+  "patientEmail": "E-mail",
+  "@patientEmail": {
+    "description": "Patient: E-mail"
+  },
+  "patientPreferredLanguage": "Preferred language",
+  "@patientPreferredLanguage": {
+    "description": "Patient: Preferred language"
+  },
+  "patientBloodGroup": "Blood group",
+  "@patientBloodGroup": {
+    "description": "Patient: Blood group"
+  },
+  "patientGeneralPractitioner": "General practitioner",
+  "@patientGeneralPractitioner": {
+    "description": "Patient: General practitioner"
+  },
+  "patientDeceased": "Deceased",
+  "@patientDeceased": {
+    "description": "Patient: Deceased"
+  },
+  "patientAllergies": "Allergies",
+  "@patientAllergies": {
+    "description": "Patient: Allergies"
+  },
+  "patientNoAllergies": "No known allergies",
+  "@patientNoAllergies": {
+    "description": "Patient: No known allergies"
+  },
+  "patientAllergyBanner": "{count, plural, =1{1 allergy on file} other{{count} allergies on file}}",
+  "@patientAllergyBanner": {
+    "description": "Patient: {count, plural, =1{1 allergy on file} other{{count} allergies on file}}",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "patientHighRiskAllergy": "High-risk allergy",
+  "@patientHighRiskAllergy": {
+    "description": "Patient: High-risk allergy"
+  },
+  "patientDemographics": "Demographics",
+  "@patientDemographics": {
+    "description": "Patient: Demographics"
+  },
+  "patientCount": "{count, plural, =0{No patients} =1{1 patient} other{{count} patients}}",
+  "@patientCount": {
+    "description": "Patient: {count, plural, =0{No patients} =1{1 patient} other{{count} patients}}",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "patientNotFound": "Patient not found.",
+  "@patientNotFound": {
+    "description": "Patient: Patient not found."
+  },
+  "patientSelectPrompt": "Select a patient to see their file.",
+  "@patientSelectPrompt": {
+    "description": "Patient: Select a patient to see their file."
+  },
+  "encounter": "Encounter",
+  "@encounter": {
+    "description": "Encounter and location: Encounter"
+  },
+  "encounters": "Encounters",
+  "@encounters": {
+    "description": "Encounter and location: Encounters"
+  },
+  "encounterActive": "Current stay",
+  "@encounterActive": {
+    "description": "Encounter and location: Current stay"
+  },
+  "encounterNone": "Not currently admitted",
+  "@encounterNone": {
+    "description": "Encounter and location: Not currently admitted"
+  },
+  "encounterVisitNumber": "Visit number",
+  "@encounterVisitNumber": {
+    "description": "Encounter and location: Visit number"
+  },
+  "encounterAdmittedOn": "Admitted on",
+  "@encounterAdmittedOn": {
+    "description": "Encounter and location: Admitted on"
+  },
+  "encounterDischargedOn": "Discharged on",
+  "@encounterDischargedOn": {
+    "description": "Encounter and location: Discharged on"
+  },
+  "encounterLengthOfStay": "Length of stay",
+  "@encounterLengthOfStay": {
+    "description": "Encounter and location: Length of stay"
+  },
+  "encounterDays": "{days, plural, =0{less than a day} =1{1 day} other{{days} days}}",
+  "@encounterDays": {
+    "description": "Encounter and location: {days, plural, =0{less than a day} =1{1 day} other{{days} days}}",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "encounterAttending": "Attending physician",
+  "@encounterAttending": {
+    "description": "Encounter and location: Attending physician"
+  },
+  "encounterReason": "Reason for admission",
+  "@encounterReason": {
+    "description": "Encounter and location: Reason for admission"
+  },
+  "locationWard": "Ward",
+  "@locationWard": {
+    "description": "Encounter and location: Ward"
+  },
+  "locationWards": "Wards",
+  "@locationWards": {
+    "description": "Encounter and location: Wards"
+  },
+  "locationRoom": "Room",
+  "@locationRoom": {
+    "description": "Encounter and location: Room"
+  },
+  "locationBed": "Bed",
+  "@locationBed": {
+    "description": "Encounter and location: Bed"
+  },
+  "locationBeds": "Beds",
+  "@locationBeds": {
+    "description": "Encounter and location: Beds"
+  },
+  "locationFloor": "Floor",
+  "@locationFloor": {
+    "description": "Encounter and location: Floor"
+  },
+  "locationIsolation": "Isolation room",
+  "@locationIsolation": {
+    "description": "Encounter and location: Isolation room"
+  },
+  "locationNotPlaced": "No bed assigned",
+  "@locationNotPlaced": {
+    "description": "Encounter and location: No bed assigned"
+  },
+  "vitals": "Vital signs",
+  "@vitals": {
+    "description": "Vital signs: Vital signs"
+  },
+  "vitalsLatest": "Latest measurements",
+  "@vitalsLatest": {
+    "description": "Vital signs: Latest measurements"
+  },
+  "vitalsNone": "No measurements recorded yet.",
+  "@vitalsNone": {
+    "description": "Vital signs: No measurements recorded yet."
+  },
+  "vitalsTrend": "Trend",
+  "@vitalsTrend": {
+    "description": "Vital signs: Trend"
+  },
+  "vitalsAbnormal": "Outside the normal range",
+  "@vitalsAbnormal": {
+    "description": "Vital signs: Outside the normal range"
+  },
+  "vitalsNormalRange": "Normal range: {low} – {high} {unit}",
+  "@vitalsNormalRange": {
+    "description": "Vital signs: Normal range: {low} – {high} {unit}",
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "vitalsMeasuredAt": "Measured at {time}",
+  "@vitalsMeasuredAt": {
+    "description": "Vital signs: Measured at {time}",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "vitalsSource": "Source",
+  "@vitalsSource": {
+    "description": "Vital signs: Source"
+  },
+  "vitalsLast24h": "Last 24 hours",
+  "@vitalsLast24h": {
+    "description": "Vital signs: Last 24 hours"
+  },
+  "vitalsLast72h": "Last 72 hours",
+  "@vitalsLast72h": {
+    "description": "Vital signs: Last 72 hours"
+  },
+  "vitalsAllTime": "Whole stay",
+  "@vitalsAllTime": {
+    "description": "Vital signs: Whole stay"
+  },
+  "vitalsObservationCount": "{count, plural, =1{1 measurement} other{{count} measurements}}",
+  "@vitalsObservationCount": {
+    "description": "Vital signs: {count, plural, =1{1 measurement} other{{count} measurements}}",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "prescriptions": "Prescriptions",
+  "@prescriptions": {
+    "description": "Prescriptions: Prescriptions"
+  },
+  "prescription": "Prescription",
+  "@prescription": {
+    "description": "Prescriptions: Prescription"
+  },
+  "prescriptionNew": "New prescription",
+  "@prescriptionNew": {
+    "description": "Prescriptions: New prescription"
+  },
+  "prescriptionActive": "Active prescriptions",
+  "@prescriptionActive": {
+    "description": "Prescriptions: Active prescriptions"
+  },
+  "prescriptionNone": "No prescriptions.",
+  "@prescriptionNone": {
+    "description": "Prescriptions: No prescriptions."
+  },
+  "prescriptionMedication": "Medication",
+  "@prescriptionMedication": {
+    "description": "Prescriptions: Medication"
+  },
+  "prescriptionDose": "Dose",
+  "@prescriptionDose": {
+    "description": "Prescriptions: Dose"
+  },
+  "prescriptionFrequency": "Frequency",
+  "@prescriptionFrequency": {
+    "description": "Prescriptions: Frequency"
+  },
+  "prescriptionRoute": "Route",
+  "@prescriptionRoute": {
+    "description": "Prescriptions: Route"
+  },
+  "prescriptionPrescriber": "Prescriber",
+  "@prescriptionPrescriber": {
+    "description": "Prescriptions: Prescriber"
+  },
+  "prescriptionStartDate": "Start date",
+  "@prescriptionStartDate": {
+    "description": "Prescriptions: Start date"
+  },
+  "prescriptionEndDate": "End date",
+  "@prescriptionEndDate": {
+    "description": "Prescriptions: End date"
+  },
+  "prescriptionIndication": "Indication",
+  "@prescriptionIndication": {
+    "description": "Prescriptions: Indication"
+  },
+  "prescriptionInstructions": "Instructions",
+  "@prescriptionInstructions": {
+    "description": "Prescriptions: Instructions"
+  },
+  "prescriptionAsNeeded": "As needed",
+  "@prescriptionAsNeeded": {
+    "description": "Prescriptions: As needed"
+  },
+  "prescriptionTimesPerDay": "{count, plural, =1{once a day} other{{count} times a day}}",
+  "@prescriptionTimesPerDay": {
+    "description": "Prescriptions: {count, plural, =1{once a day} other{{count} times a day}}",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "prescriptionStop": "Stop prescription",
+  "@prescriptionStop": {
+    "description": "Prescriptions: Stop prescription"
+  },
+  "prescriptionHold": "Put on hold",
+  "@prescriptionHold": {
+    "description": "Prescriptions: Put on hold"
+  },
+  "prescriptionResume": "Resume",
+  "@prescriptionResume": {
+    "description": "Prescriptions: Resume"
+  },
+  "prescriptionAllergyWarning": "This patient has a recorded allergy to {substance}.",
+  "@prescriptionAllergyWarning": {
+    "description": "Prescriptions: This patient has a recorded allergy to {substance}.",
+    "placeholders": {
+      "substance": {
+        "type": "String"
+      }
+    }
+  },
+  "prescriptionAllergyProceed": "Prescribe anyway",
+  "@prescriptionAllergyProceed": {
+    "description": "Prescriptions: Prescribe anyway"
+  },
+  "formulary": "Formulary",
+  "@formulary": {
+    "description": "Prescriptions: Formulary"
+  },
+  "formularySearchHint": "Search the formulary",
+  "@formularySearchHint": {
+    "description": "Prescriptions: Search the formulary"
+  },
+  "medicationControlled": "Controlled substance",
+  "@medicationControlled": {
+    "description": "Prescriptions: Controlled substance"
+  },
+  "notesTitle": "Notes and observations",
+  "@notesTitle": {
+    "description": "Clinical notes: Notes and observations"
+  },
+  "noteNew": "New note",
+  "@noteNew": {
+    "description": "Clinical notes: New note"
+  },
+  "noteType": "Note type",
+  "@noteType": {
+    "description": "Clinical notes: Note type"
+  },
+  "noteTitleField": "Title",
+  "@noteTitleField": {
+    "description": "Clinical notes: Title"
+  },
+  "noteBody": "Content",
+  "@noteBody": {
+    "description": "Clinical notes: Content"
+  },
+  "noteAuthor": "Author",
+  "@noteAuthor": {
+    "description": "Clinical notes: Author"
+  },
+  "noteWrittenIn": "Written in {language}",
+  "@noteWrittenIn": {
+    "description": "Clinical notes: Written in {language}",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "noteSigned": "Signed",
+  "@noteSigned": {
+    "description": "Clinical notes: Signed"
+  },
+  "noteUnsigned": "Draft",
+  "@noteUnsigned": {
+    "description": "Clinical notes: Draft"
+  },
+  "noteSignConfirm": "Once signed, a note can no longer be edited. Sign it?",
+  "@noteSignConfirm": {
+    "description": "Clinical notes: Once signed, a note can no longer be edited. Sign it?"
+  },
+  "noteNone": "No notes yet.",
+  "@noteNone": {
+    "description": "Clinical notes: No notes yet."
+  },
+  "noteCount": "{count, plural, =1{1 note} other{{count} notes}}",
+  "@noteCount": {
+    "description": "Clinical notes: {count, plural, =1{1 note} other{{count} notes}}",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adtDashboard": "Bed board",
+  "@adtDashboard": {
+    "description": "ADT: Bed board"
+  },
+  "adtAdmission": "Admission",
+  "@adtAdmission": {
+    "description": "ADT: Admission"
+  },
+  "adtTransfer": "Transfer",
+  "@adtTransfer": {
+    "description": "ADT: Transfer"
+  },
+  "adtDischarge": "Discharge",
+  "@adtDischarge": {
+    "description": "ADT: Discharge"
+  },
+  "adtAdmitPatient": "Admit a patient",
+  "@adtAdmitPatient": {
+    "description": "ADT: Admit a patient"
+  },
+  "adtTransferPatient": "Transfer patient",
+  "@adtTransferPatient": {
+    "description": "ADT: Transfer patient"
+  },
+  "adtDischargePatient": "Discharge patient",
+  "@adtDischargePatient": {
+    "description": "ADT: Discharge patient"
+  },
+  "adtSelectPatient": "Select the patient",
+  "@adtSelectPatient": {
+    "description": "ADT: Select the patient"
+  },
+  "adtSelectWard": "Select a ward",
+  "@adtSelectWard": {
+    "description": "ADT: Select a ward"
+  },
+  "adtSelectBed": "Select a bed",
+  "@adtSelectBed": {
+    "description": "ADT: Select a bed"
+  },
+  "adtEncounterClass": "Type of stay",
+  "@adtEncounterClass": {
+    "description": "ADT: Type of stay"
+  },
+  "adtDischargeDisposition": "Discharge destination",
+  "@adtDischargeDisposition": {
+    "description": "ADT: Discharge destination"
+  },
+  "adtMovements": "Movements",
+  "@adtMovements": {
+    "description": "ADT: Movements"
+  },
+  "adtMovementHistory": "Movement history",
+  "@adtMovementHistory": {
+    "description": "ADT: Movement history"
+  },
+  "adtNoMovements": "No movements recorded.",
+  "@adtNoMovements": {
+    "description": "ADT: No movements recorded."
+  },
+  "adtOccupancy": "Occupancy",
+  "@adtOccupancy": {
+    "description": "ADT: Occupancy"
+  },
+  "adtBedsFree": "{count} free",
+  "@adtBedsFree": {
+    "description": "ADT: {count} free",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adtBedsOccupied": "{count} occupied",
+  "@adtBedsOccupied": {
+    "description": "ADT: {count} occupied",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adtNoFreeBed": "No free bed in this ward.",
+  "@adtNoFreeBed": {
+    "description": "ADT: No free bed in this ward."
+  },
+  "adtAdmissionSuccess": "{name} admitted to bed {bed}.",
+  "@adtAdmissionSuccess": {
+    "description": "ADT: {name} admitted to bed {bed}.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "bed": {
+        "type": "String"
+      }
+    }
+  },
+  "adtTransferSuccess": "{name} transferred to bed {bed}.",
+  "@adtTransferSuccess": {
+    "description": "ADT: {name} transferred to bed {bed}.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "bed": {
+        "type": "String"
+      }
+    }
+  },
+  "adtDischargeSuccess": "{name} discharged.",
+  "@adtDischargeSuccess": {
+    "description": "ADT: {name} discharged.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adtDischargeConfirm": "Discharge {name} from bed {bed}? The bed will be released for cleaning.",
+  "@adtDischargeConfirm": {
+    "description": "ADT: Discharge {name} from bed {bed}? The bed will be released for cleaning.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "bed": {
+        "type": "String"
+      }
+    }
+  },
+  "adtWaitingForBed": "Waiting for a bed",
+  "@adtWaitingForBed": {
+    "description": "ADT: Waiting for a bed"
+  },
+  "adtAlreadyAdmitted": "This patient is already admitted.",
+  "@adtAlreadyAdmitted": {
+    "description": "ADT: This patient is already admitted."
+  },
+  "pharmCabinet": "Cabinet",
+  "@pharmCabinet": {
+    "description": "Pharmacy: Cabinet"
+  },
+  "pharmCabinets": "Cabinets",
+  "@pharmCabinets": {
+    "description": "Pharmacy: Cabinets"
+  },
+  "pharmStock": "Stock",
+  "@pharmStock": {
+    "description": "Pharmacy: Stock"
+  },
+  "pharmQueue": "Dispensing queue",
+  "@pharmQueue": {
+    "description": "Pharmacy: Dispensing queue"
+  },
+  "pharmDispense": "Dispense",
+  "@pharmDispense": {
+    "description": "Pharmacy: Dispense"
+  },
+  "pharmDispensed": "Dispensed",
+  "@pharmDispensed": {
+    "description": "Pharmacy: Dispensed"
+  },
+  "pharmRefuse": "Refuse",
+  "@pharmRefuse": {
+    "description": "Pharmacy: Refuse"
+  },
+  "pharmRefusalReason": "Reason for refusal",
+  "@pharmRefusalReason": {
+    "description": "Pharmacy: Reason for refusal"
+  },
+  "pharmOpenDrawer": "Open drawer",
+  "@pharmOpenDrawer": {
+    "description": "Pharmacy: Open drawer"
+  },
+  "pharmCloseDrawer": "Close drawer",
+  "@pharmCloseDrawer": {
+    "description": "Pharmacy: Close drawer"
+  },
+  "pharmDrawerOpen": "Drawer {slot} is open",
+  "@pharmDrawerOpen": {
+    "description": "Pharmacy: Drawer {slot} is open",
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
+  "pharmUnlock": "Unlock cabinet",
+  "@pharmUnlock": {
+    "description": "Pharmacy: Unlock cabinet"
+  },
+  "pharmLock": "Lock cabinet",
+  "@pharmLock": {
+    "description": "Pharmacy: Lock cabinet"
+  },
+  "pharmLocked": "Locked",
+  "@pharmLocked": {
+    "description": "Pharmacy: Locked"
+  },
+  "pharmUnlocked": "Unlocked",
+  "@pharmUnlocked": {
+    "description": "Pharmacy: Unlocked"
+  },
+  "pharmSlot": "Slot",
+  "@pharmSlot": {
+    "description": "Pharmacy: Slot"
+  },
+  "pharmOnHand": "On hand",
+  "@pharmOnHand": {
+    "description": "Pharmacy: On hand"
+  },
+  "pharmParLevel": "Par level",
+  "@pharmParLevel": {
+    "description": "Pharmacy: Par level"
+  },
+  "pharmExpiry": "Expiry",
+  "@pharmExpiry": {
+    "description": "Pharmacy: Expiry"
+  },
+  "pharmLot": "Lot",
+  "@pharmLot": {
+    "description": "Pharmacy: Lot"
+  },
+  "pharmLowStock": "Low stock",
+  "@pharmLowStock": {
+    "description": "Pharmacy: Low stock"
+  },
+  "pharmOutOfStock": "Out of stock",
+  "@pharmOutOfStock": {
+    "description": "Pharmacy: Out of stock"
+  },
+  "pharmExpiredLot": "Expired lot",
+  "@pharmExpiredLot": {
+    "description": "Pharmacy: Expired lot"
+  },
+  "pharmNearExpiry": "Expires soon",
+  "@pharmNearExpiry": {
+    "description": "Pharmacy: Expires soon"
+  },
+  "pharmRestock": "Restock",
+  "@pharmRestock": {
+    "description": "Pharmacy: Restock"
+  },
+  "pharmRestockAmount": "Quantity to add",
+  "@pharmRestockAmount": {
+    "description": "Pharmacy: Quantity to add"
+  },
+  "pharmWitnessRequired": "A second signature is required for controlled substances.",
+  "@pharmWitnessRequired": {
+    "description": "Pharmacy: A second signature is required for controlled substances."
+  },
+  "pharmWitnessName": "Witness",
+  "@pharmWitnessName": {
+    "description": "Pharmacy: Witness"
+  },
+  "pharmBlockedOutOfStock": "Cannot dispense: the slot is empty.",
+  "@pharmBlockedOutOfStock": {
+    "description": "Pharmacy: Cannot dispense: the slot is empty."
+  },
+  "pharmBlockedExpired": "Cannot dispense: the lot has expired.",
+  "@pharmBlockedExpired": {
+    "description": "Pharmacy: Cannot dispense: the lot has expired."
+  },
+  "pharmBlockedLocked": "Cannot dispense: the cabinet is locked.",
+  "@pharmBlockedLocked": {
+    "description": "Pharmacy: Cannot dispense: the cabinet is locked."
+  },
+  "pharmBlockedNotActive": "Cannot dispense: the prescription is not active.",
+  "@pharmBlockedNotActive": {
+    "description": "Pharmacy: Cannot dispense: the prescription is not active."
+  },
+  "pharmBlockedAllergy": "Cannot dispense: the patient is allergic to this product.",
+  "@pharmBlockedAllergy": {
+    "description": "Pharmacy: Cannot dispense: the patient is allergic to this product."
+  },
+  "pharmDispenseSuccess": "{medication} dispensed for {patient}.",
+  "@pharmDispenseSuccess": {
+    "description": "Pharmacy: {medication} dispensed for {patient}.",
+    "placeholders": {
+      "medication": {
+        "type": "String"
+      },
+      "patient": {
+        "type": "String"
+      }
+    }
+  },
+  "pharmQueueEmpty": "Nothing waiting to be dispensed.",
+  "@pharmQueueEmpty": {
+    "description": "Pharmacy: Nothing waiting to be dispensed."
+  },
+  "pharmPendingCount": "{count, plural, =0{Nothing pending} =1{1 dose pending} other{{count} doses pending}}",
+  "@pharmPendingCount": {
+    "description": "Pharmacy: {count, plural, =0{Nothing pending} =1{1 dose pending} other{{count} doses pending}}",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eaiFlows": "Integration flows",
+  "@eaiFlows": {
+    "description": "EAI: Integration flows"
+  },
+  "eaiFlow": "Flow",
+  "@eaiFlow": {
+    "description": "EAI: Flow"
+  },
+  "eaiNewFlow": "New flow",
+  "@eaiNewFlow": {
+    "description": "EAI: New flow"
+  },
+  "eaiFlowName": "Flow name",
+  "@eaiFlowName": {
+    "description": "EAI: Flow name"
+  },
+  "eaiFlowDescription": "Description",
+  "@eaiFlowDescription": {
+    "description": "EAI: Description"
+  },
+  "eaiEnabled": "Enabled",
+  "@eaiEnabled": {
+    "description": "EAI: Enabled"
+  },
+  "eaiDisabled": "Disabled",
+  "@eaiDisabled": {
+    "description": "EAI: Disabled"
+  },
+  "eaiPalette": "Building blocks",
+  "@eaiPalette": {
+    "description": "EAI: Building blocks"
+  },
+  "eaiCanvas": "Canvas",
+  "@eaiCanvas": {
+    "description": "EAI: Canvas"
+  },
+  "eaiProperties": "Properties",
+  "@eaiProperties": {
+    "description": "EAI: Properties"
+  },
+  "eaiNodeLabel": "Label",
+  "@eaiNodeLabel": {
+    "description": "EAI: Label"
+  },
+  "eaiConnect": "Connect",
+  "@eaiConnect": {
+    "description": "EAI: Connect"
+  },
+  "eaiDisconnect": "Remove connection",
+  "@eaiDisconnect": {
+    "description": "EAI: Remove connection"
+  },
+  "eaiDeleteNode": "Delete block",
+  "@eaiDeleteNode": {
+    "description": "EAI: Delete block"
+  },
+  "eaiDragHint": "Drag a building block onto the canvas to start.",
+  "@eaiDragHint": {
+    "description": "EAI: Drag a building block onto the canvas to start."
+  },
+  "eaiConnectHint": "Click the output of one block, then the input of another.",
+  "@eaiConnectHint": {
+    "description": "EAI: Click the output of one block, then the input of another."
+  },
+  "eaiTestFlow": "Test the flow",
+  "@eaiTestFlow": {
+    "description": "EAI: Test the flow"
+  },
+  "eaiTestPayload": "Test message",
+  "@eaiTestPayload": {
+    "description": "EAI: Test message"
+  },
+  "eaiRunTest": "Run",
+  "@eaiRunTest": {
+    "description": "EAI: Run"
+  },
+  "eaiTrace": "Trace",
+  "@eaiTrace": {
+    "description": "EAI: Trace"
+  },
+  "eaiTraceEmpty": "Run the flow to see what happens at each step.",
+  "@eaiTraceEmpty": {
+    "description": "EAI: Run the flow to see what happens at each step."
+  },
+  "eaiPayloadBefore": "Input",
+  "@eaiPayloadBefore": {
+    "description": "EAI: Input"
+  },
+  "eaiPayloadAfter": "Output",
+  "@eaiPayloadAfter": {
+    "description": "EAI: Output"
+  },
+  "eaiMessages": "Message log",
+  "@eaiMessages": {
+    "description": "EAI: Message log"
+  },
+  "eaiMessageType": "Message type",
+  "@eaiMessageType": {
+    "description": "EAI: Message type"
+  },
+  "eaiSourceApp": "Source",
+  "@eaiSourceApp": {
+    "description": "EAI: Source"
+  },
+  "eaiTargetApp": "Destination",
+  "@eaiTargetApp": {
+    "description": "EAI: Destination"
+  },
+  "eaiLatency": "Latency",
+  "@eaiLatency": {
+    "description": "EAI: Latency"
+  },
+  "eaiReplay": "Replay",
+  "@eaiReplay": {
+    "description": "EAI: Replay"
+  },
+  "eaiNoMessages": "No messages yet.",
+  "@eaiNoMessages": {
+    "description": "EAI: No messages yet."
+  },
+  "eaiValidationIssues": "{count, plural, =1{1 problem to fix} other{{count} problems to fix}}",
+  "@eaiValidationIssues": {
+    "description": "EAI: {count, plural, =1{1 problem to fix} other{{count} problems to fix}}",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eaiFlowValid": "The flow is ready to run.",
+  "@eaiFlowValid": {
+    "description": "EAI: The flow is ready to run."
+  },
+  "eaiFhirResources": "FHIR resources",
+  "@eaiFhirResources": {
+    "description": "EAI: FHIR resources"
+  },
+  "eaiResourceType": "Resource type",
+  "@eaiResourceType": {
+    "description": "EAI: Resource type"
+  },
+  "eaiResourceCount": "{count, plural, =0{No resources} =1{1 resource} other{{count} resources}}",
+  "@eaiResourceCount": {
+    "description": "EAI: {count, plural, =0{No resources} =1{1 resource} other{{count} resources}}",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eaiServerStatus": "FHIR server",
+  "@eaiServerStatus": {
+    "description": "EAI: FHIR server"
+  },
+  "eaiServerOnline": "Online",
+  "@eaiServerOnline": {
+    "description": "EAI: Online"
+  },
+  "eaiServerOffline": "Offline",
+  "@eaiServerOffline": {
+    "description": "EAI: Offline"
+  },
+  "eaiFieldMappings": "Field mappings",
+  "@eaiFieldMappings": {
+    "description": "EAI: Field mappings"
+  },
+  "eaiAddMapping": "Add a mapping",
+  "@eaiAddMapping": {
+    "description": "EAI: Add a mapping"
+  },
+  "eaiSourceField": "Source field",
+  "@eaiSourceField": {
+    "description": "EAI: Source field"
+  },
+  "eaiTargetField": "Target field",
+  "@eaiTargetField": {
+    "description": "EAI: Target field"
+  },
+  "eaiTransform": "Transformation",
+  "@eaiTransform": {
+    "description": "EAI: Transformation"
+  },
+  "eaiTransformArgument": "Value",
+  "@eaiTransformArgument": {
+    "description": "EAI: Value"
+  },
+  "eaiCondition": "Condition",
+  "@eaiCondition": {
+    "description": "EAI: Condition"
+  },
+  "eaiFieldPath": "Field",
+  "@eaiFieldPath": {
+    "description": "EAI: Field"
+  },
+  "eaiOperator": "Operator",
+  "@eaiOperator": {
+    "description": "EAI: Operator"
+  },
+  "eaiRoutes": "Routes",
+  "@eaiRoutes": {
+    "description": "EAI: Routes"
+  },
+  "eaiKeepUnmapped": "Keep the fields that are not mapped",
+  "@eaiKeepUnmapped": {
+    "description": "EAI: Keep the fields that are not mapped"
+  },
+  "deviceSimulator": "Device simulator",
+  "@deviceSimulator": {
+    "description": "Devices: Device simulator"
+  },
+  "devices": "Devices",
+  "@devices": {
+    "description": "Devices: Devices"
+  },
+  "device": "Device",
+  "@device": {
+    "description": "Devices: Device"
+  },
+  "deviceFleet": "Device fleet",
+  "@deviceFleet": {
+    "description": "Devices: Device fleet"
+  },
+  "deviceId": "Device identifier",
+  "@deviceId": {
+    "description": "Devices: Device identifier"
+  },
+  "deviceKind": "Device type",
+  "@deviceKind": {
+    "description": "Devices: Device type"
+  },
+  "deviceManufacturer": "Manufacturer",
+  "@deviceManufacturer": {
+    "description": "Devices: Manufacturer"
+  },
+  "deviceModel": "Model",
+  "@deviceModel": {
+    "description": "Devices: Model"
+  },
+  "deviceSerial": "Serial number",
+  "@deviceSerial": {
+    "description": "Devices: Serial number"
+  },
+  "deviceBattery": "Battery",
+  "@deviceBattery": {
+    "description": "Devices: Battery"
+  },
+  "deviceLastSeen": "Last seen",
+  "@deviceLastSeen": {
+    "description": "Devices: Last seen"
+  },
+  "deviceNeverSeen": "Never reported",
+  "@deviceNeverSeen": {
+    "description": "Devices: Never reported"
+  },
+  "deviceAssignedTo": "Assigned to",
+  "@deviceAssignedTo": {
+    "description": "Devices: Assigned to"
+  },
+  "deviceNotAssigned": "Not assigned to a patient",
+  "@deviceNotAssigned": {
+    "description": "Devices: Not assigned to a patient"
+  },
+  "deviceStart": "Start publishing",
+  "@deviceStart": {
+    "description": "Devices: Start publishing"
+  },
+  "deviceStop": "Stop publishing",
+  "@deviceStop": {
+    "description": "Devices: Stop publishing"
+  },
+  "deviceRunning": "Publishing",
+  "@deviceRunning": {
+    "description": "Devices: Publishing"
+  },
+  "deviceStopped": "Stopped",
+  "@deviceStopped": {
+    "description": "Devices: Stopped"
+  },
+  "deviceInterval": "Interval between readings",
+  "@deviceInterval": {
+    "description": "Devices: Interval between readings"
+  },
+  "deviceIntervalSeconds": "{seconds} s",
+  "@deviceIntervalSeconds": {
+    "description": "Devices: {seconds} s",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "deviceScenario": "Scenario",
+  "@deviceScenario": {
+    "description": "Devices: Scenario"
+  },
+  "deviceScenarioStable": "Stable",
+  "@deviceScenarioStable": {
+    "description": "Devices: Stable"
+  },
+  "deviceScenarioDeteriorating": "Deteriorating",
+  "@deviceScenarioDeteriorating": {
+    "description": "Devices: Deteriorating"
+  },
+  "deviceScenarioRecovering": "Recovering",
+  "@deviceScenarioRecovering": {
+    "description": "Devices: Recovering"
+  },
+  "deviceScenarioArtefact": "Noisy signal",
+  "@deviceScenarioArtefact": {
+    "description": "Devices: Noisy signal"
+  },
+  "deviceManualReading": "Send a reading by hand",
+  "@deviceManualReading": {
+    "description": "Devices: Send a reading by hand"
+  },
+  "deviceSend": "Send",
+  "@deviceSend": {
+    "description": "Devices: Send"
+  },
+  "deviceSent": "Reading sent.",
+  "@deviceSent": {
+    "description": "Devices: Reading sent."
+  },
+  "deviceSendFailed": "Could not send the reading: {error}",
+  "@deviceSendFailed": {
+    "description": "Devices: Could not send the reading: {error}",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "deviceLiveFeed": "Live feed",
+  "@deviceLiveFeed": {
+    "description": "Devices: Live feed"
+  },
+  "devicePublishedCount": "{count, plural, =0{Nothing sent yet} =1{1 reading sent} other{{count} readings sent}}",
+  "@devicePublishedCount": {
+    "description": "Devices: {count, plural, =0{Nothing sent yet} =1{1 reading sent} other{{count} readings sent}}",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deviceAppleWatch": "Apple Watch",
+  "@deviceAppleWatch": {
+    "description": "Devices: Apple Watch"
+  },
+  "deviceHealthKitTitle": "Apple Watch / HealthKit",
+  "@deviceHealthKitTitle": {
+    "description": "Devices: Apple Watch / HealthKit"
+  },
+  "deviceHealthKitBody": "Readings collected by an Apple Watch can be imported here and are published exactly like a simulator reading.",
+  "@deviceHealthKitBody": {
+    "description": "Devices: Readings collected by an Apple Watch can be imported here and are published exactly like a simulator reading."
+  },
+  "deviceHealthKitImport": "Import from HealthKit",
+  "@deviceHealthKitImport": {
+    "description": "Devices: Import from HealthKit"
+  },
+  "deviceHealthKitUnavailable": "HealthKit is only available on iOS. On other platforms you can paste an export instead.",
+  "@deviceHealthKitUnavailable": {
+    "description": "Devices: HealthKit is only available on iOS. On other platforms you can paste an export instead."
+  },
+  "deviceTargetPatient": "Send readings for",
+  "@deviceTargetPatient": {
+    "description": "Devices: Send readings for"
+  },
+  "deviceEndpoint": "Publishing to",
+  "@deviceEndpoint": {
+    "description": "Devices: Publishing to"
+  },
+  "navOverview": "Overview",
+  "@navOverview": {
+    "description": "Navigation and dashboards: Overview"
+  },
+  "navPatients": "Patients",
+  "@navPatients": {
+    "description": "Navigation and dashboards: Patients"
+  },
+  "navDashboard": "Dashboard",
+  "@navDashboard": {
+    "description": "Navigation and dashboards: Dashboard"
+  },
+  "navAdmissions": "Admissions",
+  "@navAdmissions": {
+    "description": "Navigation and dashboards: Admissions"
+  },
+  "navPharmacy": "Pharmacy",
+  "@navPharmacy": {
+    "description": "Navigation and dashboards: Pharmacy"
+  },
+  "navIntegration": "Integration",
+  "@navIntegration": {
+    "description": "Navigation and dashboards: Integration"
+  },
+  "navDevices": "Devices",
+  "@navDevices": {
+    "description": "Navigation and dashboards: Devices"
+  },
+  "navSettings": "Settings",
+  "@navSettings": {
+    "description": "Navigation and dashboards: Settings"
+  },
+  "dashboardAdmittedPatients": "Patients in the hospital",
+  "@dashboardAdmittedPatients": {
+    "description": "Navigation and dashboards: Patients in the hospital"
+  },
+  "dashboardFreeBeds": "Free beds",
+  "@dashboardFreeBeds": {
+    "description": "Navigation and dashboards: Free beds"
+  },
+  "dashboardPendingDoses": "Doses to dispense",
+  "@dashboardPendingDoses": {
+    "description": "Navigation and dashboards: Doses to dispense"
+  },
+  "dashboardActiveDevices": "Active devices",
+  "@dashboardActiveDevices": {
+    "description": "Navigation and dashboards: Active devices"
+  },
+  "dashboardAbnormalVitals": "Abnormal measurements",
+  "@dashboardAbnormalVitals": {
+    "description": "Navigation and dashboards: Abnormal measurements"
+  },
+  "dashboardRecentActivity": "Recent activity",
+  "@dashboardRecentActivity": {
+    "description": "Navigation and dashboards: Recent activity"
+  },
+  "backendModeMemory": "In-memory demo data",
+  "@backendModeMemory": {
+    "description": "Navigation and dashboards: In-memory demo data"
+  },
+  "backendModeRest": "Connected to the local API",
+  "@backendModeRest": {
+    "description": "Navigation and dashboards: Connected to the local API"
+  },
+  "backendModeDataConnect": "Connected to Firebase Data Connect",
+  "@backendModeDataConnect": {
+    "description": "Navigation and dashboards: Connected to Firebase Data Connect"
+  },
+  "backendBanner": "{mode} — data is not shared with the other applications until you switch to a real backend.",
+  "@backendBanner": {
+    "description": "Navigation and dashboards: {mode} — data is not shared with the other applications until you switch to a real backend.",
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "safetyChecks": "Safety checks",
+  "@safetyChecks": {
+    "description": "Clinical safety: Safety checks"
+  },
+  "safetyNoIssues": "No safety issues found.",
+  "@safetyNoIssues": {
+    "description": "Clinical safety: No safety issues found."
+  },
+  "safetyBlocked": "This action is blocked and cannot be completed.",
+  "@safetyBlocked": {
+    "description": "Clinical safety: This action is blocked and cannot be completed."
+  },
+  "safetyAcknowledge": "I have read the warnings and accept responsibility.",
+  "@safetyAcknowledge": {
+    "description": "Clinical safety: I have read the warnings and accept responsibility."
+  },
+  "safetyOverrideReason": "Reason for overriding",
+  "@safetyOverrideReason": {
+    "description": "Clinical safety: Reason for overriding"
+  },
+  "safetySeverityBlocking": "Blocking",
+  "@safetySeverityBlocking": {
+    "description": "Clinical safety: Blocking"
+  },
+  "safetySeverityWarning": "Warning",
+  "@safetySeverityWarning": {
+    "description": "Clinical safety: Warning"
+  },
+  "safetySeverityAdvisory": "For information",
+  "@safetySeverityAdvisory": {
+    "description": "Clinical safety: For information"
+  },
+  "prescriptionSaved": "Prescription saved.",
+  "@prescriptionSaved": {
+    "description": "Additional pharmacy and prescribing: Prescription saved."
+  },
+  "noteSaved": "Note saved.",
+  "@noteSaved": {
+    "description": "Additional pharmacy and prescribing: Note saved."
+  },
+  "prescriptionSelectMedication": "Choose a medication",
+  "@prescriptionSelectMedication": {
+    "description": "Additional pharmacy and prescribing: Choose a medication"
+  },
+  "pharmRestocked": "Slot {slot} restocked.",
+  "@pharmRestocked": {
+    "description": "Additional pharmacy and prescribing: Slot {slot} restocked.",
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
+  "pharmDrawerClosedAutomatically": "The drawer closed automatically.",
+  "@pharmDrawerClosedAutomatically": {
+    "description": "Additional pharmacy and prescribing: The drawer closed automatically."
+  },
+  "pharmAlerts": "Cabinet alerts",
+  "@pharmAlerts": {
+    "description": "Additional pharmacy and prescribing: Cabinet alerts"
+  },
+  "pharmNoAlerts": "No alerts. Stock levels and expiry dates are fine.",
+  "@pharmNoAlerts": {
+    "description": "Additional pharmacy and prescribing: No alerts. Stock levels and expiry dates are fine."
+  },
+  "pharmForPatient": "For {patient}",
+  "@pharmForPatient": {
+    "description": "Additional pharmacy and prescribing: For {patient}",
+    "placeholders": {
+      "patient": {
+        "type": "String"
+      }
+    }
+  },
+  "pharmDue": "Due {time}",
+  "@pharmDue": {
+    "description": "Additional pharmacy and prescribing: Due {time}",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "pharmOverdue": "Overdue",
+  "@pharmOverdue": {
+    "description": "Additional pharmacy and prescribing: Overdue"
+  },
+  "pharmHistory": "Dispensing history",
+  "@pharmHistory": {
+    "description": "Additional pharmacy and prescribing: Dispensing history"
+  },
+  "adtNewAdmission": "New admission",
+  "@adtNewAdmission": {
+    "description": "Additional ADT: New admission"
+  },
+  "adtStepReviewPatient": "Patient",
+  "@adtStepReviewPatient": {
+    "description": "Additional ADT: Patient"
+  },
+  "adtStepPlacement": "Placement",
+  "@adtStepPlacement": {
+    "description": "Additional ADT: Placement"
+  },
+  "adtStepConfirm": "Confirm",
+  "@adtStepConfirm": {
+    "description": "Additional ADT: Confirm"
+  },
+  "adtChooseAnotherWard": "Choose another ward",
+  "@adtChooseAnotherWard": {
+    "description": "Additional ADT: Choose another ward"
+  },
+  "adtCleaningNote": "Beds being cleaned cannot be assigned.",
+  "@adtCleaningNote": {
+    "description": "Additional ADT: Beds being cleaned cannot be assigned."
+  },
+  "adtEmitEvent": "Event sent to the integration engine.",
+  "@adtEmitEvent": {
+    "description": "Additional ADT: Event sent to the integration engine."
+  },
+  "adtEmitFailed": "The integration engine could not be reached; the movement was still recorded.",
+  "@adtEmitFailed": {
+    "description": "Additional ADT: The integration engine could not be reached; the movement was still recorded."
+  },
+  "adtWardOverview": "Ward overview",
+  "@adtWardOverview": {
+    "description": "Additional ADT: Ward overview"
+  },
+  "adtCurrentPatients": "Patients on the ward",
+  "@adtCurrentPatients": {
+    "description": "Additional ADT: Patients on the ward"
+  },
+  "adtSetBedStatus": "Change bed status",
+  "@adtSetBedStatus": {
+    "description": "Additional ADT: Change bed status"
+  },
+  "eaiOpenEditor": "Open the editor",
+  "@eaiOpenEditor": {
+    "description": "Additional EAI and devices: Open the editor"
+  },
+  "eaiSaveFlow": "Save the flow",
+  "@eaiSaveFlow": {
+    "description": "Additional EAI and devices: Save the flow"
+  },
+  "eaiFlowSaved": "Flow saved.",
+  "@eaiFlowSaved": {
+    "description": "Additional EAI and devices: Flow saved."
+  },
+  "eaiDeleteFlowConfirm": "Delete this flow? This cannot be undone.",
+  "@eaiDeleteFlowConfirm": {
+    "description": "Additional EAI and devices: Delete this flow? This cannot be undone."
+  },
+  "eaiSelectNode": "Select a block to edit its properties.",
+  "@eaiSelectNode": {
+    "description": "Additional EAI and devices: Select a block to edit its properties."
+  },
+  "eaiSamplePayload": "Sample messages",
+  "@eaiSamplePayload": {
+    "description": "Additional EAI and devices: Sample messages"
+  },
+  "eaiInvalidJson": "This is not valid JSON.",
+  "@eaiInvalidJson": {
+    "description": "Additional EAI and devices: This is not valid JSON."
+  },
+  "eaiStepPassed": "Passed",
+  "@eaiStepPassed": {
+    "description": "Additional EAI and devices: Passed"
+  },
+  "eaiStepDropped": "Dropped here",
+  "@eaiStepDropped": {
+    "description": "Additional EAI and devices: Dropped here"
+  },
+  "eaiStepFailed": "Failed here",
+  "@eaiStepFailed": {
+    "description": "Additional EAI and devices: Failed here"
+  },
+  "eaiTotalResources": "Resources on the FHIR server",
+  "@eaiTotalResources": {
+    "description": "Additional EAI and devices: Resources on the FHIR server"
+  },
+  "eaiSeedFhir": "Load the fictive patients into FHIR",
+  "@eaiSeedFhir": {
+    "description": "Additional EAI and devices: Load the fictive patients into FHIR"
+  },
+  "eaiSeedDone": "{count} resources written to the FHIR server.",
+  "@eaiSeedDone": {
+    "description": "Additional EAI and devices: {count} resources written to the FHIR server.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deviceAutoAssign": "Assign automatically from the bed",
+  "@deviceAutoAssign": {
+    "description": "Additional EAI and devices: Assign automatically from the bed"
+  },
+  "deviceWaveform": "Signal",
+  "@deviceWaveform": {
+    "description": "Additional EAI and devices: Signal"
+  },
+  "deviceOutbox": "Recently sent",
+  "@deviceOutbox": {
+    "description": "Additional EAI and devices: Recently sent"
+  },
+  "deviceConfiguration": "Configuration",
+  "@deviceConfiguration": {
+    "description": "Additional EAI and devices: Configuration"
+  },
+  "deviceMeasurements": "Measurements produced",
+  "@deviceMeasurements": {
+    "description": "Additional EAI and devices: Measurements produced"
+  },
+  "deviceOfflineQueue": "{count} readings waiting to be sent",
+  "@deviceOfflineQueue": {
+    "description": "Additional EAI and devices: {count} readings waiting to be sent",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}

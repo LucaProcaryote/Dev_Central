@@ -1,0 +1,33 @@
+name: device_simulator
+description: >-
+  Mini-Hospital 2026 - Connected medical device simulator. Weight, temperature,
+  heart rate, SpO2 and activity, publishing FHIR Observations. EN, FR, NL.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # The shared foundation: domain model, FHIR, i18n, auth, data layer, design
+  # system. Vendored rather than pulled from git so this repository is
+  # self-contained; refresh it with ./tools/sync_core.sh
+  hospital_core:
+    path: packages/hospital_core
+
+  intl: any
+  provider: ^6.1.0
+  uuid: ^4.4.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

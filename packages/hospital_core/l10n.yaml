@@ -1,0 +1,6 @@
+arb-dir: lib/src/l10n/arb
+template-arb-file: app_en.arb
+output-localization-file: hospital_localizations.dart
+output-class: HospitalLocalizations
+output-dir: lib/src/l10n/generated
+nullable-getter: false

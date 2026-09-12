@@ -1,0 +1,307 @@
+# Firebase setup
+
+The mini-hospital runs entirely without Firebase. This describes what to do
+when you want real sign-in, and optionally PostgreSQL in the cloud.
+
+Project: **`my-hospital-2026`**
+(<https://console.firebase.google.com/project/my-hospital-2026/overview>)
+
+---
+
+## What Firebase is used for, and what it is not
+
+| | |
+|---|---|
+| **Authentication** | Yes — real accounts, real passwords, real sessions. Works on the free Spark plan. |
+| **The databases** | Optional. Firebase's PostgreSQL offering is **Data Connect** (managed Cloud SQL), which needs the paid Blaze plan. The local Docker stack is the course default so nobody has to enable billing to attend a lab. |
+| **Firestore** | Not used. It is NoSQL, and a hospital-informatics course should show relational modelling. |
+
+---
+
+## 1. Authentication
+
+### Enable it
+
+In the Firebase console → **Build → Authentication → Get started** → enable
+**Email/Password**. Leave everything else off.
+
+### Create the staff accounts
+
+The applications expect the same cast of characters the demo mode uses, so
+that switching between the two does not change who is on the ward.
+
+| E-mail | Name | Role |
+|---|---|---|
+| `anne.dubois@mini-hospital.be` | Dr. Anne Dubois | physician |
+| `jan.peeters@mini-hospital.be` | Dr. Jan Peeters | physician |
+| `marie.lambert@mini-hospital.be` | Marie Lambert | nurse |
+| `sofie.declercq@mini-hospital.be` | Sofie De Clercq | nurse |
+| `paul.mertens@mini-hospital.be` | Paul Mertens | pharmacist |
+| `fatima.elamrani@mini-hospital.be` | Fatima El Amrani | admissionClerk |
+| `tom.vandenberg@mini-hospital.be` | Tom Van den Berg | integrationEngineer |
+| `lucas.moreau@mini-hospital.be` | Lucas Moreau | biomedicalTechnician |
+| `student@mini-hospital.be` | Student | student |
+
+Give each student their own account too — `student01@…` through
+`student10@…` — with the `student` role, which can do everything.
+
+### Roles
+
+Firebase owns identity. It does not own **role**: the applications read a
+`role` custom claim from the ID token. A hospital would drive those claims
+from its HR directory; here you set them once with the Admin SDK.
+
+```bash
+npm install firebase-admin
+```
+
+```js
+// set_roles.js — run once, with a service-account key from
+// Project settings → Service accounts → Generate new private key
+const admin = require('firebase-admin');
+admin.initializeApp({
+  credential: admin.credential.cert(require('./serviceAccountKey.json')),
+});
+
+const roles = {
+  'anne.dubois@mini-hospital.be': 'physician',
+  'jan.peeters@mini-hospital.be': 'physician',
+  'marie.lambert@mini-hospital.be': 'nurse',
+  'sofie.declercq@mini-hospital.be': 'nurse',
+  'paul.mertens@mini-hospital.be': 'pharmacist',
+  'fatima.elamrani@mini-hospital.be': 'admissionClerk',
+  'tom.vandenberg@mini-hospital.be': 'integrationEngineer',
+  'lucas.moreau@mini-hospital.be': 'biomedicalTechnician',
+  'student@mini-hospital.be': 'student',
+};
+
+(async () => {
+  for (const [email, role] of Object.entries(roles)) {
+    const user = await admin.auth().getUserByEmail(email);
+    await admin.auth().setCustomUserClaims(user.uid, { role });
+    console.log(`${email} → ${role}`);
+  }
+})();
+```
+
+Never commit `serviceAccountKey.json`. It is a master key to the project, and
+the `.gitignore` in each repository already excludes it.
+
+A user whose claim is missing or unreadable falls back to `student`, which is
+the safe default in a teaching environment. The valid values are the names in
+`UserRole` (`packages/hospital_core/lib/src/models/hospital_user.dart`).
+
+### Connect the applications
+
+Once per repository:
+
+```bash
+dart pub global activate flutterfire_cli
+cd EHR && flutterfire configure --project=my-hospital-2026
+```
+
+That writes `lib/firebase_options.dart`. It is **git-ignored on purpose** — it
+belongs to your Firebase project, not to this repository.
+
+Then:
+
+```bash
+flutter run -d chrome --dart-define=AUTH=firebase
+```
+
+The demo-account buttons disappear from the login screen and the e-mail and
+password fields become real.
+
+### Authorised domains
+
+Firebase Auth rejects sign-in from an origin it does not know. Under
+**Authentication → Settings → Authorised domains**, `localhost` is there by
+default. Add any other host you serve the applications from.
+
+---
+
+## 2. PostgreSQL in the cloud (optional)
+
+Only if you want the hospital to outlive the laptop it was demonstrated on.
+
+**This requires the Blaze plan.** Data Connect provisions a Cloud SQL
+instance, and Cloud SQL is not free. A small instance is inexpensive, but it
+is not zero, and it will keep costing while it exists.
+
+```bash
+npm install -g firebase-tools
+firebase login
+cd Dev_Central/infrastructure
+firebase deploy --only dataconnect --project my-hospital-2026
+```
+
+The schema and operations are in `infrastructure/dataconnect/`. Then:
+
+```bash
+flutter run -d chrome --dart-define=BACKEND=dataConnect --dart-define=AUTH=firebase
+```
+
+Two things there are worth discussing with the students:
+
+- `dataconnect/schema/schema.gql` and `db/schema.sql` describe the same tables
+  and must be kept in step **by hand**. That is part of what a managed backend
+  costs you.
+- Data Connect generates one mutation per table, so there is no single "admit
+  patient" operation — the three writes an admission implies are composed on
+  the client. That is exactly the transactional gap `AdtService` documents in
+  the ADT application, and it is a good place to talk about what a database
+  transaction actually buys.
+
+### Turning it off
+
+Data Connect keeps charging while the Cloud SQL instance exists. When the
+course is over, delete the instance in the Google Cloud console — deleting the
+Firebase Data Connect service alone does not remove it.
+
+---
+
+## 3. Hosting
+
+Five applications, five URLs, one Firebase project. Everything needed is
+already checked in: `firebase.json` and `.firebaserc` in each repository, a
+deploy script, and a GitHub Actions workflow.
+
+| Application | URL |
+|---|---|
+| EHR | `https://my-hospital-2026-ehr.web.app` |
+| ADT | `https://my-hospital-2026-adt.web.app` |
+| PHARM | `https://my-hospital-2026-pharm.web.app` |
+| EAI | `https://my-hospital-2026-eai.web.app` |
+| Devices | `https://my-hospital-2026-dev.web.app` |
+
+### One-off setup
+
+```bash
+npm install -g firebase-tools
+firebase login
+
+cd Dev_Central
+./tools/create_hosting_sites.sh
+```
+
+A Firebase project has one default site and any number of extra ones. The
+mini-hospital uses five, so each application has its own URL and can be
+redeployed without touching the others.
+
+Site ids are globally unique across all of Firebase Hosting. If
+`create_hosting_sites.sh` reports one as taken, pick another id and change it
+in that repository's `.firebaserc` and in `tools/deploy_hosting.sh`.
+
+### Deploy
+
+All five, from a directory holding all five checkouts:
+
+```bash
+cd Dev_Central
+./tools/deploy_all_hosting.sh
+```
+
+Or one at a time, from inside any repository:
+
+```bash
+cd EHR
+./tools/deploy_hosting.sh
+```
+
+### What the hosted build talks to
+
+**Nothing on localhost.** A page served from `web.app` cannot reach a database
+on a student's laptop, so the deployed build uses the in-memory dataset by
+default: every visitor gets their own complete hospital in their own browser,
+with no infrastructure at all. For a class that is often exactly right — send
+five links and start the lab.
+
+Any of it can be redirected per visitor with a query string, without
+rebuilding:
+
+| Parameter | Example |
+|---|---|
+| `?device=` | `…-dev.web.app/?device=DEV3` |
+| `?backend=` | `?backend=restApi` |
+| `?api=` | `?api=https://lab-api.example` |
+| `?fhir=` | `?fhir=https://fhir.example/fhir` |
+| `?eai=` | `?eai=https://eai.example` |
+| `?auth=` | `?auth=firebase` |
+
+That is what makes one hosted device simulator serve ten students:
+
+```
+https://my-hospital-2026-dev.web.app/?device=DEV1     → student 1
+https://my-hospital-2026-dev.web.app/?device=DEV2     → student 2
+…
+```
+
+To compile a different default in instead:
+
+```bash
+./tools/deploy_hosting.sh --backend restApi --api https://your-api-host
+./tools/deploy_hosting.sh --auth firebase        # needs firebase_options.dart
+```
+
+### Deploying from GitHub
+
+Each repository has `.github/workflows/deploy-hosting.yml`, which publishes on
+every push to `main` and can also be run by hand with a chosen backend and auth
+mode.
+
+It needs one repository secret, **`FIREBASE_SERVICE_ACCOUNT`**:
+
+1. Google Cloud console → IAM & Admin → Service accounts, in the
+   `my-hospital-2026` project.
+2. Create one, give it the **Firebase Hosting Admin** role.
+3. Keys → Add key → JSON.
+4. Paste the whole file into the repository's
+   Settings → Secrets and variables → Actions.
+
+The same secret goes in all five repositories. `ci.yml` runs the analyser,
+formatter and tests on every push and needs no secret at all.
+
+### Two things the web build needs, and why
+
+Both are already applied; this is so you know why they are there.
+
+**CanvasKit is self-hosted.** `flutter build web` bundles the CanvasKit
+renderer into `build/web/canvaskit/` — and then, by default, fetches it from
+`https://www.gstatic.com/flutter-canvaskit/…` at runtime anyway. On a campus or
+hospital network that blocks gstatic, the result is a blank white page with
+nothing on screen to explain it. Every build here passes
+`--no-web-resources-cdn`, which uses the bundled copy we are hosting regardless.
+
+**The browser locale is normalised.** Some Linux desktops report a POSIX-style
+locale such as `en-US@posix`. `Intl.Locale` rejects that, Flutter's engine does
+not guard against it, and the application dies during start-up with
+*"Incorrect locale information provided"* — again, a blank page. A short script
+at the top of each `web/index.html` cleans the value before Flutter reads it.
+Worth knowing about if you ever see a lab machine where one browser works and
+another does not.
+
+### Before exposing any of this publicly
+
+**Every CORS setting in this project is wide open.** The API server sends
+`Access-Control-Allow-Origin: *` and HAPI FHIR is configured the same way. That
+is right for a classroom laptop and wrong for anything reachable from the
+internet.
+
+If you put the back end on a public host, narrow both first:
+
+- `infrastructure/server/lib/src/api.dart` — the `_corsHeaders` map
+- `infrastructure/docker-compose.yml` — `HAPI_FHIR_CORS_ALLOWED_ORIGIN_PATTERNS`
+
+And add the hosting domains to Firebase Auth's authorised-domains list, or
+sign-in will be rejected from them.
+
+## Costs
+
+| | Plan | Cost |
+|---|---|---|
+| Authentication for ~15 accounts | Spark (free) | none |
+| Hosting the five web builds | Spark (free) | none within the free quota |
+| Data Connect / Cloud SQL | Blaze | per-hour, while the instance exists |
+
+Everything the course needs works on the free plan. Only the cloud database
+requires billing, and the local Docker stack does the same job for nothing.

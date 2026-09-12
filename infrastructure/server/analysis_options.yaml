@@ -1,0 +1,8 @@
+# The API server is a plain Dart package, not a Flutter one, so it does not
+# use flutter_lints. Declaring its own options also stops the analyser from
+# walking up into the Flutter package that happens to sit above it.
+include: package:lints/recommended.yaml
+
+linter:
+  rules:
+    - prefer_single_quotes

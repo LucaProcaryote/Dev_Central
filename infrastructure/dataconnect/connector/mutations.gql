@@ -1,0 +1,315 @@
+# The writes the applications perform.
+#
+# Note what is *not* here: there is no "admit patient" mutation that updates
+# the encounter, the bed and the movement log together. Data Connect generates
+# one mutation per table, so a multi-table operation has to be composed on the
+# client - which is precisely the transactional gap `AdtService` documents in
+# the ADT application. Worth showing students side by side with the SQL.
+
+mutation UpsertPatient(
+  $id: String!
+  $mrn: String!
+  $nationalNumber: String
+  $familyName: String!
+  $givenName: String!
+  $gender: String!
+  $birthDate: Date!
+  $address: Any
+  $phone: String
+  $email: String
+  $preferredLanguage: String!
+  $bloodGroup: String
+  $generalPractitioner: String
+) @auth(level: USER) {
+  patient_upsert(
+    data: {
+      id: $id
+      mrn: $mrn
+      nationalNumber: $nationalNumber
+      familyName: $familyName
+      givenName: $givenName
+      gender: $gender
+      birthDate: $birthDate
+      address: $address
+      phone: $phone
+      email: $email
+      preferredLanguage: $preferredLanguage
+      bloodGroup: $bloodGroup
+      generalPractitioner: $generalPractitioner
+    }
+  )
+}
+
+mutation UpsertEncounter(
+  $id: String!
+  $patientId: String!
+  $status: String!
+  $encounterClass: String!
+  $admissionDate: Timestamp!
+  $dischargeDate: Timestamp
+  $wardId: String
+  $roomId: String
+  $bedId: String
+  $reason: String
+  $dischargeDisposition: String
+  $visitNumber: String
+  $attendingPractitioner: String
+) @auth(level: USER) {
+  encounter_upsert(
+    data: {
+      id: $id
+      patientId: $patientId
+      status: $status
+      encounterClass: $encounterClass
+      admissionDate: $admissionDate
+      dischargeDate: $dischargeDate
+      wardId: $wardId
+      roomId: $roomId
+      bedId: $bedId
+      reason: $reason
+      dischargeDisposition: $dischargeDisposition
+      visitNumber: $visitNumber
+      attendingPractitioner: $attendingPractitioner
+    }
+  )
+}
+
+mutation UpdateBedStatus(
+  $id: String!
+  $status: String!
+  $currentEncounterId: String
+  $currentPatientId: String
+) @auth(level: USER) {
+  bed_update(
+    key: { id: $id }
+    data: {
+      status: $status
+      currentEncounterId: $currentEncounterId
+      currentPatientId: $currentPatientId
+    }
+  )
+}
+
+mutation AddMovement(
+  $id: String!
+  $encounterId: String!
+  $patientId: String!
+  $type: String!
+  $occurredAt: Timestamp!
+  $performedBy: String!
+  $fromWardId: String
+  $fromBedId: String
+  $toWardId: String
+  $toBedId: String
+  $note: String
+) @auth(level: USER) {
+  movement_insert(
+    data: {
+      id: $id
+      encounterId: $encounterId
+      patientId: $patientId
+      type: $type
+      occurredAt: $occurredAt
+      performedBy: $performedBy
+      fromWardId: $fromWardId
+      fromBedId: $fromBedId
+      toWardId: $toWardId
+      toBedId: $toBedId
+      note: $note
+    }
+  )
+}
+
+mutation AddObservation(
+  $id: String!
+  $patientId: String!
+  $encounterId: String
+  $type: String!
+  $value: Float!
+  $unit: String!
+  $effectiveDateTime: Timestamp!
+  $deviceId: String
+  $status: String!
+) @auth(level: USER) {
+  observation_insert(
+    data: {
+      id: $id
+      patientId: $patientId
+      encounterId: $encounterId
+      type: $type
+      value: $value
+      unit: $unit
+      effectiveDateTime: $effectiveDateTime
+      deviceId: $deviceId
+      status: $status
+    }
+  )
+}
+
+mutation UpsertPrescription(
+  $id: String!
+  $patientId: String!
+  $encounterId: String
+  $medicationCode: String!
+  $medication: Any!
+  $doseQuantity: Float!
+  $doseUnit: String!
+  $frequencyPerDay: Int!
+  $route: String!
+  $startDate: Timestamp!
+  $endDate: Timestamp
+  $prescriber: String!
+  $status: String!
+  $isPrn: Boolean!
+  $indication: String
+  $instructions: String
+) @auth(level: USER) {
+  prescription_upsert(
+    data: {
+      id: $id
+      patientId: $patientId
+      encounterId: $encounterId
+      medicationCode: $medicationCode
+      medication: $medication
+      doseQuantity: $doseQuantity
+      doseUnit: $doseUnit
+      frequencyPerDay: $frequencyPerDay
+      route: $route
+      startDate: $startDate
+      endDate: $endDate
+      prescriber: $prescriber
+      status: $status
+      isPrn: $isPrn
+      indication: $indication
+      instructions: $instructions
+    }
+  )
+}
+
+mutation UpsertDispense(
+  $id: String!
+  $prescriptionId: String!
+  $patientId: String!
+  $quantity: Float!
+  $status: String!
+  $requestedAt: Timestamp!
+  $dispensedAt: Timestamp
+  $dispensedBy: String
+  $cabinetId: String
+  $slot: String
+  $refusalReason: String
+  $lotNumber: String
+) @auth(level: USER) {
+  dispense_upsert(
+    data: {
+      id: $id
+      prescriptionId: $prescriptionId
+      patientId: $patientId
+      quantity: $quantity
+      status: $status
+      requestedAt: $requestedAt
+      dispensedAt: $dispensedAt
+      dispensedBy: $dispensedBy
+      cabinetId: $cabinetId
+      slot: $slot
+      refusalReason: $refusalReason
+      lotNumber: $lotNumber
+    }
+  )
+}
+
+mutation UpdateStockQuantity(
+  $id: String!
+  $quantityOnHand: Int!
+  $lotNumber: String!
+  $expiryDate: Timestamp!
+) @auth(level: USER) {
+  stockItem_update(
+    key: { id: $id }
+    data: {
+      quantityOnHand: $quantityOnHand
+      lotNumber: $lotNumber
+      expiryDate: $expiryDate
+    }
+  )
+}
+
+mutation UpsertNote(
+  $id: String!
+  $patientId: String!
+  $encounterId: String
+  $type: String!
+  $title: String!
+  $body: String!
+  $authorName: String!
+  $authorRole: String!
+  $createdAt: Timestamp!
+  $updatedAt: Timestamp
+  $isSigned: Boolean!
+  $language: String!
+) @auth(level: USER) {
+  clinicalNote_upsert(
+    data: {
+      id: $id
+      patientId: $patientId
+      encounterId: $encounterId
+      type: $type
+      title: $title
+      body: $body
+      authorName: $authorName
+      authorRole: $authorRole
+      createdAt: $createdAt
+      updatedAt: $updatedAt
+      isSigned: $isSigned
+      language: $language
+    }
+  )
+}
+
+mutation UpsertFlow(
+  $id: String!
+  $name: Any!
+  $description: Any
+  $isEnabled: Boolean!
+  $nodes: Any!
+  $connections: Any!
+  $updatedAt: Timestamp!
+  $messagesProcessed: Int!
+  $messagesFailed: Int!
+) @auth(level: USER) {
+  integrationFlow_upsert(
+    data: {
+      id: $id
+      name: $name
+      description: $description
+      isEnabled: $isEnabled
+      nodes: $nodes
+      connections: $connections
+      updatedAt: $updatedAt
+      messagesProcessed: $messagesProcessed
+      messagesFailed: $messagesFailed
+    }
+  )
+}
+
+mutation UpdateDevice(
+  $id: String!
+  $status: String!
+  $assignedPatientId: String
+  $assignedBedId: String
+  $wardId: String
+  $lastSeenAt: Timestamp
+  $batteryPercent: Int
+) @auth(level: USER) {
+  device_update(
+    key: { id: $id }
+    data: {
+      status: $status
+      assignedPatientId: $assignedPatientId
+      assignedBedId: $assignedBedId
+      wardId: $wardId
+      lastSeenAt: $lastSeenAt
+      batteryPercent: $batteryPercent
+    }
+  )
+}
