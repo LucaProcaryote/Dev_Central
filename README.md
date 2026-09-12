@@ -3,6 +3,10 @@
 Part of **Mini-Hospital 2026**, a teaching hospital built for the course on
 hospital, e-health and connected-medical-device informatics.
 
+> **Start here:** the [course guide](COURSE.md) explains how the six
+> repositories fit together and contains the lab exercises.
+> [FIREBASE.md](FIREBASE.md) covers real authentication and the cloud database.
+
 This repository is three things:
 
 1. the **device simulator** — one Flutter application that becomes `DEV1`

@@ -68,7 +68,7 @@ String _quote(Object? value) {
 }
 
 String _json(Object? value) =>
-    value == null ? 'NULL' : "${_quote(jsonEncode(value))}::jsonb";
+    value == null ? 'NULL' : '${_quote(jsonEncode(value))}::jsonb';
 
 /// Writes a timestamp as an offset from the moment the seed is loaded.
 String _at(DateTime? value, DateTime reference) {
