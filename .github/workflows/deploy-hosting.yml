@@ -41,6 +41,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check that a deploy credential is configured
+        env:
+          KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::No FIREBASE_SERVICE_ACCOUNT secret is set, so there is nothing to deploy with."
+            echo "::error::Create a service account with the Firebase Hosting Admin role in the"
+            echo "::error::my-hospital-2026 project, then paste its whole JSON key into"
+            echo "::error::Settings -> Secrets and variables -> Actions -> New repository secret."
+            echo "::error::The hosting sites must exist first: Dev_Central/tools/create_hosting_sites.sh"
+            exit 1
+          fi
+
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
