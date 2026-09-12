@@ -55,6 +55,7 @@ export 'src/seed/seed_users.dart';
 export 'src/l10n/generated/hospital_localizations.dart';
 
 // User interface
+export 'src/ui/app_badge.dart';
 export 'src/ui/app_shell.dart';
 export 'src/ui/formatters.dart';
 export 'src/ui/hospital_app.dart';

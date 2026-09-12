@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../auth/auth_service.dart';
+import '../config/app_config.dart';
 import '../l10n/generated/hospital_localizations.dart';
+import 'app_badge.dart';
 import 'theme.dart';
 import 'widgets/backend_banner.dart';
 import 'widgets/language_selector.dart';
@@ -66,11 +68,7 @@ class _AppShellState extends State<AppShell> {
       appBar: AppBar(
         title: Row(
           children: <Widget>[
-            Icon(
-              Icons.local_hospital_rounded,
-              color: theme.colorScheme.primary,
-              size: 22,
-            ),
+            AppBadge(app: context.watch<AppConfig>().app, size: 26),
             Gap.w8,
             Flexible(
               child: Text(

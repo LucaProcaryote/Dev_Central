@@ -123,8 +123,8 @@ class _MiniHospitalAppState extends State<MiniHospitalApp> {
           onGenerateTitle: (context) =>
               widget.title(HospitalLocalizations.of(context)),
           debugShowCheckedModeBanner: false,
-          theme: HospitalTheme.light(widget.config.app),
-          darkTheme: HospitalTheme.dark(widget.config.app),
+          theme: HospitalTheme.light(),
+          darkTheme: HospitalTheme.dark(),
           locale: localeController.locale,
           supportedLocales: SupportedLocales.all,
           localizationsDelegates: HospitalLocalizations.localizationsDelegates,

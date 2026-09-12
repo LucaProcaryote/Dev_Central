@@ -4,18 +4,29 @@ import '../config/app_config.dart';
 
 /// The visual identity of the mini-hospital.
 ///
-/// Each application gets its own seed colour so that a student with five tabs
-/// open knows at a glance which one they are looking at, while everything else
-/// - spacing, shape, typography - stays identical across the suite.
+/// One teal runs through all five applications. A student with five tabs open
+/// tells them apart by the badge in the title bar - the glyph differs, the
+/// colour does not - which is what makes a screenshot of any of them read as
+/// the same hospital rather than five unrelated tools.
 class HospitalTheme {
   const HospitalTheme._();
 
-  static const Map<HospitalApp, Color> seedColors = <HospitalApp, Color>{
-    HospitalApp.ehr: Color(0xFF00696D), // teal - the clinical record
-    HospitalApp.adt: Color(0xFF3F5AA9), // indigo - movement and logistics
-    HospitalApp.pharm: Color(0xFF7A5900), // amber - the pharmacy
-    HospitalApp.eai: Color(0xFF6750A4), // violet - plumbing between systems
-    HospitalApp.device: Color(0xFF386A20), // green - devices and signals
+  /// The brand teal, and the seed every colour scheme is seeded from.
+  static const Color brand = Color(0xFF00696D);
+
+  /// The two ends of the badge gradient. [AppBadge] paints them, and
+  /// `tools/generate_icons.py` in Dev_Central rasterises the same pair into
+  /// the favicons, so the tab and the title bar cannot drift apart.
+  static const Color brandLight = Color(0xFF0E9C93);
+  static const Color brandDeep = Color(0xFF004F52);
+
+  /// The symbol at the centre of each application's badge.
+  static IconData iconFor(HospitalApp app) => switch (app) {
+    HospitalApp.ehr => Icons.medical_information_rounded,
+    HospitalApp.adt => Icons.bed_rounded,
+    HospitalApp.pharm => Icons.medication_rounded,
+    HospitalApp.eai => Icons.hub_rounded,
+    HospitalApp.device => Icons.monitor_heart_rounded,
   };
 
   /// Status colours, which must not be derived from the seed: a critical value
@@ -63,12 +74,12 @@ class HospitalTheme {
   static Color seriesOf(BuildContext context) =>
       series(Theme.of(context).brightness);
 
-  static ThemeData light(HospitalApp app) => _build(app, Brightness.light);
-  static ThemeData dark(HospitalApp app) => _build(app, Brightness.dark);
+  static ThemeData light() => _build(Brightness.light);
+  static ThemeData dark() => _build(Brightness.dark);
 
-  static ThemeData _build(HospitalApp app, Brightness brightness) {
+  static ThemeData _build(Brightness brightness) {
     final scheme = ColorScheme.fromSeed(
-      seedColor: seedColors[app] ?? seedColors[HospitalApp.ehr]!,
+      seedColor: brand,
       brightness: brightness,
     );
 

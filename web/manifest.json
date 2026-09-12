@@ -1,11 +1,11 @@
 {
-    "name": "device_simulator",
-    "short_name": "device_simulator",
+    "name": "Mini-Hospital Devices",
+    "short_name": "Devices",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "Mini-Hospital 2026 - Connected medical device simulator",
+    "background_color": "#004F52",
+    "theme_color": "#00696D",
+    "description": "Mini-Hospital 2026 - Connected medical device simulators",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
