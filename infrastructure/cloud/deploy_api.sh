@@ -20,6 +20,13 @@ IMAGE="${IMAGE:-$REGION-docker.pkg.dev/$PROJECT/mini-hospital/api}"
 # of the five services - one door rather than five - and the portal's console
 # talks to that one. Set ADMIN_APP=none to mount it nowhere.
 ADMIN_APP="${ADMIN_APP:-EHR}"
+
+# CPU allocated for the instance's whole life, not only while a request is in
+# flight. Costs more - you pay for idle instances until they are reaped - but
+# a throttled instance cannot run a timer, retire a stale database connection
+# or finish anything it started at boot. Set CPU_THROTTLING=on to go back to
+# paying only for requests.
+CPU_THROTTLING="${CPU_THROTTLING:-off}"
 FIREBASE_API_KEY="${FIREBASE_API_KEY:-}"
 
 APPS=(EHR ADT PHARM EAI DEV)
@@ -132,6 +139,7 @@ for app in "${APPS[@]}"; do
     --max-instances 4 \
     --memory 512Mi \
     --timeout 60 \
+    $([ "$CPU_THROTTLING" = "off" ] && echo --no-cpu-throttling) \
     ${SERVICE_ACCOUNT:+--service-account "$SERVICE_ACCOUNT"}
 done
 
