@@ -32,7 +32,7 @@ mkdir -p "$OUT"
 PIDS=()
 cleanup() {
   echo
-  echo "Stopping ${#PIDS[@]} simulators…"
+  echo "Stopping ${#PIDS[@]} simulators..."
   for pid in "${PIDS[@]}"; do kill "$pid" 2>/dev/null || true; done
 }
 trap cleanup EXIT INT TERM
@@ -40,7 +40,7 @@ trap cleanup EXIT INT TERM
 for i in $(seq 1 "$COUNT"); do
   device="DEV$i"
   port=$((9000 + i))
-  echo "Building $device …"
+  echo "Building $device ..."
   flutter build web --release \
     --dart-define=DEVICE_ID="$device" \
     --dart-define=EAI_BASE="$EAI_BASE" \
@@ -48,7 +48,7 @@ for i in $(seq 1 "$COUNT"); do
     --output "$OUT/$device" >/dev/null
   (cd "$OUT/$device" && python3 -m http.server "$port" >/dev/null 2>&1) &
   PIDS+=($!)
-  echo "  $device  →  http://localhost:$port"
+  echo "  $device  ->  http://localhost:$port"
 done
 
 echo

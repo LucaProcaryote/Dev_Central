@@ -16,7 +16,7 @@
 #
 # Requires: gcloud, authenticated as someone with Firebase Authentication
 # Admin on the project. Enable Email/Password sign-in first, in the console
-# under Authentication → Sign-in method.
+# under Authentication -> Sign-in method.
 set -euo pipefail
 
 PROJECT="${FIREBASE_PROJECT:-my-hospital-2026}"
@@ -66,7 +66,7 @@ except Exception: print('')"; }
 
 if [ "$SHOW_CONFIG_ONLY" -eq 0 ]; then
   echo "Project: $PROJECT"
-  echo "Creating ${#STAFF[@]} staff accounts…"
+  echo "Creating ${#STAFF[@]} staff accounts..."
   echo
 
   for entry in "${STAFF[@]}"; do
@@ -111,7 +111,7 @@ echo "Register a Web app per application if you have not already:"
 echo "  https://console.firebase.google.com/project/$PROJECT/settings/general"
 echo
 echo "Then set these repository variables in each application repository"
-echo "(Settings → Secrets and variables → Actions → Variables):"
+echo "(Settings -> Secrets and variables -> Actions -> Variables):"
 echo
 echo "  FIREBASE_API_KEY               the web app's apiKey"
 echo "  FIREBASE_APP_ID                the web app's appId - DIFFERENT per app"

@@ -11,6 +11,39 @@ on:
   workflow_dispatch:
 
 jobs:
+  # macOS still ships bash 3.2, and it swallows a multibyte character that
+  # follows "$VAR" straight into the variable name - so `echo "Creating $SECRET…"`
+  # dies with "SECRET…: unbound variable" on a Mac and works everywhere else.
+  # These scripts are meant to be run on a laptop, so they stay plain ASCII.
+  scripts:
+    name: Shell scripts run on a Mac
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: No typographic characters
+        run: |
+          if LC_ALL=C grep -rlP '[^\x00-\x7F]' \
+               --include='*.sh' tools infrastructure; then
+            echo "::error::The scripts above contain non-ASCII characters."
+            echo "::error::Use ... instead of an ellipsis and -> instead of an arrow:"
+            echo "::error::bash 3.2 on macOS reads them as part of a variable name."
+            exit 1
+          fi
+          echo "all ASCII"
+
+      - name: No bash 4 features
+        run: |
+          if grep -rnE 'declare -A|mapfile|readarray|\$\{[A-Za-z_]+(,,|\^\^)\}' \
+               --include='*.sh' tools infrastructure; then
+            echo "::error::bash 3.2 on macOS has none of these."
+            exit 1
+          fi
+          echo "none"
+
+      - name: They parse
+        run: find tools infrastructure -name '*.sh' -exec bash -n {} +
+
   test:
     runs-on: ubuntu-latest
     steps:

@@ -32,13 +32,13 @@ CONNECTION_NAME="$(gcloud sql instances describe "$INSTANCE" \
 # ------------------------------------------------------------------- image --
 if ! gcloud artifacts repositories describe mini-hospital \
   --location "$REGION" --project "$PROJECT" >/dev/null 2>&1; then
-  echo "Creating the Artifact Registry repository…"
+  echo "Creating the Artifact Registry repository..."
   gcloud artifacts repositories create mini-hospital \
     --repository-format=docker --location "$REGION" --project "$PROJECT" \
     --description="Mini-Hospital 2026 container images"
 fi
 
-echo "Building the API image…"
+echo "Building the API image..."
 gcloud builds submit "$HERE/server" --tag "$IMAGE" --project "$PROJECT"
 
 # --------------------------------------------------------- the five services --
@@ -49,7 +49,7 @@ SERVICE_ACCOUNT="${SERVICE_ACCOUNT:-}"
 for app in "${APPS[@]}"; do
   service="mini-hospital-api-$(echo "$app" | tr '[:upper:]' '[:lower:]')"
   echo
-  echo "═══ $service ═══"
+  echo "=== $service ==="
   # shellcheck disable=SC2086
   gcloud run deploy "$service" \
     --project "$PROJECT" \
