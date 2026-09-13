@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:hospital_server/src/admin/admin_api.dart';
+import 'package:hospital_server/src/admin/identity_toolkit.dart';
 import 'package:hospital_server/src/api.dart';
 import 'package:hospital_server/src/config.dart';
 import 'package:hospital_server/src/store.dart';
@@ -43,7 +45,23 @@ Future<void> main(List<String> arguments) async {
     exit(69);
   }
 
-  final api = HospitalApi(store: store, app: config.app);
+  // Account management is only mounted when the server was told which
+  // Firebase project it belongs to. No project, no /admin.
+  AdminApi? admin;
+  if (config.servesAdmin) {
+    admin = AdminApi(
+      identity: IdentityToolkit(
+        project: config.firebaseProject,
+        apiKey: config.firebaseApiKey,
+        accessTokens: config.googleAccessToken.isNotEmpty
+            ? StaticAccessToken(config.googleAccessToken)
+            : MetadataAccessToken(),
+      ),
+    );
+    stdout.writeln('  /admin serves ${config.firebaseProject}');
+  }
+
+  final api = HospitalApi(store: store, app: config.app, admin: admin);
   final server = await io.serve(api.handler, config.host, config.port);
   stdout.writeln('Listening on http://${server.address.host}:${server.port}');
 

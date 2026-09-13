@@ -1,0 +1,5 @@
+# `tool` marks the tests that read files outside the package - the drift check
+# against hospital_core. They run in CI, where both are checked out together.
+tags:
+  tool:
+    skip: false

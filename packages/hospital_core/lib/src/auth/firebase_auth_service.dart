@@ -12,8 +12,9 @@ import 'auth_service.dart';
 /// Firebase owns identity - email, password, session persistence. It does not
 /// own *role*: [UserRole] is resolved by [roleResolver], which by default reads
 /// the custom claims set on the account. A hospital would drive those claims
-/// from its HR directory; in the course they are set with the Admin SDK script
-/// in `tools/set_user_roles.dart`.
+/// from its HR directory; in the course they are set either by
+/// `Dev_Central/tools/setup_firebase_auth.sh` or from the administration
+/// console in the portal, both of which write the same `role` custom claim.
 class FirebaseAuthService extends AuthService {
   FirebaseAuthService({
     fb.FirebaseAuth? firebaseAuth,
@@ -110,6 +111,20 @@ class FirebaseAuthService extends AuthService {
     await _auth.signOut();
     _currentUser = null;
     notifyListeners();
+  }
+
+  /// The current Firebase ID token, refreshed by the SDK when it is close to
+  /// expiring. Short-lived by design: a leaked one stops working within the
+  /// hour, and revoking the account kills it sooner.
+  @override
+  Future<String?> idToken() async {
+    final user = _auth.currentUser;
+    if (user == null) return null;
+    try {
+      return await user.getIdToken();
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<HospitalUser> _toHospitalUser(fb.User user) async {

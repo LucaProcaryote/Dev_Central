@@ -16,6 +16,12 @@ DB_USER="${DB_USER:-hospital}"
 SECRET="${SECRET:-mini-hospital-db-password}"
 IMAGE="${IMAGE:-$REGION-docker.pkg.dev/$PROJECT/mini-hospital/api}"
 
+# The administration API (account creation, roles) is mounted on exactly one
+# of the five services - one door rather than five - and the portal's console
+# talks to that one. Set ADMIN_APP=none to mount it nowhere.
+ADMIN_APP="${ADMIN_APP:-EHR}"
+FIREBASE_API_KEY="${FIREBASE_API_KEY:-}"
+
 APPS=(EHR ADT PHARM EAI DEV)
 [ $# -gt 0 ] && APPS=("$@")
 
@@ -41,6 +47,27 @@ fi
 echo "Building the API image..."
 gcloud builds submit "$HERE/server" --tag "$IMAGE" --project "$PROJECT"
 
+# ----------------------------------------------------------- admin identity --
+# Writing a role means writing a custom claim, which needs a service account
+# with Firebase Authentication Admin. The service uses its own identity for
+# that - no key is issued, downloaded or stored anywhere.
+if [ "$ADMIN_APP" != "none" ] && [ -n "$FIREBASE_API_KEY" ]; then
+  PROJECT_NUMBER="$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')"
+  RUNTIME_SA="${RUNTIME_SA:-$PROJECT_NUMBER-compute@developer.gserviceaccount.com}"
+  echo "Granting Firebase Authentication Admin to $RUNTIME_SA..."
+  gcloud projects add-iam-policy-binding "$PROJECT" \
+    --member "serviceAccount:$RUNTIME_SA" \
+    --role roles/firebaseauth.admin \
+    --condition=None >/dev/null
+elif [ "$ADMIN_APP" != "none" ]; then
+  echo
+  echo "note: FIREBASE_API_KEY is not set, so no administration API will be"
+  echo "      mounted. Re-run with the web API key from the Firebase console:"
+  echo "        FIREBASE_API_KEY=AIza... ./infrastructure/cloud/deploy_api.sh"
+  echo
+  ADMIN_APP=none
+fi
+
 # --------------------------------------------------------- the five services --
 # Cloud Run mounts the Cloud SQL socket under /cloudsql. The server treats a
 # DB_HOST beginning with "/" as a socket directory, the same convention psql
@@ -50,6 +77,11 @@ for app in "${APPS[@]}"; do
   service="mini-hospital-api-$(echo "$app" | tr '[:upper:]' '[:lower:]')"
   echo
   echo "=== $service ==="
+  env_vars="APP=$app,DB_HOST=/cloudsql/$CONNECTION_NAME,DB_USER=$DB_USER"
+  if [ "$app" = "$ADMIN_APP" ]; then
+    env_vars="$env_vars,FIREBASE_PROJECT=$PROJECT,FIREBASE_API_KEY=$FIREBASE_API_KEY"
+    echo "    (this one also serves /admin)"
+  fi
   # shellcheck disable=SC2086
   gcloud run deploy "$service" \
     --project "$PROJECT" \
@@ -58,7 +90,7 @@ for app in "${APPS[@]}"; do
     --platform managed \
     --allow-unauthenticated \
     --add-cloudsql-instances "$CONNECTION_NAME" \
-    --set-env-vars "APP=$app,DB_HOST=/cloudsql/$CONNECTION_NAME,DB_USER=$DB_USER" \
+    --set-env-vars "$env_vars" \
     --set-secrets "DB_PASSWORD=$SECRET:latest" \
     --min-instances 0 \
     --max-instances 2 \
@@ -84,4 +116,11 @@ Point an application at its API without rebuilding anything:
 To make it the default for everyone, set the API_BASE repository variable in
 each repository (Settings -> Secrets and variables -> Actions -> Variables)
 and push: the deploy workflow compiles it in.
+
+The administration console is the portal, pointed at the service that serves
+/admin - the EHR one unless ADMIN_APP said otherwise:
+
+  https://my-hospital-2026.web.app/?admin=<that URL>
+
+Make it permanent by setting ADMIN_API_URL in the my-hospital repository.
 NEXT

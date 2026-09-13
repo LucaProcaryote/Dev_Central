@@ -76,4 +76,11 @@ const List<HospitalUser> seedUsers = <HospitalUser>[
     role: UserRole.student,
     preferredLanguage: 'en',
   ),
+  HospitalUser(
+    uid: 'usr-010',
+    email: 'admin@mini-hospital.be',
+    displayName: 'Hospital Administrator',
+    role: UserRole.admin,
+    preferredLanguage: 'en',
+  ),
 ];
