@@ -36,11 +36,11 @@ is nothing to install at all:
 
 | | |
 |---|---|
-| EHR | <https://my-hospital-2026-ehr.web.app> |
-| ADT | <https://my-hospital-2026-adt.web.app> |
-| PHARM | <https://my-hospital-2026-pharm.web.app> |
-| EAI | <https://my-hospital-2026-eai.web.app> |
-| Your device | `https://my-hospital-2026-dev.web.app/?device=DEV3` |
+| EHR | <https://my-hospital-ehr.procaryote.com> |
+| ADT | <https://my-hospital-adt.procaryote.com> |
+| PHARM | <https://my-hospital-pharm.procaryote.com> |
+| EAI | <https://my-hospital-eai.procaryote.com> |
+| Your device | `https://my-hospital-dev.procaryote.com/?device=DEV3` |
 
 Each visitor gets their own complete hospital in their own browser. Use your
 own `?device=` number so the class is ten different devices rather than ten

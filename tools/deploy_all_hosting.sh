@@ -51,13 +51,13 @@ fi
 cat <<'URLS'
 All five deployed:
 
-  EHR      https://my-hospital-2026-ehr.web.app
-  ADT      https://my-hospital-2026-adt.web.app
-  PHARM    https://my-hospital-2026-pharm.web.app
-  EAI      https://my-hospital-2026-eai.web.app
-  Devices  https://my-hospital-2026-dev.web.app
+  EHR      https://my-hospital-ehr.procaryote.com
+  ADT      https://my-hospital-adt.procaryote.com
+  PHARM    https://my-hospital-pharm.procaryote.com
+  EAI      https://my-hospital-eai.procaryote.com
+  Devices  https://my-hospital-dev.procaryote.com
 
 Each student opens the device simulator with their own number:
 
-  https://my-hospital-2026-dev.web.app/?device=DEV3
+  https://my-hospital-dev.procaryote.com/?device=DEV3
 URLS

@@ -10,7 +10,7 @@
 # anything on a student's localhost. Point it at a real backend per visitor
 # with a query string instead:
 #
-#   https://my-hospital-2026-dev.web.app/?backend=restApi&api=https://your-api
+#   https://my-hospital-dev.procaryote.com/?backend=restApi&api=https://your-api
 name: Deploy to Firebase Hosting
 
 on:
