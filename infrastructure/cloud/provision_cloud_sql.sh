@@ -128,6 +128,22 @@ for db in "${DATABASES[@]}"; do
   fi
 done
 
+# The proxy authenticates with Application Default Credentials, which are a
+# different thing from the credentials `gcloud auth login` gives the CLI.
+# Check before starting it: otherwise its one-line complaint scrolls past
+# between the waiting dots, and what you read instead is a wall of
+# "connection refused" that says nothing about credentials.
+if ! gcloud auth application-default print-access-token >/dev/null 2>&1; then
+  echo >&2
+  echo "error: the Cloud SQL Auth Proxy has no Application Default Credentials." >&2
+  echo >&2
+  echo "  These are separate from the ones gcloud itself uses, so being logged" >&2
+  echo "  in is not enough. Run this once, then run this script again:" >&2
+  echo >&2
+  echo "    gcloud auth application-default login" >&2
+  exit 77
+fi
+
 # ------------------------------------------------------------------- proxy --
 # The instance has no public IP, so the schema is loaded through the Cloud SQL
 # Auth Proxy: it authenticates with the caller's own gcloud credentials and
@@ -148,20 +164,38 @@ if [ ! -x "$PROXY" ]; then
 fi
 
 PROXY_PORT="${PROXY_PORT:-5433}"
-"$PROXY" --port "$PROXY_PORT" "$CONNECTION_NAME" &
+PROXY_LOG="$(mktemp)"
+"$PROXY" --port "$PROXY_PORT" "$CONNECTION_NAME" >"$PROXY_LOG" 2>&1 &
 PROXY_PID=$!
-trap 'kill "$PROXY_PID" 2>/dev/null || true' EXIT
+trap 'kill "$PROXY_PID" 2>/dev/null || true; rm -f "$PROXY_LOG"' EXIT
 
 echo -n "Waiting for the proxy on 127.0.0.1:$PROXY_PORT"
+READY=0
 for _ in $(seq 1 30); do
+  # A proxy that has died will never be ready, and waiting the full minute
+  # for it to prove that helps nobody.
+  if ! kill -0 "$PROXY_PID" 2>/dev/null; then
+    echo
+    echo "error: the proxy exited. What it said:" >&2
+    sed 's/^/  /' "$PROXY_LOG" >&2
+    exit 78
+  fi
   if PGPASSWORD="$DB_PASSWORD" psql -h 127.0.0.1 -p "$PROXY_PORT" \
     -U "$DB_USER" -d postgres -c 'SELECT 1' >/dev/null 2>&1; then
     echo " - ready"
+    READY=1
     break
   fi
   echo -n .
   sleep 2
 done
+
+if [ "$READY" -eq 0 ]; then
+  echo
+  echo "error: the proxy never accepted a connection. What it said:" >&2
+  sed 's/^/  /' "$PROXY_LOG" >&2
+  exit 78
+fi
 
 # ------------------------------------------------------- schema and patients --
 export PGHOST=127.0.0.1
