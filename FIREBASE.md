@@ -325,6 +325,13 @@ beginning with `/` is treated as a socket directory, the same convention
 password arrives from Secret Manager as `DB_PASSWORD`; it is not baked into
 the image and does not appear in the service description.
 
+The services run with **CPU always allocated** (`--no-cpu-throttling`). By
+default Cloud Run gives an instance CPU only while a request is in flight,
+which means it cannot run a timer, retire a stale database connection, or
+finish anything it started at boot. That costs a little more - you pay for
+instances until they are reaped rather than only for requests - and
+`CPU_THROTTLING=on ./infrastructure/cloud/deploy_api.sh` puts it back.
+
 ### When something is wrong
 
 `/ping` touches nothing and answers `pong`. It exists to settle one question
