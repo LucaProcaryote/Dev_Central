@@ -110,13 +110,14 @@ Future<void> reportDatabase(HospitalStore store, String database) async {
       return;
     }
     if (attempt == 1) {
-      stdout.writeln('$database did not answer; retrying briefly');
+      stdout.writeln('$database did not answer: ${store.lastError}');
     }
     await Future<void>.delayed(const Duration(seconds: 1));
   }
   stderr.writeln(
-    '$database is not answering. The API is serving anyway: /health reports '
-    'degraded, /ping still answers, and every other route returns the '
+    '$database is not answering: ${store.lastError}\n'
+    'The API is serving anyway: /health reports degraded and carries that '
+    'same message, /ping still answers, and every other route returns the '
     "driver's error rather than hanging.",
   );
 }
