@@ -325,6 +325,24 @@ beginning with `/` is treated as a socket directory, the same convention
 password arrives from Secret Manager as `DB_PASSWORD`; it is not baked into
 the image and does not appear in the service description.
 
+### When something is wrong
+
+`/ping` touches nothing and answers `pong`. It exists to settle one question
+before any other: is the server stuck, or is the database stuck?
+
+| | |
+| --- | --- |
+| `/ping` answers, `/health` says `degraded` | the API is fine; the database is not |
+| `/ping` answers, `/health` says `ok` | everything works |
+| `/ping` does not answer | the instance is saturated or not starting - look at the Cloud Run logs |
+
+`The request was aborted because there was no available instance` in those
+logs is worth recognising. It does not mean the service is down; it means
+every instance is busy, usually holding a request that hangs. That is why the
+services are deployed with `--timeout 60` rather than the default 300: an
+instance held for five minutes by one stuck request is what turns a database
+problem into a total outage.
+
 **The API opens its port before it looks at the database, and never exits if
 the database is missing.** A server that holds its port hostage to a
 dependency turns any problem with that dependency into "the container failed

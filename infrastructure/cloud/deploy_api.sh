@@ -102,6 +102,12 @@ sleep 20
 # Cloud Run mounts the Cloud SQL socket under /cloudsql. The server treats a
 # DB_HOST beginning with "/" as a socket directory, the same convention psql
 # uses, so no proxy sidecar is needed.
+#
+# --timeout 60 rather than the default 300. A request that hangs holds its
+# instance for the whole timeout, and with only a handful of instances a few
+# of those are enough for Cloud Run to start answering everyone else with
+# "no available instance" - which looks like a much bigger outage than it is.
+# Sixty seconds is far longer than any honest query here.
 SERVICE_ACCOUNT="${SERVICE_ACCOUNT:-}"
 for app in "${APPS[@]}"; do
   service="mini-hospital-api-$(echo "$app" | tr '[:upper:]' '[:lower:]')"
@@ -123,8 +129,9 @@ for app in "${APPS[@]}"; do
     --set-env-vars "$env_vars" \
     --set-secrets "DB_PASSWORD=$SECRET:latest" \
     --min-instances 0 \
-    --max-instances 2 \
+    --max-instances 4 \
     --memory 512Mi \
+    --timeout 60 \
     ${SERVICE_ACCOUNT:+--service-account "$SERVICE_ACCOUNT"}
 done
 

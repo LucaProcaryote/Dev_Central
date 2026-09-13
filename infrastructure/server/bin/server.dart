@@ -89,29 +89,34 @@ Future<void> main(List<String> arguments) async {
   }
 
   // Now that the port is open, say whether the database is actually there.
-  // In a compose stack PostgreSQL usually comes up a moment after the API, so
-  // this retries rather than declaring failure on the first attempt.
   unawaited(reportDatabase(store, config.databaseName));
 }
 
-/// Logs whether the database answers, retrying for a couple of minutes.
+/// Logs whether the database answers. Never exits the process.
 ///
-/// Never exits the process. An API that is up and cannot reach its database
-/// is worth far more to whoever is debugging than one that is not up at all.
+/// Short and immediate, deliberately. On Cloud Run an instance's CPU is
+/// frozen the moment start-up finishes, so a leisurely background loop simply
+/// never runs and the log stays silent - which is how the first version of
+/// this managed to say nothing at all. Everything here happens inside the
+/// start-up window, where there is still CPU to run it.
+///
+/// An API that is up and cannot reach its database is worth far more to
+/// whoever is debugging than one that is not up at all, so a failure here is
+/// reported and nothing more. /health carries the state from then on.
 Future<void> reportDatabase(HospitalStore store, String database) async {
-  for (var attempt = 1; attempt <= 30; attempt++) {
+  for (var attempt = 1; attempt <= 10; attempt++) {
     if (await store.isHealthy()) {
       stdout.writeln('$database is reachable');
       return;
     }
     if (attempt == 1) {
-      stdout.writeln('$database did not answer yet; retrying');
+      stdout.writeln('$database did not answer; retrying briefly');
     }
-    await Future<void>.delayed(const Duration(seconds: 4));
+    await Future<void>.delayed(const Duration(seconds: 1));
   }
   stderr.writeln(
-    '$database has not answered in two minutes. The API is still serving; '
-    '/health reports degraded and every other route will return the '
-    "driver's error.",
+    '$database is not answering. The API is serving anyway: /health reports '
+    'degraded, /ping still answers, and every other route returns the '
+    "driver's error rather than hanging.",
   );
 }
