@@ -37,6 +37,9 @@ MATERIAL_FONT_CANDIDATES = (
 
 # repo directory -> (glyph codepoint, human name for the log)
 APPS = {
+    # The portal is the front door, so it gets the hospital itself rather than
+    # one department's symbol.
+    "my-hospital": (0xF86F, "local_hospital"),
     "EHR": (0xF0804, "medical_information"),
     "ADT": (0xF5B4, "bed"),
     "PHARM": (0xF8B1, "medication"),
