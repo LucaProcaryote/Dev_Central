@@ -67,6 +67,30 @@ through `student10@…`, role `student`, which can do everything.
 The e-mail address is the join between Firebase and the seeded staff in
 `packages/hospital_core/lib/src/seed/seed_users.dart`. Keep the two in step.
 
+#### If it says something about a quota project
+
+```
+The identitytoolkit.googleapis.com API requires a quota project, which is not
+set by default ... consumer: projects/32555940559
+```
+
+That project number is not yours — it is Google's own gcloud client. A token
+from `gcloud auth print-access-token` is a *user* credential with no project
+attached, so the call gets billed to gcloud's project instead of to
+`my-hospital-2026`, where it is naturally not enabled. The script now sends
+`x-goog-user-project` on every call, which fixes it; if you hit this from your
+own `curl`, add the same header, or:
+
+```bash
+gcloud config set project my-hospital-2026
+gcloud auth application-default set-quota-project my-hospital-2026
+```
+
+The script makes one probe call before doing anything and prints the refusal in
+full, once, with the remedy — including the case where the API is genuinely off
+(`gcloud services enable identitytoolkit.googleapis.com --project my-hospital-2026`,
+though turning on Email/Password sign-in in the console does it for you).
+
 ### Connect the applications
 
 The project configuration arrives as `--dart-define`s, not through a generated
