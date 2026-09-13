@@ -146,6 +146,28 @@ for app in "${APPS[@]}"; do
     env_vars="$env_vars,FIREBASE_PROJECT=$PROJECT,FIREBASE_API_KEY=$FIREBASE_API_KEY"
     echo "    (this one also serves /admin)"
   fi
+  # A service that still has the old single container cannot be updated into
+  # a two-container one: gcloud merges the containers rather than replacing
+  # them, and Cloud Run then refuses a revision with two exposed ports.
+  # Recreating it is the way across that change; the service URL is derived
+  # from the name, the project number and the region, so it survives.
+  #
+  # Note that the old container has no *name*, so its name list is empty -
+  # indistinguishable from "there is no service". Existence has to be tested
+  # separately, which is why this is two calls and not one.
+  if gcloud run services describe "$service" \
+       --project "$PROJECT" --region "$REGION" >/dev/null 2>&1; then
+    names="$(gcloud run services describe "$service" \
+      --project "$PROJECT" --region "$REGION" \
+      --format='value(spec.template.spec.containers[].name)' 2>/dev/null || true)"
+    case "$names" in
+      *api*) ;;
+      *) echo "    (recreating: it still has a single, unnamed container)"
+         gcloud run services delete "$service" \
+           --project "$PROJECT" --region "$REGION" -q >/dev/null ;;
+    esac
+  fi
+
   # Two notes on the invocation below. --args=... is written with an equals
   # sign because its value starts with a dash, and gcloud reads a separated
   # value beginning with "-" as the next flag. And no comment may appear
