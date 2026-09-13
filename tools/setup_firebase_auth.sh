@@ -97,11 +97,52 @@ command -v python3 >/dev/null || { echo "python3 is not installed" >&2; exit 69;
 TOKEN="$(gcloud auth print-access-token)"
 IDENTITY="https://identitytoolkit.googleapis.com/v1/projects/$PROJECT"
 
+# x-goog-user-project is not optional here. A token from
+# `gcloud auth print-access-token` is a *user* credential with no project
+# attached, so without this header Identity Toolkit bills the call to Google's
+# own gcloud client project (32555940559), where the API is of course not
+# enabled - and the 403 that comes back talks about quota projects rather than
+# about this hospital, which is thoroughly confusing.
 post() { # endpoint, json  -> response body, never failing the script
   curl -sS -X POST "$IDENTITY/$1" \
     -H "Authorization: Bearer $TOKEN" \
+    -H "x-goog-user-project: $PROJECT" \
     -H "Content-Type: application/json" \
     -d "$2" || true
+}
+
+error_of() { python3 -c "import json,sys
+try: print(json.load(sys.stdin)['error']['message'])
+except Exception: print('')"; }
+
+# One call before anything else, so a refusal is reported once, in full, with
+# what to do about it - rather than nine times as 'FAILED', or worse, as an
+# empty account list that reads like 'there is nobody here'.
+preflight() {
+  message="$(post accounts:query '{}' | error_of)"
+  [ -z "$message" ] && return 0
+
+  echo "The Firebase Authentication API refused the call." >&2
+  echo >&2
+  echo "  $message" >&2
+  echo >&2
+  case "$message" in
+    *"has not been used"*|*SERVICE_DISABLED*|*"is disabled"*)
+      echo "Enable it once for this project, then re-run:" >&2
+      echo "  gcloud services enable identitytoolkit.googleapis.com --project $PROJECT" >&2
+      echo >&2
+      echo "It is also enabled for you the moment you turn on Email/Password" >&2
+      echo "sign-in in the console, under Authentication -> Sign-in method." >&2 ;;
+    *"quota project"*)
+      echo "Your gcloud credential has no project attached. Either:" >&2
+      echo "  gcloud config set project $PROJECT" >&2
+      echo "  gcloud auth application-default set-quota-project $PROJECT" >&2 ;;
+    *PERMISSION_DENIED*|*permission*|*Permission*)
+      echo "The account you are logged in as needs Firebase Authentication" >&2
+      echo "Admin on $PROJECT. Check who that is with:" >&2
+      echo "  gcloud auth list" >&2 ;;
+  esac
+  exit 77
 }
 
 json_field() { python3 -c "import json,sys
@@ -139,7 +180,7 @@ create_or_update() { # email, role, password -> prints what happened
   fi
   if [ -z "$uid" ]; then
     echo "FAILED"
-    echo "  $created" >&2
+    echo "  $(printf '%s' "$created" | error_of)" >&2
     return 1
   fi
   set_role "$uid" "$2"
@@ -148,6 +189,7 @@ create_or_update() { # email, role, password -> prints what happened
 
 case "$ACTION" in
   list)
+    preflight
     echo "Accounts in $PROJECT:"
     echo
     post accounts:query '{}' | python3 -c "
@@ -169,6 +211,7 @@ for u in sorted(users, key=lambda x: x.get('email', '')):
     exit 0 ;;
 
   add)
+    preflight
     check_role "$ARG_ROLE"
     [ -n "$ARG_PASSWORD" ] || ARG_PASSWORD="$PASSWORD"
     printf '%-40s %-22s ' "$ARG_EMAIL" "$ARG_ROLE"
@@ -176,6 +219,7 @@ for u in sorted(users, key=lambda x: x.get('email', '')):
     exit 0 ;;
 
   set-role)
+    preflight
     check_role "$ARG_ROLE"
     uid="$(uid_of "$ARG_EMAIL")"
     [ -n "$uid" ] || { echo "no such account: $ARG_EMAIL" >&2; exit 78; }
@@ -186,6 +230,7 @@ for u in sorted(users, key=lambda x: x.get('email', '')):
     exit 0 ;;
 
   reset-password)
+    preflight
     uid="$(uid_of "$ARG_EMAIL")"
     [ -n "$uid" ] || { echo "no such account: $ARG_EMAIL" >&2; exit 78; }
     post accounts:update '{"localId":"'"$uid"'","password":"'"$ARG_PASSWORD"'"}' >/dev/null
@@ -193,6 +238,7 @@ for u in sorted(users, key=lambda x: x.get('email', '')):
     exit 0 ;;
 
   delete)
+    preflight
     uid="$(uid_of "$ARG_EMAIL")"
     [ -n "$uid" ] || { echo "no such account: $ARG_EMAIL" >&2; exit 78; }
     post accounts:delete '{"localId":"'"$uid"'"}' >/dev/null
@@ -200,6 +246,7 @@ for u in sorted(users, key=lambda x: x.get('email', '')):
     exit 0 ;;
 
   seed)
+    preflight
     echo "Project: $PROJECT"
     echo "Creating ${#STAFF[@]} accounts..."
     echo
