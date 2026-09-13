@@ -10,9 +10,28 @@ import 'package:postgres/postgres.dart';
 /// query is written out, parameterised, and readable, because reading the SQL
 /// is half the point of the exercise.
 class HospitalStore {
-  HospitalStore(this._connection);
+  HospitalStore(this._db);
 
-  final Connection _connection;
+  /// A pool, not a single connection, and that is not a performance decision.
+  ///
+  /// One connection opened at start-up works on a laptop and fails on Cloud
+  /// Run. Between requests the instance's CPU is frozen and Cloud SQL drops
+  /// what it sees as an idle client; the socket is then dead, but nothing says
+  /// so until a query is written into it and no answer ever comes back. A pool
+  /// replaces a connection that has aged out instead of discovering it is dead
+  /// halfway through somebody's request.
+  final Pool<void> _db;
+
+  /// How long a connection may live before the pool retires it. Comfortably
+  /// under Cloud SQL's idle timeout, so a stale connection is never handed to
+  /// a request in the first place.
+  static const Duration _maxConnectionAge = Duration(minutes: 5);
+
+  /// Nothing may hang for longer than this. The driver's own default is five
+  /// minutes, which is far past the point where every caller has given up and
+  /// the only visible symptom is silence.
+  static const Duration _queryTimeout = Duration(seconds: 30);
+  static const Duration _connectTimeout = Duration(seconds: 15);
 
   static Future<HospitalStore> connect({
     required String host,
@@ -22,25 +41,38 @@ class HospitalStore {
     required String password,
     bool isUnixSocket = false,
     SslMode sslMode = SslMode.disable,
+    Duration connectTimeout = _connectTimeout,
+    Duration queryTimeout = _queryTimeout,
   }) async {
-    final connection = await Connection.open(
-      Endpoint(
-        host: host,
-        port: port,
-        database: database,
-        username: username,
-        password: password,
-        isUnixSocket: isUnixSocket,
+    final pool = Pool<void>.withEndpoints(
+      <Endpoint>[
+        Endpoint(
+          host: host,
+          port: port,
+          database: database,
+          username: username,
+          password: password,
+          isUnixSocket: isUnixSocket,
+        ),
+      ],
+      settings: PoolSettings(
+        // Plain TCP is right on a classroom network and on a unix socket,
+        // where the kernel is the boundary. A connection that crosses a
+        // network we do not own is given `--db-ssl require` instead.
+        sslMode: sslMode,
+        maxConnectionCount: 4,
+        maxConnectionAge: _maxConnectionAge,
+        connectTimeout: connectTimeout,
+        queryTimeout: queryTimeout,
       ),
-      // Plain TCP is right on a classroom network and on a unix socket, where
-      // the kernel is the boundary. A connection that crosses a network we do
-      // not own is given `--db-ssl require` instead.
-      settings: ConnectionSettings(sslMode: sslMode),
     );
-    return HospitalStore(connection);
+    // A pool opens nothing until it is asked to, so prove the database really
+    // is reachable rather than reporting success and failing on first use.
+    await pool.execute('SELECT 1');
+    return HospitalStore(pool);
   }
 
-  Future<void> close() => _connection.close();
+  Future<void> close() => _db.close();
 
   /// Runs a query and returns each row as a JSON-ready map.
   ///
@@ -51,10 +83,7 @@ class HospitalStore {
     String sql, [
     Map<String, Object?> values = const <String, Object?>{},
   ]) async {
-    final result = await _connection.execute(
-      Sql.named(sql),
-      parameters: values,
-    );
+    final result = await _db.execute(Sql.named(sql), parameters: values);
     return result.map((row) {
       final map = row.toColumnMap();
       return map.map((key, value) => MapEntry(key, _normalise(value)));
@@ -75,9 +104,14 @@ class HospitalStore {
     return rows.isEmpty ? null : rows.first;
   }
 
+  /// Whether the database answers, with its own short deadline.
+  ///
+  /// A health check that can hang is worse than no health check: it turns
+  /// "the database is unreachable" into "the whole service is unreachable",
+  /// which is a much harder thing to diagnose from outside.
   Future<bool> isHealthy() async {
     try {
-      await _connection.execute('SELECT 1');
+      await _db.execute('SELECT 1').timeout(const Duration(seconds: 5));
       return true;
     } catch (_) {
       return false;
@@ -133,7 +167,7 @@ class HospitalStore {
   );
 
   Future<Map<String, dynamic>?> savePatient(Map<String, dynamic> body) async {
-    await _connection.execute(
+    await _db.execute(
       Sql.named('''
         INSERT INTO patients (id, mrn, national_number, family_name, given_name,
                               gender, birth_date, address, phone, email,
@@ -205,7 +239,7 @@ class HospitalStore {
       _one('SELECT * FROM beds WHERE id = @id', <String, Object?>{'id': id});
 
   Future<Map<String, dynamic>?> saveBed(Map<String, dynamic> body) async {
-    await _connection.execute(
+    await _db.execute(
       Sql.named('''
         INSERT INTO beds (id, room_id, ward_id, label, status,
                           current_encounter_id, current_patient_id)
@@ -252,7 +286,7 @@ class HospitalStore {
   );
 
   Future<Map<String, dynamic>?> saveEncounter(Map<String, dynamic> body) async {
-    await _connection.execute(
+    await _db.execute(
       Sql.named('''
         INSERT INTO encounters (id, patient_id, status, encounter_class,
                                 admission_date, discharge_date, ward_id, room_id,
@@ -310,7 +344,7 @@ class HospitalStore {
   );
 
   Future<Map<String, dynamic>?> addMovement(Map<String, dynamic> body) async {
-    await _connection.execute(
+    await _db.execute(
       Sql.named('''
         INSERT INTO movements (id, encounter_id, patient_id, type, occurred_at,
                                performed_by, from_ward_id, from_bed_id,
@@ -365,7 +399,7 @@ class HospitalStore {
   Future<Map<String, dynamic>?> addObservation(
     Map<String, dynamic> body,
   ) async {
-    await _connection.execute(
+    await _db.execute(
       Sql.named('''
         INSERT INTO observations (id, patient_id, encounter_id, type, value,
                                   unit, effective_date_time, device_id,
@@ -451,7 +485,7 @@ class HospitalStore {
     final medication =
         (body['medication'] as Map?)?.cast<String, dynamic>() ??
         <String, dynamic>{};
-    await _connection.execute(
+    await _db.execute(
       Sql.named('''
         INSERT INTO prescriptions (id, patient_id, encounter_id, medication_code,
                                    medication, dose_quantity, dose_unit,
@@ -512,7 +546,7 @@ class HospitalStore {
   );
 
   Future<Map<String, dynamic>?> saveDispense(Map<String, dynamic> body) async {
-    await _connection.execute(
+    await _db.execute(
       Sql.named('''
         INSERT INTO dispenses (id, prescription_id, patient_id, quantity, status,
                                requested_at, dispensed_at, dispensed_by,
@@ -560,7 +594,7 @@ class HospitalStore {
   );
 
   Future<Map<String, dynamic>?> saveCabinet(Map<String, dynamic> body) async {
-    await _connection.execute(
+    await _db.execute(
       Sql.named('''
         INSERT INTO cabinets (id, code, name, ward_id, is_locked,
                               temperature_celsius)
@@ -609,7 +643,7 @@ class HospitalStore {
     final medication =
         (body['medication'] as Map?)?.cast<String, dynamic>() ??
         <String, dynamic>{};
-    await _connection.execute(
+    await _db.execute(
       Sql.named('''
         INSERT INTO stock_items (id, cabinet_id, slot, medication_code,
                                  medication, quantity_on_hand, par_level,
@@ -649,7 +683,7 @@ class HospitalStore {
   );
 
   Future<Map<String, dynamic>?> saveDevice(Map<String, dynamic> body) async {
-    await _connection.execute(
+    await _db.execute(
       Sql.named('''
         INSERT INTO devices (id, code, kind, manufacturer, model, serial_number,
                              status, assigned_patient_id, assigned_bed_id,
@@ -703,7 +737,7 @@ class HospitalStore {
   );
 
   Future<Map<String, dynamic>?> saveNote(Map<String, dynamic> body) async {
-    await _connection.execute(
+    await _db.execute(
       Sql.named('''
         INSERT INTO clinical_notes (id, patient_id, encounter_id, type, title,
                                     body, author_name, author_role, created_at,
@@ -738,7 +772,7 @@ class HospitalStore {
     );
   }
 
-  Future<void> deleteNote(String id) => _connection
+  Future<void> deleteNote(String id) => _db
       .execute(
         Sql.named('DELETE FROM clinical_notes WHERE id = @id'),
         parameters: <String, Object?>{'id': id},
@@ -756,7 +790,7 @@ class HospitalStore {
   );
 
   Future<Map<String, dynamic>?> saveFlow(Map<String, dynamic> body) async {
-    await _connection.execute(
+    await _db.execute(
       Sql.named('''
         INSERT INTO integration_flows (id, name, description, is_enabled, nodes,
                                        connections, updated_at,
@@ -786,7 +820,7 @@ class HospitalStore {
     return findFlow(body['id'].toString());
   }
 
-  Future<void> deleteFlow(String id) => _connection
+  Future<void> deleteFlow(String id) => _db
       .execute(
         Sql.named('DELETE FROM integration_flows WHERE id = @id'),
         parameters: <String, Object?>{'id': id},
@@ -807,7 +841,7 @@ class HospitalStore {
   );
 
   Future<Map<String, dynamic>?> saveMessage(Map<String, dynamic> body) async {
-    await _connection.execute(
+    await _db.execute(
       Sql.named('''
         INSERT INTO integration_messages (id, message_type, source_app,
                                           target_app, flow_id, patient_id,

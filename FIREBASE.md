@@ -325,6 +325,15 @@ beginning with `/` is treated as a socket directory, the same convention
 password arrives from Secret Manager as `DB_PASSWORD`; it is not baked into
 the image and does not appear in the service description.
 
+The server talks to the database through a **connection pool**, and on Cloud
+Run that is not a performance decision. Between requests an instance's CPU is
+frozen and Cloud SQL drops what it sees as an idle client; the socket is then
+dead, but nothing says so until a query is written into it and no answer comes
+back. The driver's default query timeout is five minutes, so the symptom is
+not an error - it is silence, and `curl` simply times out. The pool retires a
+connection after five minutes rather than handing a dead one to a request, and
+every query has a thirty-second ceiling.
+
 The script grants the Cloud Run runtime identity the three roles it needs
 before deploying anything:
 
