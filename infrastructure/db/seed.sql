@@ -180,6 +180,7 @@ INSERT INTO staff (uid, email, display_name, role, ward_ids, preferred_language,
 INSERT INTO staff (uid, email, display_name, role, ward_ids, preferred_language, registration_number) VALUES ('usr-007', 'tom.vandenberg@mini-hospital.be', 'Tom Van den Berg', 'integrationEngineer', '{}', 'en', NULL);
 INSERT INTO staff (uid, email, display_name, role, ward_ids, preferred_language, registration_number) VALUES ('usr-008', 'lucas.moreau@mini-hospital.be', 'Lucas Moreau', 'biomedicalTechnician', '{}', 'fr', NULL);
 INSERT INTO staff (uid, email, display_name, role, ward_ids, preferred_language, registration_number) VALUES ('usr-009', 'student@mini-hospital.be', 'Student (full access)', 'student', '{}', 'en', NULL);
+INSERT INTO staff (uid, email, display_name, role, ward_ids, preferred_language, registration_number) VALUES ('usr-010', 'admin@mini-hospital.be', 'Hospital Administrator', 'admin', '{}', 'en', NULL);
 
 -- --------------------------------------------------------------------------
 -- Formulary

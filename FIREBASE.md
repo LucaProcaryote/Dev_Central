@@ -36,7 +36,7 @@ cd Dev_Central
 ./tools/setup_firebase_auth.sh
 ```
 
-That creates all nine and sets each one's role. It is safe to re-run: an
+That creates all ten and sets each one's role. It is safe to re-run: an
 existing account is left alone and only its role is refreshed. `--password`
 chooses the shared password instead of the default.
 
@@ -51,10 +51,17 @@ chooses the shared password instead of the default.
 | `tom.vandenberg@mini-hospital.be` | Tom Van den Berg | integrationEngineer |
 | `lucas.moreau@mini-hospital.be` | Lucas Moreau | biomedicalTechnician |
 | `student@mini-hospital.be` | Student | student |
+| `admin@mini-hospital.be` | Hospital Administrator | **admin** |
 
 **Change the shared password before these URLs are reachable by anyone outside
-the course.** Nine known addresses behind one known password is a real door,
-not a pretend one. Give each student their own account too — `student01@…`
+the course.** Ten known addresses behind one known password is a real door,
+not a pretend one — and one of them is the administrator. Give that one a
+password of its own straight away:
+
+```bash
+./tools/setup_firebase_auth.sh --reset-password admin@mini-hospital.be 'something long'
+```
+ Give each student their own account too — `student01@…`
 through `student10@…`, role `student`, which can do everything.
 
 The e-mail address is the join between Firebase and the seeded staff in
@@ -117,7 +124,99 @@ that difference is worth a minute of discussion with the students.
 
 A user whose claim is missing or unreadable falls back to `student`, which is
 the safe default in a teaching environment. The valid values are the names in
-`UserRole` (`packages/hospital_core/lib/src/models/hospital_user.dart`).
+`UserRole` (`packages/hospital_core/lib/src/models/hospital_user.dart`):
+
+`physician`, `nurse`, `pharmacist`, `admissionClerk`, `integrationEngineer`,
+`biomedicalTechnician`, `student`, `admin`.
+
+`admin` is the only role that can manage accounts, and it is deliberately the
+only one with **no clinical rights at all** — it cannot prescribe, dispense,
+admit or write notes. Being able to hand out every permission is not the same
+as holding them, and keeping the two apart is worth pointing out to the
+students. `student` is the opposite: every clinical right, so the exercises
+work, and no way to promote itself.
+
+### Administrators, and where accounts come from
+
+There are two ways to create an account, and they are for different moments.
+
+**The script is the bootstrap.** It is how the *first* administrator comes
+into being, because the console will only talk to somebody who is already an
+administrator — and something has to break that circle. It also does the bulk
+work at the start of a course, where ten identical student accounts are one
+loop rather than ten dialogs.
+
+```bash
+./tools/setup_firebase_auth.sh --list                          # who exists, and as what
+./tools/setup_firebase_auth.sh --add student01@mini-hospital.be student
+./tools/setup_firebase_auth.sh --set-role tom.vandenberg@mini-hospital.be admin
+./tools/setup_firebase_auth.sh --reset-password student01@mini-hospital.be 'new one'
+./tools/setup_firebase_auth.sh --delete student01@mini-hospital.be
+```
+
+**The console is for everything after that.** The portal
+(`my-hospital-2026.web.app`) has an **Administration** page: sign in as an
+account whose role is `admin` and it lists every account, with its role, its
+last sign-in and whether it is disabled. From there you can create an account,
+change a role, reset a password, disable someone for the afternoon, or delete
+them.
+
+#### Why the console needs a server
+
+Setting a role means writing a custom claim, and custom claims can only be
+written with service-account credentials. Those cannot go into a Flutter web
+build — every byte of it is downloadable — so the console does not talk to
+Firebase directly. It asks `/admin` on the API server, carrying the
+administrator's own Firebase ID token; the server hands that token to Google
+to be checked, confirms the account's role really is `admin`, and only then
+uses its own Cloud Run identity to make the change.
+
+Consequences worth knowing:
+
+* **The console does nothing in demo mode.** A demo session is a Dart object
+  in the browser; a server that trusted it would be trusting the browser.
+* **No key is issued or stored anywhere.** On Cloud Run the service uses the
+  identity it already runs as. `deploy_api.sh` grants that identity
+  `roles/firebaseauth.admin` and nothing else.
+* **`/admin` is mounted on one service only** — the EHR API unless
+  `ADMIN_APP` said otherwise. One door rather than five.
+* **Nobody can demote, disable or delete their own account.** The console
+  greys those out and the server refuses them anyway. Locking the last
+  administrator out is the classic way to lose an installation.
+
+#### Turning the console on
+
+`deploy_api.sh` mounts `/admin` when it is given the web API key:
+
+```bash
+FIREBASE_API_KEY=AIza... ./infrastructure/cloud/deploy_api.sh
+```
+
+Then point the portal at that service. Per visitor, for a quick look:
+
+```
+https://my-hospital-2026.web.app/?admin=https://mini-hospital-api-ehr-xxxx.run.app
+```
+
+Permanently: set `ADMIN_API_URL` to the same URL as a repository variable in
+`my-hospital`, along with `FIREBASE_API_KEY`, `FIREBASE_APP_ID`,
+`FIREBASE_MESSAGING_SENDER_ID` and `FIREBASE_PROJECT_ID` — the console signs
+the administrator in before it calls anything, so the portal needs the
+Firebase values too. Without `ADMIN_API_URL` the page loads and explains what
+is missing rather than showing buttons that cannot work.
+
+Running it locally against the classroom stack:
+
+```bash
+export GOOGLE_ACCESS_TOKEN=$(gcloud auth print-access-token)
+cd infrastructure/server
+dart run bin/server.dart --app EHR \
+  --firebase-project my-hospital-2026 --firebase-api-key AIza...
+# then open the portal with ?admin=http://localhost:8081
+```
+
+A role change reaches the applications when the ID token refreshes, which in
+practice means the user signs out and back in.
 
 ### Authorised domains
 
@@ -413,6 +512,15 @@ If you put the back end on a public host, narrow both first:
 
 And add the hosting domains to Firebase Auth's authorised-domains list, or
 sign-in will be rejected from them.
+
+**The administration API is only as safe as the administrator's password.**
+`/admin` can create accounts and grant roles in the Firebase project, and the
+one thing standing in front of it is one sign-in. Before the URLs are public:
+give `admin@mini-hospital.be` a long password of its own (not the shared one),
+keep the number of accounts holding the `admin` role to the people who teach
+the course, and check `./tools/setup_firebase_auth.sh --list` occasionally to
+see who does. If you do not need the console at all, deploy with
+`ADMIN_APP=none` and it is not mounted anywhere.
 
 ## Costs
 

@@ -20,6 +20,9 @@ class ServerConfig {
     required this.databaseUser,
     required this.databasePassword,
     required this.databaseSsl,
+    this.firebaseProject = '',
+    this.firebaseApiKey = '',
+    this.googleAccessToken = '',
   });
 
   /// `EHR`, `ADT`, `PHARM`, `EAI` or `DEV`.
@@ -37,6 +40,27 @@ class ServerConfig {
   /// `disable` on a classroom network and over a unix socket, `require` when
   /// the connection crosses a network we do not own.
   final String databaseSsl;
+
+  /// The Firebase project whose accounts the administration API manages, and
+  /// the web API key used to validate the caller's ID token. Both empty means
+  /// no administration API: the rest of the server runs exactly as before.
+  final String firebaseProject;
+  final String firebaseApiKey;
+
+  /// A Google access token supplied from outside, for running the
+  /// administration API on a laptop:
+  ///
+  ///     export GOOGLE_ACCESS_TOKEN=$(gcloud auth print-access-token)
+  ///
+  /// On Cloud Run this stays empty and the service's own identity is used
+  /// instead, so nothing has to be issued, stored or rotated.
+  final String googleAccessToken;
+
+  /// Whether `/admin` is mounted. It takes both values because one without
+  /// the other cannot work: the key alone cannot write claims, and the
+  /// project alone cannot check who is asking.
+  bool get servesAdmin =>
+      firebaseProject.isNotEmpty && firebaseApiKey.isNotEmpty;
 
   /// A [databaseHost] beginning with `/` names a directory holding a unix
   /// socket, the same convention `psql` and libpq use. Cloud Run mounts the
@@ -80,6 +104,16 @@ class ServerConfig {
       allowed: <String>['disable', 'require', 'verifyFull'],
       defaultsTo: 'disable',
     )
+    ..addOption(
+      'firebase-project',
+      help: 'Firebase project for the administration API (enables /admin)',
+      defaultsTo: '',
+    )
+    ..addOption(
+      'firebase-api-key',
+      help: "The project's web API key, used to validate callers",
+      defaultsTo: '',
+    )
     ..addFlag('help', abbr: 'h', negatable: false);
 
   /// Command-line arguments win, then environment variables, then the
@@ -110,6 +144,11 @@ class ServerConfig {
       databasePassword:
           given('db-password') ?? env['DB_PASSWORD'] ?? 'hospital',
       databaseSsl: given('db-ssl') ?? env['DB_SSL'] ?? 'disable',
+      firebaseProject:
+          given('firebase-project') ?? env['FIREBASE_PROJECT'] ?? '',
+      firebaseApiKey:
+          given('firebase-api-key') ?? env['FIREBASE_API_KEY'] ?? '',
+      googleAccessToken: env['GOOGLE_ACCESS_TOKEN'] ?? '',
     );
   }
 

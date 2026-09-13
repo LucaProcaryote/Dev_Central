@@ -16,6 +16,7 @@ enum UserRole {
     canAdmit: true,
     canWriteNotes: true,
     canConfigureIntegration: false,
+    canAdminister: false,
   ),
   nurse(
     LocalizedText(en: 'Nurse', fr: 'Infirmier·ère', nl: 'Verpleegkundige'),
@@ -24,6 +25,7 @@ enum UserRole {
     canAdmit: true,
     canWriteNotes: true,
     canConfigureIntegration: false,
+    canAdminister: false,
   ),
   pharmacist(
     LocalizedText(en: 'Pharmacist', fr: 'Pharmacien·ne', nl: 'Apotheker'),
@@ -32,6 +34,7 @@ enum UserRole {
     canAdmit: false,
     canWriteNotes: false,
     canConfigureIntegration: false,
+    canAdminister: false,
   ),
   admissionClerk(
     LocalizedText(
@@ -44,6 +47,7 @@ enum UserRole {
     canAdmit: true,
     canWriteNotes: false,
     canConfigureIntegration: false,
+    canAdminister: false,
   ),
   integrationEngineer(
     LocalizedText(
@@ -56,6 +60,7 @@ enum UserRole {
     canAdmit: false,
     canWriteNotes: false,
     canConfigureIntegration: true,
+    canAdminister: false,
   ),
   biomedicalTechnician(
     LocalizedText(
@@ -68,6 +73,7 @@ enum UserRole {
     canAdmit: false,
     canWriteNotes: false,
     canConfigureIntegration: false,
+    canAdminister: false,
   ),
   student(
     LocalizedText(en: 'Student', fr: 'Étudiant·e', nl: 'Student'),
@@ -76,6 +82,16 @@ enum UserRole {
     canAdmit: true,
     canWriteNotes: true,
     canConfigureIntegration: true,
+    canAdminister: false,
+  ),
+  admin(
+    LocalizedText(en: 'Administrator', fr: 'Administrateur', nl: 'Beheerder'),
+    canPrescribe: false,
+    canDispense: false,
+    canAdmit: false,
+    canWriteNotes: false,
+    canConfigureIntegration: true,
+    canAdminister: true,
   );
 
   const UserRole(
@@ -85,6 +101,7 @@ enum UserRole {
     required this.canAdmit,
     required this.canWriteNotes,
     required this.canConfigureIntegration,
+    required this.canAdminister,
   });
 
   final LocalizedText display;
@@ -93,6 +110,11 @@ enum UserRole {
   final bool canAdmit;
   final bool canWriteNotes;
   final bool canConfigureIntegration;
+
+  /// May create staff accounts and change what role they sign in as. Held by
+  /// [UserRole.admin] alone: it is the one permission that can hand out every
+  /// other permission, so it does not ride along with clinical seniority.
+  final bool canAdminister;
 
   static UserRole fromName(String value) =>
       values.firstWhere((r) => r.name == value, orElse: () => UserRole.student);

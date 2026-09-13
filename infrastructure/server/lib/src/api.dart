@@ -4,6 +4,7 @@ import 'package:postgres/postgres.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 
+import 'admin/admin_api.dart';
 import 'store.dart';
 
 /// The REST API the Flutter applications talk to.
@@ -12,9 +13,14 @@ import 'store.dart';
 /// one for one: if you can read that class, you can read this router, and a
 /// student adding an endpoint knows exactly which two files to touch.
 class HospitalApi {
-  HospitalApi({required this.store, required this.app});
+  HospitalApi({required this.store, required this.app, this.admin});
 
   final HospitalStore store;
+
+  /// Account management, mounted under `/admin` when the server was given a
+  /// Firebase project. Absent everywhere else, so a classroom stack running
+  /// without Firebase exposes no administration surface at all.
+  final AdminApi? admin;
 
   /// Which application this instance serves. Reported by `/health` so an
   /// operator hitting the wrong port finds out immediately.
@@ -67,6 +73,9 @@ class HospitalApi {
       // The inbox other applications post events to. The ADT and device
       // simulators use this; it is the one route without a repository twin.
       ..post('/messages', _receiveMessage);
+
+    final adminApi = admin;
+    if (adminApi != null) router.mount('/admin/', adminApi.handler);
 
     return const Pipeline()
         .addMiddleware(_cors)

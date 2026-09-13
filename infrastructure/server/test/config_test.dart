@@ -110,4 +110,44 @@ void main() {
       expect(config.port, 8080);
     });
   });
+
+  group('the administration API', () {
+    test('is off unless both Firebase values are given', () {
+      ServerConfig config(Map<String, String> env) =>
+          ServerConfig.from(ServerConfig.parser().parse(<String>[]), env);
+
+      expect(config(<String, String>{}).servesAdmin, isFalse);
+      expect(
+        config(<String, String>{
+          'FIREBASE_PROJECT': 'my-hospital-2026',
+        }).servesAdmin,
+        isFalse,
+        reason: 'the project alone cannot validate a caller',
+      );
+      expect(
+        config(<String, String>{'FIREBASE_API_KEY': 'abc'}).servesAdmin,
+        isFalse,
+        reason: 'the key alone cannot write claims',
+      );
+      expect(
+        config(<String, String>{
+          'FIREBASE_PROJECT': 'my-hospital-2026',
+          'FIREBASE_API_KEY': 'abc',
+        }).servesAdmin,
+        isTrue,
+      );
+    });
+
+    test('an access token is read from the environment only', () {
+      // There is no --google-access-token flag on purpose: a credential in a
+      // command line ends up in shell history and in `ps`.
+      final config = ServerConfig.from(
+        ServerConfig.parser().parse(<String>[]),
+        <String, String>{'GOOGLE_ACCESS_TOKEN': 'ya29.test'},
+      );
+
+      expect(config.googleAccessToken, 'ya29.test');
+      expect(config.toString(), isNot(contains('ya29')));
+    });
+  });
 }

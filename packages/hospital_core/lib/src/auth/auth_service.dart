@@ -41,6 +41,14 @@ abstract class AuthService extends ChangeNotifier {
   /// backing service has no such concept (i.e. real Firebase).
   List<HospitalUser> get quickSignInAccounts => const <HospitalUser>[];
 
+  /// A token proving to a server who the signed-in user is, or null when the
+  /// backing service cannot produce one.
+  ///
+  /// Only real authentication can: a demo session is a Dart object, and a
+  /// server that trusted it would be trusting the browser. That is why the
+  /// administration console does nothing in demo mode.
+  Future<String?> idToken() async => null;
+
   /// Signs in directly as [user]. Only supported in demo mode.
   Future<HospitalUser> signInAs(HospitalUser user) =>
       throw const AuthFailure('not-supported');
