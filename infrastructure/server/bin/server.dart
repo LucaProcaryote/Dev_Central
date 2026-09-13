@@ -62,8 +62,24 @@ Future<void> main(List<String> arguments) async {
   }
 
   final api = HospitalApi(store: store, app: config.app, admin: admin);
-  final server = await io.serve(api.handler, config.host, config.port);
-  stdout.writeln('Listening on http://${server.address.host}:${server.port}');
+
+  // Never fail silently here. A server that reaches this line and then says
+  // nothing is indistinguishable, from outside, from one that hung on the
+  // database - and on Cloud Run all you get is "the container failed to
+  // listen on PORT", which names the symptom and not one cause.
+  // Printed before the attempt, not after: if binding hangs rather than
+  // throws, this line is the only thing that says where it stopped.
+  stdout.writeln('Binding ${config.bindAddress} port ${config.port}...');
+  final HttpServer server;
+  try {
+    server = await io.serve(api.handler, config.bindAddress, config.port);
+  } catch (error) {
+    stderr.writeln('Could not listen on ${config.host}:${config.port}: $error');
+    exit(70);
+  }
+  stdout.writeln(
+    'Listening on http://${server.address.address}:${server.port}',
+  );
 
   // Close the database cleanly so a restart does not leave a connection behind.
   Future<void> shutdown(ProcessSignal signal) async {
