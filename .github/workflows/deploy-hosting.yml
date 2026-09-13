@@ -21,16 +21,20 @@ on:
       - "docs/**"
   workflow_dispatch:
     inputs:
+      # "auto" is the default and means: decide from the repository variables,
+      # exactly as a push does. A choice input cannot default to empty, and a
+      # default of "demo" silently overrode the detection below - a manual
+      # re-run then shipped demo sign-in however the variables were set.
       backend:
-        description: "Backend mode compiled into the build"
-        default: memory
+        description: "Backend compiled in (auto = restApi when API_BASE is set)"
+        default: auto
         type: choice
-        options: [memory, restApi, dataConnect]
+        options: [auto, memory, restApi, dataConnect]
       auth:
-        description: "Authentication mode"
-        default: demo
+        description: "Sign-in compiled in (auto = firebase when configured)"
+        default: auto
         type: choice
-        options: [demo, firebase]
+        options: [auto, demo, firebase]
 
 jobs:
   deploy:
@@ -107,6 +111,11 @@ jobs:
           FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
         run: |
           backend="${{ inputs.backend }}"
+          auth="${{ inputs.auth }}"
+          # A push sends neither; a manual run sends "auto" unless overridden.
+          [ "$backend" = "auto" ] && backend=""
+          [ "$auth" = "auto" ] && auth=""
+
           if [ -z "$backend" ]; then
             if [ -n "$API_BASE" ]; then backend=restApi; else backend=memory; fi
           fi
@@ -114,7 +123,6 @@ jobs:
           # All three or none. A half-configured project would compile happily
           # and then fail at the sign-in screen, which is the worst place to
           # discover a missing variable.
-          auth="${{ inputs.auth }}"
           if [ -z "$auth" ]; then
             if [ -n "$FIREBASE_API_KEY" ] && [ -n "$FIREBASE_APP_ID" ] \
                && [ -n "$FIREBASE_MESSAGING_SENDER_ID" ]; then
