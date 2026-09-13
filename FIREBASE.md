@@ -122,9 +122,22 @@ the safe default in a teaching environment. The valid values are the names in
 ### Authorised domains
 
 Firebase Auth rejects sign-in from an origin it does not know. Under
-**Authentication → Settings → Authorised domains**, `localhost` and the
-project's own `.web.app` and `.firebaseapp.com` domains are there by default,
-so the six hosted sites work with no action. Add any other host you serve from.
+**Authentication -> Settings -> Authorised domains**, `localhost` and the
+project's own `.web.app` and `.firebaseapp.com` domains are there by default.
+
+**The five `procaryote.com` domains are not**, and must be added by hand:
+
+```
+my-hospital-ehr.procaryote.com
+my-hospital-adt.procaryote.com
+my-hospital-pharm.procaryote.com
+my-hospital-eai.procaryote.com
+my-hospital-dev.procaryote.com
+```
+
+Miss this and sign-in works on the `.web.app` address and fails on the custom
+one, with an error that never mentions domains - a genuinely confusing hour if
+you are not expecting it.
 
 ---
 
@@ -194,7 +207,7 @@ the image and does not appear in the service description.
 Per visitor, with no rebuild:
 
 ```
-https://my-hospital-2026-ehr.web.app/?backend=restApi&api=<the EHR Cloud Run URL>
+https://my-hospital-ehr.procaryote.com/?backend=restApi&api=<the EHR Cloud Run URL>
 ```
 
 As the default for everyone: set an `API_BASE` **repository variable** in each
@@ -242,13 +255,43 @@ Five applications, five URLs, one Firebase project. Everything needed is
 already checked in: `firebase.json` and `.firebaserc` in each repository, a
 deploy script, and a GitHub Actions workflow.
 
-| Application | URL |
-|---|---|
-| EHR | `https://my-hospital-2026-ehr.web.app` |
-| ADT | `https://my-hospital-2026-adt.web.app` |
-| PHARM | `https://my-hospital-2026-pharm.web.app` |
-| EAI | `https://my-hospital-2026-eai.web.app` |
-| Devices | `https://my-hospital-2026-dev.web.app` |
+| Application | Address | Firebase site |
+|---|---|---|
+| Portal | `https://my-hospital-2026.web.app` | `my-hospital-2026` (the default site) |
+| EHR | `https://my-hospital-ehr.procaryote.com` | `my-hospital-2026-ehr` |
+| ADT | `https://my-hospital-adt.procaryote.com` | `my-hospital-2026-adt` |
+| PHARM | `https://my-hospital-pharm.procaryote.com` | `my-hospital-2026-pharm` |
+| EAI | `https://my-hospital-eai.procaryote.com` | `my-hospital-2026-eai` |
+| Devices | `https://my-hospital-dev.procaryote.com` | `my-hospital-2026-dev` |
+
+A custom domain is *attached* to a site; it does not rename it. The site ids
+stay as they are in `.firebaserc` and `create_hosting_sites.sh`, the
+`.web.app` addresses keep working, and nothing needs redeploying when a
+domain is added or changed.
+
+### Custom domains
+
+The Firebase CLI cannot attach a domain, so this part is the console:
+**Hosting -> the site -> Add custom domain**, once per site, at
+<https://console.firebase.google.com/project/my-hospital-2026/hosting/sites>.
+
+Firebase asks for a TXT record to prove you own `procaryote.com`, then gives
+two A records per host. Add them at whoever runs the DNS for the domain.
+Certificates are issued automatically once the records propagate - usually
+minutes, occasionally a day. Until then the domain shows a certificate
+warning while the `.web.app` address keeps serving normally.
+
+**Two things break quietly if you forget them.**
+
+Firebase Auth rejects a sign-in from an origin it does not know, and a new
+custom domain is not known. Add all five under **Authentication -> Settings ->
+Authorised domains**, or sign-in works on `.web.app` and fails on
+`procaryote.com` with an error that does not mention domains at all.
+
+The portal has no custom domain yet, so it stays on `my-hospital-2026.web.app`
+- it is the project's default site. If you add one, say
+`my-hospital.procaryote.com`, it needs no code change: the portal's own
+address is nowhere in its source.
 
 ### One-off setup
 
@@ -307,8 +350,8 @@ rebuilding:
 That is what makes one hosted device simulator serve ten students:
 
 ```
-https://my-hospital-2026-dev.web.app/?device=DEV1     → student 1
-https://my-hospital-2026-dev.web.app/?device=DEV2     → student 2
+https://my-hospital-dev.procaryote.com/?device=DEV1     → student 1
+https://my-hospital-dev.procaryote.com/?device=DEV2     → student 2
 …
 ```
 

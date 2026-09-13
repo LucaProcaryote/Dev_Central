@@ -79,7 +79,7 @@ cat <<'NEXT'
 
 Point an application at its API without rebuilding anything:
 
-  https://my-hospital-2026-ehr.web.app/?backend=restApi&api=<the EHR URL>
+  https://my-hospital-ehr.procaryote.com/?backend=restApi&api=<the EHR URL>
 
 To make it the default for everyone, set the API_BASE repository variable in
 each repository (Settings -> Secrets and variables -> Actions -> Variables)
