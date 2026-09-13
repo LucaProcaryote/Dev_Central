@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:firebase_core/firebase_core.dart';
 
+import '../config/firebase_config.dart';
 import '../models/hospital_user.dart';
 import 'auth_service.dart';
 
@@ -15,10 +17,19 @@ import 'auth_service.dart';
 class FirebaseAuthService extends AuthService {
   FirebaseAuthService({
     fb.FirebaseAuth? firebaseAuth,
+    FirebaseConfig? config,
     this.roleResolver = defaultRoleResolver,
-  }) : _auth = firebaseAuth ?? fb.FirebaseAuth.instance;
+  }) : _injected = firebaseAuth,
+       _config = config;
 
-  final fb.FirebaseAuth _auth;
+  /// Supplied by a test. When absent the instance is resolved in
+  /// [initialize], *after* Firebase has been started - reading
+  /// `FirebaseAuth.instance` in the constructor would throw before there is an
+  /// app for it to attach to.
+  final fb.FirebaseAuth? _injected;
+  final FirebaseConfig? _config;
+
+  late final fb.FirebaseAuth _auth;
 
   /// Maps a signed-in Firebase account onto a hospital role.
   final Future<UserRole> Function(fb.User user) roleResolver;
@@ -35,6 +46,27 @@ class FirebaseAuthService extends AuthService {
 
   @override
   Future<void> initialize() async {
+    if (_injected != null) {
+      _auth = _injected;
+    } else {
+      final config = _config ?? FirebaseConfig.fromEnvironment();
+      if (!config.isComplete) {
+        throw StateError(
+          'Firebase sign-in was requested but the project is not configured. '
+          'Missing: ${config.missing.join(", ")}. Pass them at build time, '
+          'for example --dart-define=FIREBASE_API_KEY=… ; the values are in '
+          'the Firebase console under Project settings > Your apps. See '
+          'FIREBASE.md.',
+        );
+      }
+      // Safe to call more than once for the same options, which matters
+      // because the startup screen offers a retry.
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp(options: config.toOptions());
+      }
+      _auth = fb.FirebaseAuth.instance;
+    }
+
     _subscription = _auth.authStateChanges().listen((user) async {
       _currentUser = user == null ? null : await _toHospitalUser(user);
       _isReady = true;

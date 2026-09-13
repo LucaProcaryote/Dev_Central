@@ -27,8 +27,18 @@ In the Firebase console → **Build → Authentication → Get started** → ena
 
 ### Create the staff accounts
 
-The applications expect the same cast of characters the demo mode uses, so
-that switching between the two does not change who is on the ward.
+The applications expect the same cast of characters demo mode uses, so that
+switching between the two does not change who is on the ward.
+
+```bash
+gcloud auth login
+cd Dev_Central
+./tools/setup_firebase_auth.sh
+```
+
+That creates all nine and sets each one's role. It is safe to re-run: an
+existing account is left alone and only its role is refreshed. `--password`
+chooses the shared password instead of the default.
 
 | E-mail | Name | Role |
 |---|---|---|
@@ -42,81 +52,79 @@ that switching between the two does not change who is on the ward.
 | `lucas.moreau@mini-hospital.be` | Lucas Moreau | biomedicalTechnician |
 | `student@mini-hospital.be` | Student | student |
 
-Give each student their own account too — `student01@…` through
-`student10@…` — with the `student` role, which can do everything.
+**Change the shared password before these URLs are reachable by anyone outside
+the course.** Nine known addresses behind one known password is a real door,
+not a pretend one. Give each student their own account too — `student01@…`
+through `student10@…`, role `student`, which can do everything.
+
+The e-mail address is the join between Firebase and the seeded staff in
+`packages/hospital_core/lib/src/seed/seed_users.dart`. Keep the two in step.
+
+### Connect the applications
+
+The project configuration arrives as `--dart-define`s, not through a generated
+`firebase_options.dart`. That keeps the repository compilable for someone who
+has never run `flutterfire configure` — which matters when ten students clone
+it on the first morning — and it means one build can be pointed at a teaching
+project or a throwaway one without regenerating a file.
+
+Register a **Web app per application** in the console, under
+[Project settings → General](https://console.firebase.google.com/project/my-hospital-2026/settings/general),
+then read three values off each one:
+
+| Value | Where it comes from | Same for all five? |
+| --- | --- | --- |
+| `FIREBASE_API_KEY` | the web app's `apiKey` | yes |
+| `FIREBASE_APP_ID` | the web app's `appId` | **no — one per application** |
+| `FIREBASE_MESSAGING_SENDER_ID` | the project number | yes |
+
+Locally:
+
+```bash
+flutter run -d chrome \
+  --dart-define=AUTH=firebase \
+  --dart-define=FIREBASE_API_KEY=AIza… \
+  --dart-define=FIREBASE_APP_ID=1:123456789:web:abc… \
+  --dart-define=FIREBASE_MESSAGING_SENDER_ID=123456789
+```
+
+Hosted: set those three as **repository variables** in each application
+repository (Settings → Secrets and variables → Actions → Variables) and push.
+The deploy workflow switches `AUTH` to `firebase` on its own as soon as all
+three are present — and warns, rather than half-working, if only some are.
+
+The demo-account buttons disappear from the sign-in screen and the e-mail and
+password fields become real.
+
+**None of these three is a secret.** A Firebase web API key identifies the
+project; it does not authorise anything on its own. What protects the hospital
+is the sign-in itself, the authorised-domains list, and the rules on the data.
+Storing them as *variables* rather than *secrets* is deliberate: it makes them
+readable in the workflow log, which is where you want them when a build signs
+in against the wrong project.
+
+If `AUTH=firebase` is set without those values, the application stops on its
+startup screen and names exactly which ones are missing, with a Retry button.
+It does not crash.
 
 ### Roles
 
-Firebase owns identity. It does not own **role**: the applications read a
-`role` custom claim from the ID token. A hospital would drive those claims
-from its HR directory; here you set them once with the Admin SDK.
-
-```bash
-npm install firebase-admin
-```
-
-```js
-// set_roles.js — run once, with a service-account key from
-// Project settings → Service accounts → Generate new private key
-const admin = require('firebase-admin');
-admin.initializeApp({
-  credential: admin.credential.cert(require('./serviceAccountKey.json')),
-});
-
-const roles = {
-  'anne.dubois@mini-hospital.be': 'physician',
-  'jan.peeters@mini-hospital.be': 'physician',
-  'marie.lambert@mini-hospital.be': 'nurse',
-  'sofie.declercq@mini-hospital.be': 'nurse',
-  'paul.mertens@mini-hospital.be': 'pharmacist',
-  'fatima.elamrani@mini-hospital.be': 'admissionClerk',
-  'tom.vandenberg@mini-hospital.be': 'integrationEngineer',
-  'lucas.moreau@mini-hospital.be': 'biomedicalTechnician',
-  'student@mini-hospital.be': 'student',
-};
-
-(async () => {
-  for (const [email, role] of Object.entries(roles)) {
-    const user = await admin.auth().getUserByEmail(email);
-    await admin.auth().setCustomUserClaims(user.uid, { role });
-    console.log(`${email} → ${role}`);
-  }
-})();
-```
-
-Never commit `serviceAccountKey.json`. It is a master key to the project, and
-the `.gitignore` in each repository already excludes it.
+Firebase owns identity — e-mail, password, session. It does not own **role**.
+`UserRole` comes from a custom claim called `role` on the account, which is
+what `FirebaseAuthService.defaultRoleResolver` reads; `setup_firebase_auth.sh`
+sets it. A real hospital would drive those claims from its HR directory, and
+that difference is worth a minute of discussion with the students.
 
 A user whose claim is missing or unreadable falls back to `student`, which is
 the safe default in a teaching environment. The valid values are the names in
 `UserRole` (`packages/hospital_core/lib/src/models/hospital_user.dart`).
 
-### Connect the applications
-
-Once per repository:
-
-```bash
-dart pub global activate flutterfire_cli
-cd EHR && flutterfire configure --project=my-hospital-2026
-```
-
-That writes `lib/firebase_options.dart`. It is **git-ignored on purpose** — it
-belongs to your Firebase project, not to this repository.
-
-Then:
-
-```bash
-flutter run -d chrome --dart-define=AUTH=firebase
-```
-
-The demo-account buttons disappear from the login screen and the e-mail and
-password fields become real.
-
 ### Authorised domains
 
 Firebase Auth rejects sign-in from an origin it does not know. Under
-**Authentication → Settings → Authorised domains**, `localhost` is there by
-default. Add any other host you serve the applications from.
+**Authentication → Settings → Authorised domains**, `localhost` and the
+project's own `.web.app` and `.firebaseapp.com` domains are there by default,
+so the six hosted sites work with no action. Add any other host you serve from.
 
 ---
 

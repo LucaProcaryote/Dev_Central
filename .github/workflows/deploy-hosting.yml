@@ -96,20 +96,52 @@ jobs:
           # gets their own in-browser hospital, which is the right default for
           # a page that cannot reach anything on a student's localhost.
           API_BASE: ${{ vars.API_BASE }}
+
+          # Set these three and the build signs in against Firebase instead of
+          # the demo accounts. None is a secret: a web API key identifies the
+          # project, it does not authorise anything. The app id differs per
+          # application; the sender id is the project number, shared.
+          FIREBASE_API_KEY: ${{ vars.FIREBASE_API_KEY }}
+          FIREBASE_APP_ID: ${{ vars.FIREBASE_APP_ID }}
+          FIREBASE_MESSAGING_SENDER_ID: ${{ vars.FIREBASE_MESSAGING_SENDER_ID }}
+          FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
         run: |
           backend="${{ inputs.backend }}"
           if [ -z "$backend" ]; then
             if [ -n "$API_BASE" ]; then backend=restApi; else backend=memory; fi
           fi
 
+          # All three or none. A half-configured project would compile happily
+          # and then fail at the sign-in screen, which is the worst place to
+          # discover a missing variable.
+          auth="${{ inputs.auth }}"
+          if [ -z "$auth" ]; then
+            if [ -n "$FIREBASE_API_KEY" ] && [ -n "$FIREBASE_APP_ID" ] \
+               && [ -n "$FIREBASE_MESSAGING_SENDER_ID" ]; then
+              auth=firebase
+            else
+              auth=demo
+              if [ -n "$FIREBASE_API_KEY$FIREBASE_APP_ID$FIREBASE_MESSAGING_SENDER_ID" ]; then
+                echo "::warning::Some FIREBASE_* variables are set but not all three;"
+                echo "::warning::building with demo sign-in. Needed: FIREBASE_API_KEY,"
+                echo "::warning::FIREBASE_APP_ID, FIREBASE_MESSAGING_SENDER_ID."
+              fi
+            fi
+          fi
+
           # Self-host CanvasKit: see tools/deploy_hosting.sh for why.
           defines=(
             --dart-define=BACKEND="$backend"
-            --dart-define=AUTH="${{ inputs.auth || 'demo' }}"
+            --dart-define=AUTH="$auth"
           )
           [ -n "$API_BASE" ] && defines+=(--dart-define=API_BASE="$API_BASE")
+          for name in FIREBASE_API_KEY FIREBASE_APP_ID \
+                      FIREBASE_MESSAGING_SENDER_ID FIREBASE_PROJECT_ID; do
+            value="${!name}"
+            [ -n "$value" ] && defines+=(--dart-define="$name=$value")
+          done
 
-          echo "backend: $backend"
+          echo "backend: $backend, auth: $auth"
           flutter build web --release --no-web-resources-cdn "${defines[@]}"
 
       - name: Deploy
