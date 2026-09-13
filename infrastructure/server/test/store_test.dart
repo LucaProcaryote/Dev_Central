@@ -4,7 +4,7 @@ import 'package:hospital_server/src/store.dart';
 import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
 
-/// The failure this guards against, in the words of the machine that found it:
+/// The failure these guard against, in the words of the machine that found it:
 ///
 ///     curl: (28) Operation timed out after 60003 milliseconds
 ///           with 0 bytes received
@@ -12,8 +12,11 @@ import 'package:test/test.dart';
 /// The server was listening. The database socket had quietly died while the
 /// Cloud Run instance was frozen, and the driver's default query timeout is
 /// five minutes - so the request neither answered nor failed. Silence is the
-/// worst possible failure mode: from outside it is indistinguishable from a
+/// worst failure mode there is: from outside it is indistinguishable from a
 /// hang anywhere else in the stack.
+///
+/// The other half of the lesson is that opening the store must never be able
+/// to fail, so that the port is never held hostage to the database.
 void main() {
   /// A socket that accepts the connection and then says nothing at all -
   /// which is exactly what a dead PostgreSQL connection looks like.
@@ -25,52 +28,53 @@ void main() {
     return server;
   }
 
+  void disposeLater(HospitalStore store) {
+    addTearDown(() async {
+      try {
+        await store.close();
+      } catch (_) {
+        // Closing a pool that never connected is not interesting.
+      }
+    });
+  }
+
+  test('opening the store never touches the database', () {
+    // Port 1: nothing is listening, and nothing ever will be. Building the
+    // store must still succeed, because the process has to open its port
+    // before it can afford to care.
+    final store = HospitalStore.open(
+      host: '127.0.0.1',
+      port: 1,
+      database: 'EHR_DB',
+      username: 'hospital',
+      password: 'hospital',
+    );
+    disposeLater(store);
+
+    expect(store, isNotNull);
+  });
+
   test(
-    'a database that accepts and never answers fails, and fails fast',
+    'a database that accepts and never answers is reported, not awaited',
     () async {
       final server = await blackHole();
       addTearDown(() => server.close());
+
+      final store = HospitalStore.open(
+        host: '127.0.0.1',
+        port: server.port,
+        database: 'EHR_DB',
+        username: 'hospital',
+        password: 'hospital',
+        connectTimeout: const Duration(seconds: 2),
+        queryTimeout: const Duration(seconds: 2),
+      );
+      disposeLater(store);
 
       final stopwatch = Stopwatch()..start();
-      await expectLater(
-        HospitalStore.connect(
-          host: '127.0.0.1',
-          port: server.port,
-          database: 'EHR_DB',
-          username: 'hospital',
-          password: 'hospital',
-          connectTimeout: const Duration(seconds: 2),
-          queryTimeout: const Duration(seconds: 2),
-        ),
-        throwsA(anything),
-      );
-
+      expect(await store.isHealthy(), isFalse);
       // The number that matters is not two seconds; it is "less than forever".
       expect(stopwatch.elapsed, lessThan(const Duration(seconds: 20)));
-    },
-  );
-
-  test(
-    'connecting proves the database answers, not merely that it exists',
-    () async {
-      // A pool opens nothing until it is used, so a connect() that only built
-      // one would report success against a database that is not there.
-      final server = await blackHole();
-      addTearDown(() => server.close());
-
-      await expectLater(
-        HospitalStore.connect(
-          host: '127.0.0.1',
-          port: server.port,
-          database: 'EHR_DB',
-          username: 'hospital',
-          password: 'hospital',
-          connectTimeout: const Duration(seconds: 2),
-          queryTimeout: const Duration(seconds: 2),
-        ),
-        throwsA(anything),
-        reason: 'connect() must not return a store that cannot run a query',
-      );
     },
   );
 
@@ -99,13 +103,7 @@ void main() {
         ),
       ),
     );
-    addTearDown(() async {
-      try {
-        await store.close();
-      } catch (_) {
-        // Closing a pool that never connected is not interesting.
-      }
-    });
+    disposeLater(store);
 
     final stopwatch = Stopwatch()..start();
 
