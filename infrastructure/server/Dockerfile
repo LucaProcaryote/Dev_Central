@@ -12,17 +12,19 @@ COPY . .
 RUN dart pub get --offline
 RUN dart compile exe bin/server.dart -o bin/server
 
-# `scratch` would work for a statically linked binary, but Dart's AOT output
-# needs a libc, so use the runtime image Dart publishes for exactly this.
+# `scratch` plus Dart's own /runtime/ is what the Dart documentation suggests,
+# and it works. So does this. Both were suspected, in turn, of being why the
+# service starts on Cloud Run, listens, passes its health probe and then
+# answers nothing - and the suspicion was wrong both times.
 #
-# This was briefly changed to distroless/cc-debian12 on the theory that the
-# minimal image was why the service started, listened, passed its health probe
-# and then answered nothing. The timestamps say otherwise: the one time the
-# service ever answered - `pong`, 17:10 - it was running this image, and the
-# first distroless build never answered at all. The theory was wrong and the
-# change made things worse, so it is reverted.
-FROM scratch
-COPY --from=build /runtime/ /
+# This exact image, pulled by digest and run with `docker run`, answers /ping
+# in under a millisecond and reports the database error on /health. Whatever
+# silences it on Cloud Run is not in here.
+#
+# distroless/cc it is, then: a real glibc, libssl and the CA bundle, on the
+# same Debian 12 as the dart:3.9 build stage, maintained by someone else. The
+# only base we have actually watched serve a request from inside a container.
+FROM gcr.io/distroless/cc-debian12
 COPY --from=build /app/bin/server /app/bin/server
 
 # Which application this instance serves is set per service in the compose
