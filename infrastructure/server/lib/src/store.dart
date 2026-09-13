@@ -109,6 +109,14 @@ class HospitalStore {
     return rows.isEmpty ? null : rows.first;
   }
 
+  /// Why the last health check failed, or null when it succeeded.
+  ///
+  /// Kept because swallowing it was a mistake. A `catch (_)` here turned
+  /// every possible database problem - wrong password, missing socket, a
+  /// connector that accepts and stalls - into the single word "degraded",
+  /// and left the only interesting sentence on the floor.
+  String? lastError;
+
   /// Whether the database answers, with its own short deadline.
   ///
   /// A health check that can hang is worse than no health check: it turns
@@ -117,8 +125,10 @@ class HospitalStore {
   Future<bool> isHealthy() async {
     try {
       await _db.execute('SELECT 1').timeout(const Duration(seconds: 5));
+      lastError = null;
       return true;
-    } catch (_) {
+    } catch (error) {
+      lastError = error.toString();
       return false;
     }
   }

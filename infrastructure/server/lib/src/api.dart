@@ -261,11 +261,16 @@ class HospitalApi {
 
   // ---- Handlers ------------------------------------------------------------
 
-  Future<Response> _health(Request request) async => _json(<String, dynamic>{
-    'status': await store.isHealthy() ? 'ok' : 'degraded',
-    'app': app,
-    'time': DateTime.now().toIso8601String(),
-  });
+  Future<Response> _health(Request request) async {
+    final healthy = await store.isHealthy();
+    return _json(<String, dynamic>{
+      'status': healthy ? 'ok' : 'degraded',
+      'app': app,
+      'time': DateTime.now().toIso8601String(),
+      // The one sentence worth having when it is not ok.
+      if (!healthy && store.lastError != null) 'database': store.lastError,
+    });
+  }
 
   Future<Response> _listPatients(Request request) async =>
       _json(await store.listPatients(query: _query(request, 'query')));

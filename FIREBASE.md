@@ -339,7 +339,7 @@ before any other: is the server stuck, or is the database stuck?
 
 | | |
 | --- | --- |
-| `/ping` answers, `/health` says `degraded` | the API is fine; the database is not |
+| `/ping` answers, `/health` says `degraded` | the API is fine; the database is not - and the `database` field of that answer carries the driver's own message |
 | `/ping` answers, `/health` says `ok` | everything works |
 | `/ping` does not answer | the instance is saturated or not starting - look at the Cloud Run logs |
 
