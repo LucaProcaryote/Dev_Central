@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:hospital_server/src/admin/admin_api.dart';
@@ -19,31 +20,24 @@ Future<void> main(List<String> arguments) async {
   final config = ServerConfig.from(args, Platform.environment);
   stdout.writeln('Mini-Hospital 2026 API — $config');
 
-  // The database usually comes up a moment after the API in a compose stack,
-  // so retry rather than crash-looping the container.
-  HospitalStore? store;
-  for (var attempt = 1; attempt <= 30; attempt++) {
-    try {
-      store = await HospitalStore.connect(
-        host: config.databaseEndpointHost,
-        port: config.databasePort,
-        database: config.databaseName,
-        username: config.databaseUser,
-        password: config.databasePassword,
-        isUnixSocket: config.usesUnixSocket,
-        sslMode: sslModeFor(config.databaseSsl),
-      );
-      break;
-    } catch (error) {
-      stdout.writeln('  waiting for the database ($attempt/30): $error');
-      await Future<void>.delayed(const Duration(seconds: 2));
-    }
-  }
-  if (store == null) {
-    stderr.writeln('Could not reach ${config.databaseName}. Is it running?');
-    stderr.writeln('  cd infrastructure && docker compose up -d postgres');
-    exit(69);
-  }
+  // Nothing here waits for PostgreSQL, and that is the point. Three
+  // deployments in a row failed to start for three different reasons, and
+  // every one of them looked identical from outside: "the container failed to
+  // listen on PORT". A server that holds its port hostage to a dependency
+  // turns any problem with that dependency into an unexplained outage.
+  //
+  // So the port is opened first, unconditionally. If the database is
+  // unreachable, /health says `degraded` and every other route answers with
+  // the driver's own error - which is a diagnosis rather than a silence.
+  final store = HospitalStore.open(
+    host: config.databaseEndpointHost,
+    port: config.databasePort,
+    database: config.databaseName,
+    username: config.databaseUser,
+    password: config.databasePassword,
+    isUnixSocket: config.usesUnixSocket,
+    sslMode: sslModeFor(config.databaseSsl),
+  );
 
   // Account management is only mounted when the server was told which
   // Firebase project it belongs to. No project, no /admin.
@@ -85,7 +79,7 @@ Future<void> main(List<String> arguments) async {
   Future<void> shutdown(ProcessSignal signal) async {
     stdout.writeln('\nStopping (${signal.toString()})…');
     await server.close(force: true);
-    await store!.close();
+    await store.close();
     exit(0);
   }
 
@@ -93,4 +87,31 @@ Future<void> main(List<String> arguments) async {
   if (!Platform.isWindows) {
     ProcessSignal.sigterm.watch().listen(shutdown);
   }
+
+  // Now that the port is open, say whether the database is actually there.
+  // In a compose stack PostgreSQL usually comes up a moment after the API, so
+  // this retries rather than declaring failure on the first attempt.
+  unawaited(reportDatabase(store, config.databaseName));
+}
+
+/// Logs whether the database answers, retrying for a couple of minutes.
+///
+/// Never exits the process. An API that is up and cannot reach its database
+/// is worth far more to whoever is debugging than one that is not up at all.
+Future<void> reportDatabase(HospitalStore store, String database) async {
+  for (var attempt = 1; attempt <= 30; attempt++) {
+    if (await store.isHealthy()) {
+      stdout.writeln('$database is reachable');
+      return;
+    }
+    if (attempt == 1) {
+      stdout.writeln('$database did not answer yet; retrying');
+    }
+    await Future<void>.delayed(const Duration(seconds: 4));
+  }
+  stderr.writeln(
+    '$database has not answered in two minutes. The API is still serving; '
+    '/health reports degraded and every other route will return the '
+    "driver's error.",
+  );
 }

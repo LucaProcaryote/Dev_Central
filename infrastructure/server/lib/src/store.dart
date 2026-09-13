@@ -33,7 +33,15 @@ class HospitalStore {
   static const Duration _queryTimeout = Duration(seconds: 30);
   static const Duration _connectTimeout = Duration(seconds: 15);
 
-  static Future<HospitalStore> connect({
+  /// Builds the store. Opens nothing.
+  ///
+  /// This is deliberate, and it is the difference between a service that
+  /// starts and one that does not. A pool creates connections when it is first
+  /// asked to run something, so the process can listen immediately and report
+  /// the database's state through `/health` - rather than holding the port
+  /// hostage to a dependency and leaving the platform to guess why nothing
+  /// ever answered.
+  factory HospitalStore.open({
     required String host,
     required int port,
     required String database,
@@ -43,7 +51,7 @@ class HospitalStore {
     SslMode sslMode = SslMode.disable,
     Duration connectTimeout = _connectTimeout,
     Duration queryTimeout = _queryTimeout,
-  }) async {
+  }) {
     final pool = Pool<void>.withEndpoints(
       <Endpoint>[
         Endpoint(
@@ -66,9 +74,6 @@ class HospitalStore {
         queryTimeout: queryTimeout,
       ),
     );
-    // A pool opens nothing until it is asked to, so prove the database really
-    // is reachable rather than reporting success and failing on first use.
-    await pool.execute('SELECT 1');
     return HospitalStore(pool);
   }
 

@@ -325,6 +325,14 @@ beginning with `/` is treated as a socket directory, the same convention
 password arrives from Secret Manager as `DB_PASSWORD`; it is not baked into
 the image and does not appear in the service description.
 
+**The API opens its port before it looks at the database, and never exits if
+the database is missing.** A server that holds its port hostage to a
+dependency turns any problem with that dependency into "the container failed
+to start and listen on PORT" - a message that names the symptom and not one
+cause. If PostgreSQL is unreachable the service still starts, `/health`
+answers `degraded`, and every other route returns the driver's own error.
+Look there first.
+
 The server talks to the database through a **connection pool**, and on Cloud
 Run that is not a performance decision. Between requests an instance's CPU is
 frozen and Cloud SQL drops what it sees as an idle client; the socket is then
