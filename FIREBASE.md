@@ -325,6 +325,22 @@ beginning with `/` is treated as a socket directory, the same convention
 password arrives from Secret Manager as `DB_PASSWORD`; it is not baked into
 the image and does not appear in the service description.
 
+The script grants the Cloud Run runtime identity the three roles it needs
+before deploying anything:
+
+| Role | Scope | For |
+| --- | --- | --- |
+| `roles/secretmanager.secretAccessor` | the one secret | reading `DB_PASSWORD` |
+| `roles/cloudsql.client` | the project | opening the socket |
+| `roles/firebaseauth.admin` | the project | writing role claims, `/admin` only |
+
+On projects created since 2024 the default compute service account starts with
+**no roles at all**, so none of this is redundant. A missing grant does not
+fail early — it fails several minutes in, on the first `gcloud run deploy`,
+with a message about `env[5].value_from.secret_key_ref`. That message means
+exactly one thing: the service account cannot read the secret. Re-running the
+script fixes it.
+
 ### Point the applications at it
 
 Per visitor, with no rebuild:
