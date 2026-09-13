@@ -318,12 +318,31 @@ Pass `--schema-only` to skip the patients.
 Five Cloud Run services, one per application, all against the one instance. It
 prints the five URLs.
 
-The server reaches Cloud SQL over the **unix socket Cloud Run mounts** at
-`/cloudsql/PROJECT:REGION:INSTANCE`, with no Auth Proxy sidecar: a `DB_HOST`
-beginning with `/` is treated as a socket directory, the same convention
-`psql` uses, and the socket file is `<dir>/.s.PGSQL.<port>`. The database
-password arrives from Secret Manager as `DB_PASSWORD`; it is not baked into
-the image and does not appear in the service description.
+Each service is **two containers**: ours, and the Cloud SQL Auth Proxy. Our
+container connects to plain TCP at `127.0.0.1:5432` — containers in one Cloud
+Run instance share a network namespace — and the proxy does the
+authentication and TLS to Cloud SQL, using the same service account.
+
+It used to be one container reaching Cloud SQL over the **unix socket** Cloud
+Run mounts at `/cloudsql/…` when you pass `--add-cloudsql-instances`. Do not
+go back to that. The socket lives on a FUSE filesystem, and the path lookup
+inside `connect()` happens in the kernel on the calling thread — which in
+Dart is the thread running the isolate. When it does not come back, nothing
+in the process comes back: not the query, not the timers meant to bound it,
+not the HTTP server. The service answered its TCP health probe and then went
+silent, including on a route that touches nothing at all, which is a
+remarkably hard thing to read.
+
+Bisected on a throwaway Cloud Run service with the same image:
+
+| | `/ping` |
+| --- | --- |
+| Cloud SQL attached but unused | `pong` |
+| secret mounted | `pong` |
+| socket actually used | silence |
+
+The database password arrives from Secret Manager as `DB_PASSWORD`; it is not
+baked into the image and does not appear in the service description.
 
 The services run with **CPU always allocated** (`--no-cpu-throttling`). By
 default Cloud Run gives an instance CPU only while a request is in flight,
