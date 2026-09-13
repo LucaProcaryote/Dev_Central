@@ -28,6 +28,11 @@ class HospitalApi {
 
   Handler get handler {
     final router = Router()
+      // Touches nothing. When something is wrong and every other route
+      // hangs, this is what separates "the server is stuck" from "the
+      // database is stuck" - a distinction that took three deployments to
+      // make the hard way.
+      ..get('/ping', (Request request) => Response.ok('pong'))
       ..get('/health', _health)
       ..get('/patients', _listPatients)
       ..get('/patients/resolve', _resolvePatient)
