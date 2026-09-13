@@ -55,7 +55,7 @@ DEFINES=(--dart-define=BACKEND="$BACKEND" --dart-define=AUTH="$AUTH")
 [ -n "$EAI" ]    && DEFINES+=(--dart-define=EAI_BASE="$EAI")
 [ -n "$DEVICE" ] && DEFINES+=(--dart-define=DEVICE_ID="$DEVICE")
 
-echo "Building device simulator for the web (backend: $BACKEND, auth: $AUTH)…"
+echo "Building device simulator for the web (backend: $BACKEND, auth: $AUTH)..."
 # --no-web-resources-cdn makes Flutter load the CanvasKit renderer from
 # the copy it already bundles, instead of fetching it from gstatic.com at
 # runtime. Without it, a campus or hospital network that blocks gstatic
@@ -63,7 +63,7 @@ echo "Building device simulator for the web (backend: $BACKEND, auth: $AUTH)…"
 # are hosting that copy either way.
 flutter build web --release --no-web-resources-cdn "${DEFINES[@]}"
 
-echo "Deploying to $SITE…"
+echo "Deploying to $SITE..."
 firebase deploy --only "hosting:$TARGET" --project "$PROJECT"
 
 echo

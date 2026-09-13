@@ -13,26 +13,29 @@ set -euo pipefail
 
 PROJECT="${FIREBASE_PROJECT:-my-hospital-2026}"
 
-declare -A SITES=(
-  [ehr]=my-hospital-2026-ehr
-  [adt]=my-hospital-2026-adt
-  [pharm]=my-hospital-2026-pharm
-  [eai]=my-hospital-2026-eai
-  [dev]=my-hospital-2026-dev
+# "target:site" pairs rather than an associative array: macOS still ships bash
+# 3.2, which has no associative arrays, and this has to run on a laptop.
+SITES=(
+  "ehr:my-hospital-2026-ehr"
+  "adt:my-hospital-2026-adt"
+  "pharm:my-hospital-2026-pharm"
+  "eai:my-hospital-2026-eai"
+  "dev:my-hospital-2026-dev"
 )
 
 command -v firebase >/dev/null || { echo "npm i -g firebase-tools" >&2; exit 69; }
 
 echo "Project: $PROJECT"
-for target in "${!SITES[@]}"; do
-  site="${SITES[$target]}"
+for entry in "${SITES[@]}"; do
+  target="${entry%%:*}"
+  site="${entry##*:}"
   printf '%-8s %-28s ' "$target" "$site"
   if firebase hosting:sites:list --project "$PROJECT" 2>/dev/null | grep -q "$site"; then
     echo "already exists"
   elif firebase hosting:sites:create "$site" --project "$PROJECT" >/dev/null 2>&1; then
     echo "created"
   else
-    echo "COULD NOT CREATE — the id may be taken globally; pick another"
+    echo "COULD NOT CREATE - the id may be taken globally; pick another"
   fi
 done
 

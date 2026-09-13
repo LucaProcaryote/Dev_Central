@@ -48,7 +48,7 @@ echo "Instance: $INSTANCE ($TIER)"
 echo
 
 # ---------------------------------------------------------------- services --
-echo "Enabling the APIs this needs…"
+echo "Enabling the APIs this needs..."
 gcloud services enable \
   sqladmin.googleapis.com \
   secretmanager.googleapis.com \
@@ -61,12 +61,22 @@ gcloud services enable \
 if gcloud secrets describe "$SECRET" --project "$PROJECT" >/dev/null 2>&1; then
   echo "Password secret $SECRET already exists, reusing it"
 else
-  echo "Creating the password secret $SECRET…"
+  echo "Creating the password secret $SECRET..."
   # Generated here and never printed: the only copies are Secret Manager and
   # the Cloud SQL user itself.
-  LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32 |
+  #
+  # Not `tr </dev/urandom | head -c 32`: head closes the pipe after 32 bytes,
+  # tr dies of SIGPIPE, and `set -o pipefail` then fails the whole script.
+  # Both of these read a bounded amount and exit on their own.
+  if command -v openssl >/dev/null; then
+    generated="$(openssl rand -hex 24)"
+  else
+    generated="$(LC_ALL=C head -c 24 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+  fi
+  printf '%s' "$generated" |
     gcloud secrets create "$SECRET" --project "$PROJECT" --data-file=- \
       --replication-policy=automatic
+  unset generated
 fi
 DB_PASSWORD="$(gcloud secrets versions access latest --secret "$SECRET" --project "$PROJECT")"
 
@@ -74,7 +84,7 @@ DB_PASSWORD="$(gcloud secrets versions access latest --secret "$SECRET" --projec
 if gcloud sql instances describe "$INSTANCE" --project "$PROJECT" >/dev/null 2>&1; then
   echo "Instance $INSTANCE already exists"
 else
-  echo "Creating $INSTANCE - this takes several minutes…"
+  echo "Creating $INSTANCE - this takes several minutes..."
   # ZONAL rather than REGIONAL: no high availability, because a teaching
   # hospital that is down for ten minutes costs nobody anything, and HA
   # doubles the bill.
@@ -102,7 +112,7 @@ if gcloud sql users list --instance "$INSTANCE" --project "$PROJECT" \
   gcloud sql users set-password "$DB_USER" --instance "$INSTANCE" \
     --project "$PROJECT" --password "$DB_PASSWORD"
 else
-  echo "Creating user $DB_USER…"
+  echo "Creating user $DB_USER..."
   gcloud sql users create "$DB_USER" --instance "$INSTANCE" \
     --project "$PROJECT" --password "$DB_PASSWORD"
 fi
@@ -113,7 +123,7 @@ for db in "${DATABASES[@]}"; do
     --project "$PROJECT" >/dev/null 2>&1; then
     echo "Database $db already exists"
   else
-    echo "Creating database $db…"
+    echo "Creating database $db..."
     gcloud sql databases create "$db" --instance "$INSTANCE" --project "$PROJECT"
   fi
 done
@@ -125,7 +135,7 @@ done
 # the local stack and CI use - run unchanged against it.
 PROXY="${TMPDIR:-/tmp}/cloud-sql-proxy"
 if [ ! -x "$PROXY" ]; then
-  echo "Fetching the Cloud SQL Auth Proxy…"
+  echo "Fetching the Cloud SQL Auth Proxy..."
   case "$(uname -s)/$(uname -m)" in
     Darwin/arm64) asset=darwin.arm64 ;;
     Darwin/*)     asset=darwin.amd64 ;;

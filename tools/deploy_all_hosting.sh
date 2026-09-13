@@ -33,7 +33,7 @@ echo
 
 failed=()
 for repo in "${REPOS[@]}"; do
-  echo "═══ $repo ═══"
+  echo "=== $repo ==="
   if (cd "$WORKSPACE/$repo" && ./tools/deploy_hosting.sh "$@"); then
     echo
   else

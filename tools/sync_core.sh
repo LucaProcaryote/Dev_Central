@@ -18,7 +18,7 @@ TARGET="$HERE/packages/hospital_core"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-echo "Fetching hospital_core from $CANONICAL_REPO ($CANONICAL_REF)…"
+echo "Fetching hospital_core from $CANONICAL_REPO ($CANONICAL_REF)..."
 git clone --quiet --depth 1 --branch "$CANONICAL_REF" "$CANONICAL_REPO" "$TMP/central"
 
 if [ ! -d "$TMP/central/packages/hospital_core" ]; then

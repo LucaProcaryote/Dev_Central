@@ -3,7 +3,7 @@
 # into each of them.
 #
 #   ./db/apply.sh                       # against localhost:5432
-#   PGHOST=… PGPORT=… ./db/apply.sh     # anywhere else
+#   PGHOST=... PGPORT=... ./db/apply.sh     # anywhere else
 #   ./db/apply.sh --schema-only         # skip the fictive patients
 #
 # Safe to re-run: the schema uses CREATE TABLE IF NOT EXISTS and the seed
@@ -30,7 +30,7 @@ echo "PostgreSQL at $PGHOST:$PGPORT as $PGUSER"
 
 for db in "${DATABASES[@]}"; do
   echo
-  echo "── $db ──"
+  echo "-- $db --"
   if psql -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname = '$db'" | grep -q 1; then
     echo "  database exists"
   else
