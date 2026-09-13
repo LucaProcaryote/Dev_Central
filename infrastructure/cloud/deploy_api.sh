@@ -47,14 +47,37 @@ fi
 echo "Building the API image..."
 gcloud builds submit "$HERE/server" --tag "$IMAGE" --project "$PROJECT"
 
-# ----------------------------------------------------------- admin identity --
-# Writing a role means writing a custom claim, which needs a service account
-# with Firebase Authentication Admin. The service uses its own identity for
-# that - no key is issued, downloaded or stored anywhere.
+# --------------------------------------------------------- runtime identity --
+# What the services run as, and what that identity is allowed to do.
+#
+# On projects created since 2024 the default compute service account is given
+# no roles at all, so every one of these has to be granted explicitly. Skipping
+# them does not fail the grant - it fails the deploy, several minutes later,
+# with a message about env[5].value_from.secret_key_ref.
+PROJECT_NUMBER="$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')"
+RUNTIME_SA="${RUNTIME_SA:-$PROJECT_NUMBER-compute@developer.gserviceaccount.com}"
+echo
+echo "Granting $RUNTIME_SA what the services need..."
+
+# Read the database password. Bound to the one secret rather than to the whole
+# project: this identity has no business reading any other secret.
+echo "  - Secret Manager Secret Accessor, on $SECRET"
+gcloud secrets add-iam-policy-binding "$SECRET" --project "$PROJECT" \
+  --member "serviceAccount:$RUNTIME_SA" \
+  --role roles/secretmanager.secretAccessor >/dev/null
+
+# Open the Cloud SQL socket that --add-cloudsql-instances mounts.
+echo "  - Cloud SQL Client"
+gcloud projects add-iam-policy-binding "$PROJECT" \
+  --member "serviceAccount:$RUNTIME_SA" \
+  --role roles/cloudsql.client \
+  --condition=None >/dev/null
+
+# Writing a role means writing a custom claim, which needs Firebase
+# Authentication Admin. The service uses its own identity for that - no key is
+# issued, downloaded or stored anywhere.
 if [ "$ADMIN_APP" != "none" ] && [ -n "$FIREBASE_API_KEY" ]; then
-  PROJECT_NUMBER="$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')"
-  RUNTIME_SA="${RUNTIME_SA:-$PROJECT_NUMBER-compute@developer.gserviceaccount.com}"
-  echo "Granting Firebase Authentication Admin to $RUNTIME_SA..."
+  echo "  - Firebase Authentication Admin (for /admin)"
   gcloud projects add-iam-policy-binding "$PROJECT" \
     --member "serviceAccount:$RUNTIME_SA" \
     --role roles/firebaseauth.admin \
@@ -67,6 +90,13 @@ elif [ "$ADMIN_APP" != "none" ]; then
   echo
   ADMIN_APP=none
 fi
+
+# An IAM change takes a few seconds to reach the service that checks it, and
+# Cloud Run checks the secret binding while creating the revision. Waiting here
+# is cheaper than a deploy that fails on the first service and has to be
+# re-run from the top.
+echo "Waiting for the grants to take effect..."
+sleep 20
 
 # --------------------------------------------------------- the five services --
 # Cloud Run mounts the Cloud SQL socket under /cloudsql. The server treats a
