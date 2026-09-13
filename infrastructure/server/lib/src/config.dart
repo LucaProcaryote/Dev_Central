@@ -74,6 +74,19 @@ class ServerConfig {
   String get databaseEndpointHost =>
       usesUnixSocket ? '$databaseHost/.s.PGSQL.$databasePort' : databaseHost;
 
+  /// What to hand `shelf_io.serve` as its address.
+  ///
+  /// A *string* would send Dart through `getaddrinfo`, and the runtime image
+  /// is `FROM scratch`: it has a libc, but none of the NSS plugins glibc
+  /// dlopens to resolve a name. Handing over an [InternetAddress] skips name
+  /// resolution altogether - which is both correct and, when it is wrong,
+  /// wrong immediately rather than after a health-check deadline.
+  Object get bindAddress => switch (host) {
+    '0.0.0.0' => InternetAddress.anyIPv4,
+    '::' || '::0' => InternetAddress.anyIPv6,
+    _ => host,
+  };
+
   static const Map<String, ({int port, String database})> defaults =
       <String, ({int port, String database})>{
         'EHR': (port: 8081, database: 'EHR_DB'),
