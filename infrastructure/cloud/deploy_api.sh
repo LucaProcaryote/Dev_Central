@@ -146,6 +146,10 @@ for app in "${APPS[@]}"; do
     env_vars="$env_vars,FIREBASE_PROJECT=$PROJECT,FIREBASE_API_KEY=$FIREBASE_API_KEY"
     echo "    (this one also serves /admin)"
   fi
+  # Two notes on the invocation below. --args=... is written with an equals
+  # sign because its value starts with a dash, and gcloud reads a separated
+  # value beginning with "-" as the next flag. And no comment may appear
+  # between the continuation lines: it swallows the rest of the command.
   # shellcheck disable=SC2086
   gcloud run deploy "$service" \
     --project "$PROJECT" \
@@ -167,7 +171,7 @@ for app in "${APPS[@]}"; do
     --container sql-proxy \
       --image "$PROXY_IMAGE" \
       --memory 256Mi \
-      --args "--structured-logs,--port=5432,$CONNECTION_NAME"
+      --args="--structured-logs,--port=5432,$CONNECTION_NAME"
 done
 
 echo
