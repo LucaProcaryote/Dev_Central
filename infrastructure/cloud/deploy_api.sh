@@ -16,6 +16,9 @@ DB_USER="${DB_USER:-hospital}"
 SECRET="${SECRET:-mini-hospital-db-password}"
 IMAGE="${IMAGE:-$REGION-docker.pkg.dev/$PROJECT/mini-hospital/api}"
 
+# The Cloud SQL Auth Proxy, run as a second container beside each service.
+PROXY_IMAGE="${PROXY_IMAGE:-gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.14.1}"
+
 # The administration API (account creation, roles) is mounted on exactly one
 # of the five services - one door rather than five - and the portal's console
 # talks to that one. Set ADMIN_APP=none to mount it nowhere.
@@ -73,7 +76,7 @@ gcloud secrets add-iam-policy-binding "$SECRET" --project "$PROJECT" \
   --member "serviceAccount:$RUNTIME_SA" \
   --role roles/secretmanager.secretAccessor >/dev/null
 
-# Open the Cloud SQL socket that --add-cloudsql-instances mounts.
+# What the Cloud SQL Auth Proxy sidecar authenticates with.
 echo "  - Cloud SQL Client"
 gcloud projects add-iam-policy-binding "$PROJECT" \
   --member "serviceAccount:$RUNTIME_SA" \
@@ -106,9 +109,27 @@ echo "Waiting for the grants to take effect..."
 sleep 20
 
 # --------------------------------------------------------- the five services --
-# Cloud Run mounts the Cloud SQL socket under /cloudsql. The server treats a
-# DB_HOST beginning with "/" as a socket directory, the same convention psql
-# uses, so no proxy sidecar is needed.
+# Each service is TWO containers: ours, and the Cloud SQL Auth Proxy.
+#
+# It used to be one, reaching Cloud SQL over the unix socket Cloud Run mounts
+# at /cloudsql when you pass --add-cloudsql-instances. That socket lives on a
+# FUSE filesystem, and the path lookup inside connect() happens in the kernel
+# on the calling thread - which in Dart is the thread running the isolate. When
+# it does not come back, nothing in the process comes back: not the query, not
+# the timers meant to bound it, not the HTTP server. The service answered its
+# TCP health probe and then went silent, including on a route that touches
+# nothing at all.
+#
+# Bisected on a throwaway Cloud Run service with the same image:
+#
+#   Cloud SQL attached but unused   pong
+#   secret mounted                  pong
+#   socket actually used            (silence)
+#
+# The proxy sidecar removes the socket from the picture. It listens on plain
+# TCP at 127.0.0.1:5432 - containers in one Cloud Run instance share a network
+# namespace - and does the authentication and TLS to Cloud SQL itself, using
+# the same service account. Ordinary TCP on both sides of our code.
 #
 # --timeout 60 rather than the default 300. A request that hangs holds its
 # instance for the whole timeout, and with only a handful of instances a few
@@ -120,7 +141,7 @@ for app in "${APPS[@]}"; do
   service="mini-hospital-api-$(echo "$app" | tr '[:upper:]' '[:lower:]')"
   echo
   echo "=== $service ==="
-  env_vars="APP=$app,DB_HOST=/cloudsql/$CONNECTION_NAME,DB_USER=$DB_USER"
+  env_vars="APP=$app,DB_HOST=127.0.0.1,DB_PORT=5432,DB_USER=$DB_USER"
   if [ "$app" = "$ADMIN_APP" ]; then
     env_vars="$env_vars,FIREBASE_PROJECT=$PROJECT,FIREBASE_API_KEY=$FIREBASE_API_KEY"
     echo "    (this one also serves /admin)"
@@ -129,18 +150,24 @@ for app in "${APPS[@]}"; do
   gcloud run deploy "$service" \
     --project "$PROJECT" \
     --region "$REGION" \
-    --image "$IMAGE" \
     --platform managed \
     --allow-unauthenticated \
-    --add-cloudsql-instances "$CONNECTION_NAME" \
-    --set-env-vars "$env_vars" \
-    --set-secrets "DB_PASSWORD=$SECRET:latest" \
     --min-instances 0 \
     --max-instances 4 \
-    --memory 512Mi \
     --timeout 60 \
+    --clear-cloudsql-instances \
     $([ "$CPU_THROTTLING" = "off" ] && echo --no-cpu-throttling) \
-    ${SERVICE_ACCOUNT:+--service-account "$SERVICE_ACCOUNT"}
+    ${SERVICE_ACCOUNT:+--service-account "$SERVICE_ACCOUNT"} \
+    --container api \
+      --image "$IMAGE" \
+      --port 8080 \
+      --memory 512Mi \
+      --set-env-vars "$env_vars" \
+      --set-secrets "DB_PASSWORD=$SECRET:latest" \
+    --container sql-proxy \
+      --image "$PROXY_IMAGE" \
+      --memory 256Mi \
+      --args "--structured-logs,--port=5432,$CONNECTION_NAME"
 done
 
 echo
