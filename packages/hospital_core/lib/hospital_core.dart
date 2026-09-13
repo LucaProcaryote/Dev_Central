@@ -8,6 +8,7 @@ library;
 
 // Configuration
 export 'src/config/app_config.dart';
+export 'src/config/firebase_config.dart';
 export 'src/config/supported_locales.dart';
 
 // Domain model
