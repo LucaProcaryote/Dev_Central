@@ -370,4 +370,17 @@ void main() {
 
     expect(body['roles'], AdminApi.defaultRoles);
   });
+
+  group('the metadata token', () {
+    test('asks for a specific service account, not the collection', () {
+      // Without `default/` the path names a collection rather than a token and
+      // the metadata server answers 404 - which surfaced in the console as
+      // "L'API a refuse : metadata server: HTTP 404" and cost a deployment.
+      expect(
+        MetadataAccessToken.url.toString(),
+        'http://metadata.google.internal/computeMetadata/v1/'
+        'instance/service-account/default/token',
+      );
+    });
+  });
 }
