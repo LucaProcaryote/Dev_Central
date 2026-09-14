@@ -372,14 +372,15 @@ void main() {
   });
 
   group('the metadata token', () {
-    test('asks for a specific service account, not the collection', () {
-      // Without `default/` the path names a collection rather than a token and
-      // the metadata server answers 404 - which surfaced in the console as
-      // "L'API a refuse : metadata server: HTTP 404" and cost a deployment.
+    test('uses the path Google documents, exactly', () {
+      // Two deployments were spent on this one string: first the missing
+      // `default`, then `service-account` where it is `service-accounts`.
+      // Every wrong spelling answers 404, and a 404 says nothing about which
+      // part is wrong - hence a test that pins the whole thing.
       expect(
         MetadataAccessToken.url.toString(),
         'http://metadata.google.internal/computeMetadata/v1/'
-        'instance/service-account/default/token',
+        'instance/service-accounts/default/token',
       );
     });
   });
