@@ -292,9 +292,13 @@ class MetadataAccessToken implements AccessTokens {
 
   final DateTime Function() now;
 
-  static final Uri _url = Uri.parse(
+  /// Note `default/`. The path names *which* service account is wanted, and
+  /// leaving it out asks for a collection rather than a token: the metadata
+  /// server answers 404, which reaches the console as "metadata server: HTTP
+  /// 404" and looks for all the world like a problem with the console.
+  static final Uri url = Uri.parse(
     'http://metadata.google.internal/computeMetadata/v1/'
-    'instance/service-account/token',
+    'instance/service-account/default/token',
   );
 
   String? _cached;
@@ -309,12 +313,16 @@ class MetadataAccessToken implements AccessTokens {
     }
     final client = HttpClient();
     try {
-      final request = await client.getUrl(_url);
+      final request = await client.getUrl(url);
       request.headers.set('Metadata-Flavor', 'Google');
       final response = await request.close();
       final text = await response.transform(utf8.decoder).join();
       if (response.statusCode != 200) {
-        throw IdentityFailure('metadata server: HTTP ${response.statusCode}');
+        // The path is part of the message: a 404 here is almost always the
+        // URL being wrong rather than the server being unwell.
+        throw IdentityFailure(
+          'metadata server: HTTP ${response.statusCode} for ${url.path}',
+        );
       }
       final json = jsonDecode(text) as Map<String, dynamic>;
       final token = json['access_token']?.toString() ?? '';
