@@ -178,6 +178,14 @@ loop rather than ten dialogs.
 ./tools/setup_firebase_auth.sh --delete student01@mini-hospital.be
 ```
 
+**No password can ever be read back.** Firebase stores a scrypt hash and
+nothing else, so a forgotten password cannot be recovered by the console, by
+this API, by the Firebase console, or by Google - it can only be replaced.
+What the administration console does offer is a reveal button on every field
+where you *type* one, because those are all passwords being chosen rather
+than recalled, and typing eighteen characters blind is how people lock
+themselves out of accounts they created a minute earlier.
+
 **The console is for everything after that.** The portal
 (`my-hospital-2026.web.app`) has an **Administration** page: sign in as an
 account whose role is `admin` and it lists every account, with its role, its
