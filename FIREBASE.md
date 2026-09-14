@@ -410,6 +410,36 @@ with a message about `env[5].value_from.secret_key_ref`. That message means
 exactly one thing: the service account cannot read the secret. Re-running the
 script fixes it.
 
+### The FHIR server
+
+`fhir-server/` in the EAI repository runs HAPI FHIR locally under Docker, and
+that is still the right thing for a student with Docker on their machine. A
+*hosted* page cannot reach it: the application asks
+`http://localhost:8080/fhir`, which means the visitor's own computer, and the
+FHIR tab shows "Offline".
+
+To put it beside the five APIs instead:
+
+```bash
+./infrastructure/cloud/deploy_fhir.sh
+```
+
+The same `hapiproject/hapi` image with the same settings as the compose file,
+one more database on the existing instance, and the same proxy sidecar. It
+prints the endpoint; set it as the `FHIR_BASE` repository variable in the EAI
+repository and push, or try it first with `?fhir=<url>`.
+
+Two things to know. **The first boot is slow** - HAPI builds its schema, which
+takes minutes; if the start-up probe gives up, run the script again and the
+second boot is quick because the schema is now in Cloud SQL. And **a Java
+server is not a Dart binary**: 2 GiB rather than 512 MiB, and about a minute to
+wake from cold. `MIN_INSTANCES=1` keeps one warm for a lecture and bills for
+it; `0` is the default and costs nothing while unused.
+
+`FHIR_DB` is deliberately absent from the list `provision_cloud_sql.sh`
+manages: that script applies the hospital schema and the fictive patients to
+every database it knows about, and HAPI builds and owns its own.
+
 ### Point the applications at it
 
 Per visitor, with no rebuild:
