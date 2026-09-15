@@ -1,5 +1,8 @@
+import '../hl7/hl7_builder.dart';
 import '../hl7/hl7_message.dart';
 import '../hl7/hl7_to_fhir.dart';
+import '../models/observation.dart';
+import '../mqtt/device_reading.dart';
 import '../models/integration.dart';
 import '../models/patient.dart';
 import 'json_path.dart';
@@ -170,6 +173,7 @@ class FlowEngine {
       case FlowNodeType.deviceSource:
       case FlowNodeType.adtSource:
       case FlowNodeType.timerSource:
+      case FlowNodeType.mqttSource:
         return _NodeResult.pass(input, 'Message entered the flow');
 
       // The one source that does work: a v2 message arrives as one long
@@ -312,6 +316,47 @@ class FlowEngine {
           'Translated "$current" to "$translated"',
         );
 
+      case FlowNodeType.deviceDecoder:
+        final format = (node.config['format'] ?? 'fhir').toString();
+        if (readPath(input, 'metric') == null) {
+          return _NodeResult.failure(
+            'This is not a device reading: no "metric" field. Put an MQTT '
+            'subscription ahead of it.',
+          );
+        }
+        final reading = DeviceReading.fromJson(input);
+        final observation = reading.toObservation(id: _readingId(reading));
+
+        if (format == 'hl7v2') {
+          // An ORU needs a name and a medical record number, which the device
+          // payload does not carry - it sends an internal patient id and
+          // nothing else, exactly as a real monitor does.
+          final patient = await context.lookupPatient(reading.patientId);
+          if (patient == null) {
+            return _NodeResult.failure(
+              'No patient "${reading.patientId}" to identify in PID, so no '
+              'ORU^R01 can be built.',
+            );
+          }
+          const builder = Hl7Builder(sendingApplication: 'MINI-DEV');
+          final message = builder.oru(
+            patient: patient,
+            observations: <Observation>[observation],
+            now: reading.at,
+            controlId: _readingId(reading).toUpperCase(),
+          );
+          return _NodeResult.pass(
+            message.toJson(),
+            'Encoded ${reading.metric} as ORU^R01',
+          );
+        }
+
+        return _NodeResult.pass(
+          observation.toFhir(),
+          'Decoded ${reading.metric} ${reading.value} ${reading.unit} '
+          'from ${reading.deviceId}',
+        );
+
       case FlowNodeType.hl7ToFhir:
         final target = Hl7FhirTarget.fromName(
           (node.config['target'] ?? 'auto').toString(),
@@ -412,6 +457,17 @@ class FlowEngine {
     }
   }
 }
+
+/// A stable resource id for a reading.
+///
+/// Derived from the device and the instant rather than generated, so the same
+/// message processed twice - a redelivery, a flow re-run - produces one
+/// resource instead of two. At-least-once delivery makes that a certainty
+/// rather than a corner case.
+String _readingId(DeviceReading reading) =>
+    'obs-${reading.deviceId.toLowerCase()}-'
+    '${reading.metric.toLowerCase()}-'
+    '${reading.at.toUtc().millisecondsSinceEpoch}';
 
 /// The v2 text for [payload], or null when there is none to be had.
 ///

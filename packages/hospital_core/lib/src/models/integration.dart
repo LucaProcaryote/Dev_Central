@@ -42,6 +42,19 @@ enum FlowNodeType {
       nl: 'Opname-, overplaatsings- en ontslagbewegingen.',
     ),
   ),
+  mqttSource(
+    FlowNodeFamily.source,
+    LocalizedText(
+      en: 'MQTT subscription',
+      fr: 'Abonnement MQTT',
+      nl: 'MQTT-abonnement',
+    ),
+    LocalizedText(
+      en: 'Readings published by the devices on a topic filter.',
+      fr: 'Mesures publiées par les appareils sur un filtre de topics.',
+      nl: 'Metingen die apparaten publiceren op een topicfilter.',
+    ),
+  ),
   hl7Source(
     FlowNodeFamily.source,
     LocalizedText(
@@ -121,6 +134,19 @@ enum FlowNodeType {
       en: 'Maps local codes onto a standard terminology.',
       fr: 'Convertit les codes locaux vers une terminologie standard.',
       nl: 'Zet lokale codes om naar een standaardterminologie.',
+    ),
+  ),
+  deviceDecoder(
+    FlowNodeFamily.processor,
+    LocalizedText(
+      en: 'Decode device reading',
+      fr: 'Décoder la mesure',
+      nl: 'Meting decoderen',
+    ),
+    LocalizedText(
+      en: 'Turns a device payload into a FHIR Observation or an ORU^R01.',
+      fr: "Transforme une trame d'appareil en Observation FHIR ou en ORU^R01.",
+      nl: 'Zet een apparaatbericht om in een FHIR Observation of een ORU^R01.',
     ),
   ),
   hl7ToFhir(
@@ -255,6 +281,10 @@ class FlowNode {
   /// - [FlowNodeType.applicationDestination]: `{app: 'EHR'|'ADT'|'PHARM'}`
   /// - [FlowNodeType.httpDestination]: `{url, method}`
   /// - [FlowNodeType.codeTranslator]: `{path, table: {from: to}}`
+  /// - [FlowNodeType.mqttSource]: `{filter}` - the topic filter to subscribe
+  ///   to, read by the application that holds the connection rather than by
+  ///   the engine
+  /// - [FlowNodeType.deviceDecoder]: `{format}` - `fhir` or `hl7v2`
   /// - [FlowNodeType.hl7Source]: `{path}` - where the raw message sits in the
   ///   incoming payload, default `hl7`
   /// - [FlowNodeType.hl7ToFhir]: `{target}` - one of `auto`, `patient`,

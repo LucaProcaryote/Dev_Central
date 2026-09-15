@@ -1,12 +1,111 @@
 import '../models/integration.dart';
 import '../util/localized_text.dart';
 
-/// Four worked integration flows, ready to open on the canvas.
+/// Five worked integration flows, ready to open on the canvas.
 ///
 /// They are meant to be read before they are run. Between them they cover the
 /// patterns the students will need for their own flows: validate then store,
-/// route on a field, filter to raise an alert, and translate HL7 v2 to FHIR.
+/// route on a field, filter to raise an alert, translate HL7 v2 to FHIR, and
+/// carry a bedside measurement from the broker to the record.
 List<IntegrationFlow> buildSeedFlows(DateTime now) => <IntegrationFlow>[
+  IntegrationFlow(
+    id: 'flow-mqtt-vitals',
+    name: const LocalizedText(
+      en: 'Bedside monitors to the record',
+      fr: 'Moniteurs de chevet vers le dossier',
+      nl: 'Bedmonitoren naar het dossier',
+    ),
+    description: const LocalizedText(
+      en:
+          'The whole chain a hospital actually runs. A monitor publishes a '
+          'measurement on MQTT, the engine decodes the device payload into an '
+          'ORU^R01 - the message a real monitor sends - translates that to a '
+          'FHIR Observation, and files it. Three formats, one reading, and '
+          'every step visible on the trace.',
+      fr:
+          "La chaîne complète telle qu'un hôpital la fait tourner. Un moniteur "
+          'publie une mesure en MQTT, le moteur décode la trame en ORU^R01 - '
+          "le message qu'envoie un vrai moniteur - le traduit en Observation "
+          'FHIR, et le classe. Trois formats, une mesure, et chaque étape '
+          'visible dans la trace.',
+      nl:
+          'De volledige keten zoals een ziekenhuis die draait. Een monitor '
+          'publiceert een meting via MQTT, de motor decodeert het bericht naar '
+          'een ORU^R01 - wat een echte monitor verstuurt - vertaalt dat naar '
+          'een FHIR Observation en slaat het op. Drie formaten, één meting, '
+          'elke stap zichtbaar in het spoor.',
+    ),
+    isEnabled: true,
+    updatedAt: now,
+    messagesProcessed: 5127,
+    messagesFailed: 11,
+    nodes: const <FlowNode>[
+      FlowNode(
+        id: 'n-mqtt-src',
+        type: FlowNodeType.mqttSource,
+        label: 'hospital/ward/#',
+        x: 60,
+        y: 180,
+        // Everything published anywhere in the hospital. A ward screen would
+        // subscribe to hospital/ward/<ward>/# instead, which is the point of
+        // putting the location in the topic rather than in the payload.
+        config: <String, dynamic>{'filter': 'hospital/ward/#'},
+      ),
+      FlowNode(
+        id: 'n-mqtt-oru',
+        type: FlowNodeType.deviceDecoder,
+        label: 'ORU^R01',
+        x: 300,
+        y: 180,
+        config: <String, dynamic>{'format': 'hl7v2'},
+      ),
+      FlowNode(
+        id: 'n-mqtt-fhir',
+        type: FlowNodeType.hl7ToFhir,
+        label: 'v2 → FHIR',
+        x: 540,
+        y: 180,
+        config: <String, dynamic>{'target': 'observation'},
+      ),
+      FlowNode(
+        id: 'n-mqtt-store',
+        type: FlowNodeType.fhirStore,
+        label: 'FHIR server',
+        x: 800,
+        y: 90,
+      ),
+      FlowNode(
+        id: 'n-mqtt-ehr',
+        type: FlowNodeType.applicationDestination,
+        label: 'EHR',
+        x: 800,
+        y: 270,
+        config: <String, dynamic>{'app': 'EHR'},
+      ),
+    ],
+    connections: const <FlowConnection>[
+      FlowConnection(
+        id: 'c-mqtt-1',
+        fromNodeId: 'n-mqtt-src',
+        toNodeId: 'n-mqtt-oru',
+      ),
+      FlowConnection(
+        id: 'c-mqtt-2',
+        fromNodeId: 'n-mqtt-oru',
+        toNodeId: 'n-mqtt-fhir',
+      ),
+      FlowConnection(
+        id: 'c-mqtt-3',
+        fromNodeId: 'n-mqtt-fhir',
+        toNodeId: 'n-mqtt-store',
+      ),
+      FlowConnection(
+        id: 'c-mqtt-4',
+        fromNodeId: 'n-mqtt-fhir',
+        toNodeId: 'n-mqtt-ehr',
+      ),
+    ],
+  ),
   IntegrationFlow(
     id: 'flow-hl7-adt',
     name: const LocalizedText(

@@ -702,6 +702,52 @@ void main() {
       expect(delivered['EHR']!['hl7'], original);
     });
 
+    test('the seeded HL7 flow carries a real admission all the way to FHIR',
+        () async {
+      // The other seeded-flow test only checks the graph is well formed. This
+      // one runs a message through it, because a flow the students open on
+      // day one had better work.
+      final stored = <Map<String, dynamic>>[];
+      final delivered = <String, Map<String, dynamic>>{};
+      final engine = FlowEngine(
+        FlowExecutionContext(
+          lookupPatient: (_) async => null,
+          writeToFhirStore: (resource) async {
+            stored.add(resource);
+            return 'Encounter/1';
+          },
+          deliverToApplication: (app, payload) async =>
+              delivered[app] = payload,
+          postToUrl: (_, __) async {},
+        ),
+      );
+
+      final flow = HospitalSeed.build(now: DateTime.utc(2026, 9, 14)).flows
+          .firstWhere((f) => f.id == 'flow-hl7-adt');
+
+      final result = await engine.run(
+        flow,
+        messageWith(<String, dynamic>{
+          'hl7': builder
+              .adt(
+                patient: patient,
+                encounter: encounter,
+                movement: admission,
+                wardName: 'Internal medicine',
+              )
+              .toEr7(),
+        }),
+      );
+
+      expect(result.status, MessageStatus.delivered);
+      expect(stored.single['resourceType'], 'Encounter');
+      expect(
+        readPath(stored.single, 'subject.identifier.value'),
+        'MRN000002',
+      );
+      expect(delivered.keys, <String>['EHR']);
+    });
+
     test('every node type is still executable', () async {
       // The engine switches exhaustively on FlowNodeType, so a new node
       // cannot be added to the model without being handled here. This test
@@ -720,6 +766,36 @@ void main() {
           reason: '${type.name} produced no trace step',
         );
       }
+    });
+  });
+
+  group('what the applications put on the wire', () {
+    test('an ADT movement carries both the JSON event and the v2 message', () {
+      final message = builder.adt(
+        patient: patient,
+        encounter: encounter,
+        movement: admission,
+      );
+
+      // The publisher builds exactly this and files it under "hl7" beside the
+      // JSON, so a flow can be written against either representation of the
+      // same admission.
+      final parsed = Hl7Message.parse(message.toEr7());
+      expect(parsed.messageType, 'ADT^A01');
+      expect(parsed.sendingApplication, 'MINI-ADT');
+    });
+
+    test('a device reading says it came from the device feed, not the ADT', () {
+      // MSH-3 is what a receiving system routes on. A monitor claiming to be
+      // the admissions system is how a message ends up in the wrong queue.
+      const deviceBuilder = Hl7Builder(sendingApplication: 'MINI-DEV');
+      final message = deviceBuilder.oru(
+        patient: patient,
+        observations: <Observation>[temperature],
+      );
+
+      expect(message.sendingApplication, 'MINI-DEV');
+      expect(message.messageType, 'ORU^R01');
     });
   });
 }

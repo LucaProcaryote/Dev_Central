@@ -24,6 +24,9 @@ dependencies:
   collection: ^1.18.0
   firebase_core: ^3.6.0
   firebase_auth: ^5.3.0
+  # MQTT over WebSocket, because a browser cannot open a TCP socket and the
+  # device simulators have to reach the same broker the web applications do.
+  mqtt_client: ^10.9.0
 
 dev_dependencies:
   flutter_test:
