@@ -42,6 +42,32 @@ enum FlowNodeType {
       nl: 'Opname-, overplaatsings- en ontslagbewegingen.',
     ),
   ),
+  mqttSource(
+    FlowNodeFamily.source,
+    LocalizedText(
+      en: 'MQTT subscription',
+      fr: 'Abonnement MQTT',
+      nl: 'MQTT-abonnement',
+    ),
+    LocalizedText(
+      en: 'Readings published by the devices on a topic filter.',
+      fr: 'Mesures publiées par les appareils sur un filtre de topics.',
+      nl: 'Metingen die apparaten publiceren op een topicfilter.',
+    ),
+  ),
+  hl7Source(
+    FlowNodeFamily.source,
+    LocalizedText(
+      en: 'HL7 v2 message',
+      fr: 'Message HL7 v2',
+      nl: 'HL7 v2-bericht',
+    ),
+    LocalizedText(
+      en: 'Accepts a pipe-delimited HL7 v2 message and parses its segments.',
+      fr: 'Accepte un message HL7 v2 en barres verticales et analyse ses segments.',
+      nl: 'Accepteert een HL7 v2-bericht met pipes en ontleedt de segmenten.',
+    ),
+  ),
   timerSource(
     FlowNodeFamily.source,
     LocalizedText(en: 'Timer', fr: 'Minuterie', nl: 'Timer'),
@@ -110,6 +136,32 @@ enum FlowNodeType {
       nl: 'Zet lokale codes om naar een standaardterminologie.',
     ),
   ),
+  deviceDecoder(
+    FlowNodeFamily.processor,
+    LocalizedText(
+      en: 'Decode device reading',
+      fr: 'Décoder la mesure',
+      nl: 'Meting decoderen',
+    ),
+    LocalizedText(
+      en: 'Turns a device payload into a FHIR Observation or an ORU^R01.',
+      fr: "Transforme une trame d'appareil en Observation FHIR ou en ORU^R01.",
+      nl: 'Zet een apparaatbericht om in een FHIR Observation of een ORU^R01.',
+    ),
+  ),
+  hl7ToFhir(
+    FlowNodeFamily.processor,
+    LocalizedText(
+      en: 'HL7 v2 to FHIR',
+      fr: 'HL7 v2 vers FHIR',
+      nl: 'HL7 v2 naar FHIR',
+    ),
+    LocalizedText(
+      en: 'Translates a parsed v2 message into a FHIR resource.',
+      fr: 'Traduit un message v2 analysé en ressource FHIR.',
+      nl: 'Vertaalt een ontleed v2-bericht naar een FHIR-resource.',
+    ),
+  ),
   router(
     FlowNodeFamily.processor,
     LocalizedText(en: 'Router', fr: 'Routeur', nl: 'Router'),
@@ -146,6 +198,19 @@ enum FlowNodeType {
       en: 'POSTs the message to any external URL.',
       fr: 'Envoie le message en POST vers une URL externe.',
       nl: 'Verstuurt het bericht via POST naar een externe URL.',
+    ),
+  ),
+  hl7Destination(
+    FlowNodeFamily.destination,
+    LocalizedText(
+      en: 'HL7 v2 out',
+      fr: 'Sortie HL7 v2',
+      nl: 'HL7 v2-uitgang',
+    ),
+    LocalizedText(
+      en: 'Writes the message back out as HL7 v2 and delivers it.',
+      fr: 'Réécrit le message en HL7 v2 et le délivre.',
+      nl: 'Schrijft het bericht terug als HL7 v2 en levert het af.',
     ),
   ),
   logDestination(
@@ -216,6 +281,16 @@ class FlowNode {
   /// - [FlowNodeType.applicationDestination]: `{app: 'EHR'|'ADT'|'PHARM'}`
   /// - [FlowNodeType.httpDestination]: `{url, method}`
   /// - [FlowNodeType.codeTranslator]: `{path, table: {from: to}}`
+  /// - [FlowNodeType.mqttSource]: `{filter}` - the topic filter to subscribe
+  ///   to, read by the application that holds the connection rather than by
+  ///   the engine
+  /// - [FlowNodeType.deviceDecoder]: `{format}` - `fhir` or `hl7v2`
+  /// - [FlowNodeType.hl7Source]: `{path}` - where the raw message sits in the
+  ///   incoming payload, default `hl7`
+  /// - [FlowNodeType.hl7ToFhir]: `{target}` - one of `auto`, `patient`,
+  ///   `encounter`, `observation`, `bundle`
+  /// - [FlowNodeType.hl7Destination]: `{app}` - which application receives it,
+  ///   or empty to only record the message
   final Map<String, dynamic> config;
 
   String get effectiveLabel => label.isNotEmpty ? label : type.display.en;

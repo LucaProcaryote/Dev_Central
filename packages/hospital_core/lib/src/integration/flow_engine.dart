@@ -1,3 +1,8 @@
+import '../hl7/hl7_builder.dart';
+import '../hl7/hl7_message.dart';
+import '../hl7/hl7_to_fhir.dart';
+import '../models/observation.dart';
+import '../mqtt/device_reading.dart';
 import '../models/integration.dart';
 import '../models/patient.dart';
 import 'json_path.dart';
@@ -168,7 +173,32 @@ class FlowEngine {
       case FlowNodeType.deviceSource:
       case FlowNodeType.adtSource:
       case FlowNodeType.timerSource:
+      case FlowNodeType.mqttSource:
         return _NodeResult.pass(input, 'Message entered the flow');
+
+      // The one source that does work: a v2 message arrives as one long
+      // string, and nothing downstream can filter or map on it until its
+      // segments have been taken apart.
+      case FlowNodeType.hl7Source:
+        final path = (node.config['path'] ?? 'hl7').toString();
+        final raw = readPath(input, path)?.toString() ?? '';
+        if (raw.trim().isEmpty) {
+          return _NodeResult.failure(
+            'No HL7 v2 message found at "$path" in the incoming payload',
+          );
+        }
+        final parsed = Hl7Message.parse(raw);
+        if (parsed.segment('MSH') == null) {
+          return _NodeResult.failure(
+            'Not an HL7 v2 message: it does not start with an MSH segment',
+          );
+        }
+        final segmentNames = parsed.segments.map((s) => s.name).join(', ');
+        return _NodeResult.pass(
+          parsed.toJson(),
+          'Parsed ${parsed.messageType} '
+          '(${parsed.segments.length} segments: $segmentNames)',
+        );
 
       case FlowNodeType.filter:
         final path = (node.config['path'] ?? '').toString();
@@ -286,6 +316,70 @@ class FlowEngine {
           'Translated "$current" to "$translated"',
         );
 
+      case FlowNodeType.deviceDecoder:
+        final format = (node.config['format'] ?? 'fhir').toString();
+        if (readPath(input, 'metric') == null) {
+          return _NodeResult.failure(
+            'This is not a device reading: no "metric" field. Put an MQTT '
+            'subscription ahead of it.',
+          );
+        }
+        final reading = DeviceReading.fromJson(input);
+        final observation = reading.toObservation(id: _readingId(reading));
+
+        if (format == 'hl7v2') {
+          // An ORU needs a name and a medical record number, which the device
+          // payload does not carry - it sends an internal patient id and
+          // nothing else, exactly as a real monitor does.
+          final patient = await context.lookupPatient(reading.patientId);
+          if (patient == null) {
+            return _NodeResult.failure(
+              'No patient "${reading.patientId}" to identify in PID, so no '
+              'ORU^R01 can be built.',
+            );
+          }
+          const builder = Hl7Builder(sendingApplication: 'MINI-DEV');
+          final message = builder.oru(
+            patient: patient,
+            observations: <Observation>[observation],
+            now: reading.at,
+            controlId: _readingId(reading).toUpperCase(),
+          );
+          return _NodeResult.pass(
+            message.toJson(),
+            'Encoded ${reading.metric} as ORU^R01',
+          );
+        }
+
+        return _NodeResult.pass(
+          observation.toFhir(),
+          'Decoded ${reading.metric} ${reading.value} ${reading.unit} '
+          'from ${reading.deviceId}',
+        );
+
+      case FlowNodeType.hl7ToFhir:
+        final target = Hl7FhirTarget.fromName(
+          (node.config['target'] ?? 'auto').toString(),
+        );
+        final raw = readPath(input, 'hl7')?.toString() ?? '';
+        if (raw.trim().isEmpty) {
+          return _NodeResult.failure(
+            'This node needs the original v2 message under "hl7". Put an '
+            'HL7 v2 source ahead of it, or keep the field through the mapper.',
+          );
+        }
+        final message = Hl7Message.parse(raw);
+        try {
+          final resource = hl7ToFhir(message, target: target);
+          return _NodeResult.pass(
+            resource,
+            'Translated ${message.messageType} to '
+            '${resource['resourceType']}',
+          );
+        } on Hl7TranslationException catch (error) {
+          return _NodeResult.failure(error.message);
+        }
+
       case FlowNodeType.router:
         final path = (node.config['path'] ?? '').toString();
         final routes = (node.config['routes'] as List? ?? const <dynamic>[])
@@ -330,10 +424,68 @@ class FlowEngine {
         await context.postToUrl(url, input);
         return _NodeResult.delivered(input, 'POSTed to $url');
 
+      case FlowNodeType.hl7Destination:
+        // A real engine would open an MLLP connection here. Cloud Run speaks
+        // no raw TCP and a browser cannot open a socket at all, so the hosted
+        // build hands the message to an application over HTTP instead. The
+        // encoding on the wire is the same; only the transport differs, and
+        // the local Docker stack does run a real MLLP listener.
+        final rendered = _renderHl7(input);
+        if (rendered == null) {
+          return _NodeResult.failure(
+            'Nothing to send: the payload carries no "hl7" field and no '
+            'parsed segments to rebuild one from.',
+          );
+        }
+        final app = (node.config['app'] ?? '').toString();
+        final outgoing = <String, dynamic>{...input, 'hl7': rendered};
+        if (app.isEmpty) {
+          return _NodeResult.delivered(
+            outgoing,
+            'Rendered ${rendered.length} bytes of HL7 v2, not delivered '
+            '(no application configured)',
+          );
+        }
+        await context.deliverToApplication(app, outgoing);
+        return _NodeResult.delivered(
+          outgoing,
+          'Sent ${_messageTypeOf(input)} to $app as HL7 v2',
+        );
+
       case FlowNodeType.logDestination:
         return _NodeResult.delivered(input, 'Logged');
     }
   }
+}
+
+/// A stable resource id for a reading.
+///
+/// Derived from the device and the instant rather than generated, so the same
+/// message processed twice - a redelivery, a flow re-run - produces one
+/// resource instead of two. At-least-once delivery makes that a certainty
+/// rather than a corner case.
+String _readingId(DeviceReading reading) =>
+    'obs-${reading.deviceId.toLowerCase()}-'
+    '${reading.metric.toLowerCase()}-'
+    '${reading.at.toUtc().millisecondsSinceEpoch}';
+
+/// The v2 text for [payload], or null when there is none to be had.
+///
+/// A flow that only routed the message still holds the original under `hl7`;
+/// one that mapped fields may have dropped it, in which case the parsed
+/// segments are re-serialised. Nothing is invented: if neither is present the
+/// caller is told rather than being handed an empty MSH.
+String? _renderHl7(Map<String, dynamic> payload) {
+  final raw = payload['hl7'];
+  if (raw is String && raw.trim().isNotEmpty) {
+    return Hl7Message.parse(raw).toEr7();
+  }
+  return null;
+}
+
+String _messageTypeOf(Map<String, dynamic> payload) {
+  final type = payload['message_type'];
+  return type is String && type.isNotEmpty ? type : 'the message';
 }
 
 class _Pending {
