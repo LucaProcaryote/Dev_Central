@@ -205,7 +205,14 @@ class SimulatorController extends ChangeNotifier {
     var delivered = false;
     String? error;
     if (publisher != null) {
-      final result = await publisher!.publishObservation(observation);
+      // Fetched for PID: an ORU^R01 identifies its patient by name and
+      // medical record number, not by the internal id the FHIR resource
+      // uses. No patient, no v2 message - the FHIR one still goes.
+      final patient = await repository.findPatient(observation.patientId);
+      final result = await publisher!.publishObservation(
+        observation,
+        patient: patient,
+      );
       delivered = result.delivered;
       error = result.error;
     } else {

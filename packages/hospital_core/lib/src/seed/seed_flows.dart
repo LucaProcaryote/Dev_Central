@@ -1,12 +1,115 @@
 import '../models/integration.dart';
 import '../util/localized_text.dart';
 
-/// Three worked integration flows, ready to open on the canvas.
+/// Four worked integration flows, ready to open on the canvas.
 ///
 /// They are meant to be read before they are run. Between them they cover the
 /// patterns the students will need for their own flows: validate then store,
-/// route on a field, and filter to raise an alert.
+/// route on a field, filter to raise an alert, and translate HL7 v2 to FHIR.
 List<IntegrationFlow> buildSeedFlows(DateTime now) => <IntegrationFlow>[
+  IntegrationFlow(
+    id: 'flow-hl7-adt',
+    name: const LocalizedText(
+      en: 'HL7 v2 admissions to FHIR',
+      fr: 'Admissions HL7 v2 vers FHIR',
+      nl: 'HL7 v2-opnames naar FHIR',
+    ),
+    description: const LocalizedText(
+      en:
+          'The job an interface engine does all day: an ADT^A01 arrives as a '
+          'pipe-delimited v2 message, its segments are parsed, inpatient '
+          'admissions are kept, and the visit is translated into a FHIR '
+          'Encounter for the record. Open a message and switch between the '
+          'two views to see what each format keeps and what it loses.',
+      fr:
+          "Le travail quotidien d'un moteur d'intégration : un ADT^A01 arrive "
+          'en message v2 à barres verticales, ses segments sont analysés, les '
+          'admissions hospitalières sont retenues, et le séjour est traduit '
+          'en Encounter FHIR pour le dossier. Ouvrez un message et basculez '
+          'entre les deux vues pour voir ce que chaque format conserve et ce '
+          "qu'il perd.",
+      nl:
+          'Het dagelijkse werk van een integratiemotor: een ADT^A01 komt '
+          'binnen als v2-bericht met pipes, de segmenten worden ontleed, '
+          'opnames worden behouden en het verblijf wordt vertaald naar een '
+          'FHIR Encounter voor het dossier. Open een bericht en wissel tussen '
+          'beide weergaven om te zien wat elk formaat bewaart en verliest.',
+    ),
+    isEnabled: true,
+    updatedAt: now.subtract(const Duration(days: 1)),
+    messagesProcessed: 342,
+    messagesFailed: 2,
+    nodes: const <FlowNode>[
+      FlowNode(
+        id: 'n-hl7-src',
+        type: FlowNodeType.hl7Source,
+        label: 'ADT^A01 in',
+        x: 60,
+        y: 180,
+        config: <String, dynamic>{'path': 'hl7'},
+      ),
+      FlowNode(
+        id: 'n-hl7-filter',
+        type: FlowNodeType.filter,
+        label: 'Inpatient only',
+        x: 300,
+        y: 180,
+        // PV1-2 is the patient class: I for inpatient, O for outpatient, E
+        // for emergency. One letter, one position - which is the whole
+        // character of v2 in a single field.
+        config: <String, dynamic>{
+          'path': 'PV1.2',
+          'operator': 'equals',
+          'value': 'I',
+        },
+      ),
+      FlowNode(
+        id: 'n-hl7-fhir',
+        type: FlowNodeType.hl7ToFhir,
+        label: 'v2 → FHIR',
+        x: 540,
+        y: 180,
+        config: <String, dynamic>{'target': 'encounter'},
+      ),
+      FlowNode(
+        id: 'n-hl7-store',
+        type: FlowNodeType.fhirStore,
+        label: 'FHIR server',
+        x: 800,
+        y: 90,
+      ),
+      FlowNode(
+        id: 'n-hl7-ehr',
+        type: FlowNodeType.applicationDestination,
+        label: 'EHR',
+        x: 800,
+        y: 270,
+        config: <String, dynamic>{'app': 'EHR'},
+      ),
+    ],
+    connections: const <FlowConnection>[
+      FlowConnection(
+        id: 'c-hl7-1',
+        fromNodeId: 'n-hl7-src',
+        toNodeId: 'n-hl7-filter',
+      ),
+      FlowConnection(
+        id: 'c-hl7-2',
+        fromNodeId: 'n-hl7-filter',
+        toNodeId: 'n-hl7-fhir',
+      ),
+      FlowConnection(
+        id: 'c-hl7-3',
+        fromNodeId: 'n-hl7-fhir',
+        toNodeId: 'n-hl7-store',
+      ),
+      FlowConnection(
+        id: 'c-hl7-4',
+        fromNodeId: 'n-hl7-fhir',
+        toNodeId: 'n-hl7-ehr',
+      ),
+    ],
+  ),
   IntegrationFlow(
     id: 'flow-vitals',
     name: const LocalizedText(

@@ -42,6 +42,19 @@ enum FlowNodeType {
       nl: 'Opname-, overplaatsings- en ontslagbewegingen.',
     ),
   ),
+  hl7Source(
+    FlowNodeFamily.source,
+    LocalizedText(
+      en: 'HL7 v2 message',
+      fr: 'Message HL7 v2',
+      nl: 'HL7 v2-bericht',
+    ),
+    LocalizedText(
+      en: 'Accepts a pipe-delimited HL7 v2 message and parses its segments.',
+      fr: 'Accepte un message HL7 v2 en barres verticales et analyse ses segments.',
+      nl: 'Accepteert een HL7 v2-bericht met pipes en ontleedt de segmenten.',
+    ),
+  ),
   timerSource(
     FlowNodeFamily.source,
     LocalizedText(en: 'Timer', fr: 'Minuterie', nl: 'Timer'),
@@ -110,6 +123,19 @@ enum FlowNodeType {
       nl: 'Zet lokale codes om naar een standaardterminologie.',
     ),
   ),
+  hl7ToFhir(
+    FlowNodeFamily.processor,
+    LocalizedText(
+      en: 'HL7 v2 to FHIR',
+      fr: 'HL7 v2 vers FHIR',
+      nl: 'HL7 v2 naar FHIR',
+    ),
+    LocalizedText(
+      en: 'Translates a parsed v2 message into a FHIR resource.',
+      fr: 'Traduit un message v2 analysé en ressource FHIR.',
+      nl: 'Vertaalt een ontleed v2-bericht naar een FHIR-resource.',
+    ),
+  ),
   router(
     FlowNodeFamily.processor,
     LocalizedText(en: 'Router', fr: 'Routeur', nl: 'Router'),
@@ -146,6 +172,19 @@ enum FlowNodeType {
       en: 'POSTs the message to any external URL.',
       fr: 'Envoie le message en POST vers une URL externe.',
       nl: 'Verstuurt het bericht via POST naar een externe URL.',
+    ),
+  ),
+  hl7Destination(
+    FlowNodeFamily.destination,
+    LocalizedText(
+      en: 'HL7 v2 out',
+      fr: 'Sortie HL7 v2',
+      nl: 'HL7 v2-uitgang',
+    ),
+    LocalizedText(
+      en: 'Writes the message back out as HL7 v2 and delivers it.',
+      fr: 'Réécrit le message en HL7 v2 et le délivre.',
+      nl: 'Schrijft het bericht terug als HL7 v2 en levert het af.',
     ),
   ),
   logDestination(
@@ -216,6 +255,12 @@ class FlowNode {
   /// - [FlowNodeType.applicationDestination]: `{app: 'EHR'|'ADT'|'PHARM'}`
   /// - [FlowNodeType.httpDestination]: `{url, method}`
   /// - [FlowNodeType.codeTranslator]: `{path, table: {from: to}}`
+  /// - [FlowNodeType.hl7Source]: `{path}` - where the raw message sits in the
+  ///   incoming payload, default `hl7`
+  /// - [FlowNodeType.hl7ToFhir]: `{target}` - one of `auto`, `patient`,
+  ///   `encounter`, `observation`, `bundle`
+  /// - [FlowNodeType.hl7Destination]: `{app}` - which application receives it,
+  ///   or empty to only record the message
   final Map<String, dynamic> config;
 
   String get effectiveLabel => label.isNotEmpty ? label : type.display.en;

@@ -30,6 +30,11 @@ export 'src/clinical/safety_checks.dart';
 // FHIR
 export 'src/fhir/fhir_client.dart';
 
+// HL7 v2
+export 'src/hl7/hl7_builder.dart';
+export 'src/hl7/hl7_message.dart';
+export 'src/hl7/hl7_to_fhir.dart';
+
 // Integration engine
 export 'src/integration/event_publisher.dart';
 export 'src/integration/flow_engine.dart';
