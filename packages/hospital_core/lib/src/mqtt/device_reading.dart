@@ -162,11 +162,12 @@ class PresenceMessage {
 
   String encode() => jsonEncode(toJson());
 
-  factory PresenceMessage.fromJson(Map<String, dynamic> json) => PresenceMessage(
-    deviceId: asString(json['device']),
-    presence: DevicePresence.fromName(asString(json['state'])),
-    at: asDateTime(json['at']),
-  );
+  factory PresenceMessage.fromJson(Map<String, dynamic> json) =>
+      PresenceMessage(
+        deviceId: asString(json['device']),
+        presence: DevicePresence.fromName(asString(json['state'])),
+        at: asDateTime(json['at']),
+      );
 
   String get topic => MqttTopics.status(deviceId);
 }

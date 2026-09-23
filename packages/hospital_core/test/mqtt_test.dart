@@ -92,7 +92,10 @@ void main() {
     test('# takes the rest of the tree', () {
       expect(MqttTopics.matches('hospital/ward/#', heartRate.topic), isTrue);
       expect(
-        MqttTopics.matches(MqttTopics.wardReadings('ward-icu'), heartRate.topic),
+        MqttTopics.matches(
+          MqttTopics.wardReadings('ward-icu'),
+          heartRate.topic,
+        ),
         isTrue,
       );
       expect(
@@ -208,43 +211,52 @@ void main() {
       expect(replayed, isEmpty);
     });
 
-    test('presence is retained, so a screen opened later still learns it',
-        () async {
-      await broker.connect();
-      feed.announce('DEV3', DevicePresence.online, now: DateTime.utc(2026, 9, 15));
+    test(
+      'presence is retained, so a screen opened later still learns it',
+      () async {
+        await broker.connect();
+        feed.announce(
+          'DEV3',
+          DevicePresence.online,
+          now: DateTime.utc(2026, 9, 15),
+        );
 
-      // Subscribing after the fact: a real broker replays what it kept.
-      final late = DeviceFeed(broker);
-      final seen = late.events.firstWhere((e) => e is PresenceEvent);
-      await late.connectAsObserver();
+        // Subscribing after the fact: a real broker replays what it kept.
+        final late = DeviceFeed(broker);
+        final seen = late.events.firstWhere((e) => e is PresenceEvent);
+        await late.connectAsObserver();
 
-      final event = await seen as PresenceEvent;
-      expect(event.status.presence, DevicePresence.online);
-      expect(event.retained, isTrue, reason: 'a replay is not news');
-      await late.close();
-    });
+        final event = await seen as PresenceEvent;
+        expect(event.status.presence, DevicePresence.online);
+        expect(event.retained, isTrue, reason: 'a replay is not news');
+        await late.close();
+      },
+    );
 
-    test('a device that stops answering is announced by the broker itself',
-        () async {
-      final observer = DeviceFeed(broker);
-      await observer.connectAsObserver();
-      final offline = observer.events.firstWhere(
-        (e) => e is PresenceEvent && e.status.presence == DevicePresence.offline,
-      );
+    test(
+      'a device that stops answering is announced by the broker itself',
+      () async {
+        final observer = DeviceFeed(broker);
+        await observer.connectAsObserver();
+        final offline = observer.events.firstWhere(
+          (e) =>
+              e is PresenceEvent && e.status.presence == DevicePresence.offline,
+        );
 
-      await feed.connectAsDevice('DEV3', now: DateTime.utc(2026, 9, 15, 6));
-      expect(observer.isOnline('DEV3'), isFalse, reason: 'not yet delivered');
-      await Future<void>.delayed(Duration.zero);
-      expect(observer.isOnline('DEV3'), isTrue);
+        await feed.connectAsDevice('DEV3', now: DateTime.utc(2026, 9, 15, 6));
+        expect(observer.isOnline('DEV3'), isFalse, reason: 'not yet delivered');
+        await Future<void>.delayed(Duration.zero);
+        expect(observer.isOnline('DEV3'), isTrue);
 
-      // Nothing polls and nothing notices: the broker publishes the will.
-      broker.fail();
+        // Nothing polls and nothing notices: the broker publishes the will.
+        broker.fail();
 
-      final event = await offline as PresenceEvent;
-      expect(event.status.deviceId, 'DEV3');
-      expect(observer.isOnline('DEV3'), isFalse);
-      await observer.close();
-    });
+        final event = await offline as PresenceEvent;
+        expect(event.status.deviceId, 'DEV3');
+        expect(observer.isOnline('DEV3'), isFalse);
+        await observer.close();
+      },
+    );
 
     test('a device nobody has heard from is not online', () async {
       await feed.connectAsObserver();
@@ -262,16 +274,18 @@ void main() {
       expect(event.payload, 'not json at all');
     });
 
-    test('a topic from outside the hospital tree is reported, not parsed',
-        () async {
-      await feed.connectAsObserver(readings: '#');
-      final received = feed.events.firstWhere((e) => e is MalformedEvent);
+    test(
+      'a topic from outside the hospital tree is reported, not parsed',
+      () async {
+        await feed.connectAsObserver(readings: '#');
+        final received = feed.events.firstWhere((e) => e is MalformedEvent);
 
-      broker.inject('somebody/else/topic', '{"value":1}');
+        broker.inject('somebody/else/topic', '{"value":1}');
 
-      final event = await received as MalformedEvent;
-      expect(event.reason, contains('tree'));
-    });
+        final event = await received as MalformedEvent;
+        expect(event.reason, contains('tree'));
+      },
+    );
   });
 
   group('the decoder node', () {
@@ -370,30 +384,32 @@ void main() {
       expect(stored[0]['id'], stored[1]['id']);
     });
 
-    test('the v2 format needs a patient, and says so when there is none',
-        () async {
-      final result = await engineWith().run(
-        flowOf(
-          <FlowNode>[
-            node('a', FlowNodeType.mqttSource),
-            node(
-              'b',
-              FlowNodeType.deviceDecoder,
-              config: const <String, dynamic>{'format': 'hl7v2'},
-            ),
-            node('c', FlowNodeType.logDestination),
-          ],
-          const <FlowConnection>[
-            FlowConnection(id: '1', fromNodeId: 'a', toNodeId: 'b'),
-            FlowConnection(id: '2', fromNodeId: 'b', toNodeId: 'c'),
-          ],
-        ),
-        messageOf(heartRate.toJson()),
-      );
+    test(
+      'the v2 format needs a patient, and says so when there is none',
+      () async {
+        final result = await engineWith().run(
+          flowOf(
+            <FlowNode>[
+              node('a', FlowNodeType.mqttSource),
+              node(
+                'b',
+                FlowNodeType.deviceDecoder,
+                config: const <String, dynamic>{'format': 'hl7v2'},
+              ),
+              node('c', FlowNodeType.logDestination),
+            ],
+            const <FlowConnection>[
+              FlowConnection(id: '1', fromNodeId: 'a', toNodeId: 'b'),
+              FlowConnection(id: '2', fromNodeId: 'b', toNodeId: 'c'),
+            ],
+          ),
+          messageOf(heartRate.toJson()),
+        );
 
-      expect(result.status, MessageStatus.failed);
-      expect(result.error, contains('pat-002'));
-    });
+        expect(result.status, MessageStatus.failed);
+        expect(result.error, contains('pat-002'));
+      },
+    );
 
     test('something that is not a reading fails with a reason', () async {
       final result = await engineWith().run(
@@ -415,25 +431,31 @@ void main() {
       expect(result.error, contains('metric'));
     });
 
-    test('the seeded flow carries one reading through all three formats',
-        () async {
-      // MQTT payload, then ORU^R01, then FHIR. This is the chain a hospital
-      // actually runs, and the flow the students open on day one.
-      final stored = <Map<String, dynamic>>[];
-      final flow = HospitalSeed.build(now: DateTime.utc(2026, 9, 15)).flows
-          .firstWhere((f) => f.id == 'flow-mqtt-vitals');
+    test(
+      'the seeded flow carries one reading through all three formats',
+      () async {
+        // MQTT payload, then ORU^R01, then FHIR. This is the chain a hospital
+        // actually runs, and the flow the students open on day one.
+        final stored = <Map<String, dynamic>>[];
+        final flow = HospitalSeed.build(
+          now: DateTime.utc(2026, 9, 15),
+        ).flows.firstWhere((f) => f.id == 'flow-mqtt-vitals');
 
-      final result = await engineWith(stored: stored, known: patient).run(
-        flow,
-        messageOf(heartRate.toJson()),
-      );
+        final result = await engineWith(
+          stored: stored,
+          known: patient,
+        ).run(flow, messageOf(heartRate.toJson()));
 
-      expect(result.status, MessageStatus.delivered);
-      expect(result.trace[1].detail, contains('ORU^R01'));
-      expect(stored.single['resourceType'], 'Observation');
-      expect(readPath(stored.single, 'code.coding.0.code'), '8867-4');
-      expect(readPath(stored.single, 'subject.identifier.value'), 'MRN000002');
-      expect(readPath(stored.single, 'device.identifier.value'), 'DEV3');
-    });
+        expect(result.status, MessageStatus.delivered);
+        expect(result.trace[1].detail, contains('ORU^R01'));
+        expect(stored.single['resourceType'], 'Observation');
+        expect(readPath(stored.single, 'code.coding.0.code'), '8867-4');
+        expect(
+          readPath(stored.single, 'subject.identifier.value'),
+          'MRN000002',
+        );
+        expect(readPath(stored.single, 'device.identifier.value'), 'DEV3');
+      },
+    );
   });
 }

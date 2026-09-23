@@ -99,9 +99,10 @@ void main() {
         encounter: encounter,
         movement: admission,
       );
-      final line = message.toEr7().split('\r').firstWhere(
-        (l) => l.startsWith('PID'),
-      );
+      final line = message
+          .toEr7()
+          .split('\r')
+          .firstWhere((l) => l.startsWith('PID'));
 
       // The patient's family name contains a component separator. Written
       // raw it would turn one name into three components; escaped, PID-5
@@ -118,10 +119,7 @@ void main() {
       );
       final reparsed = Hl7Message.parse(message.toEr7());
 
-      expect(
-        reparsed.segment('PID')!.component(5, 1),
-        "D'Hondt^Dupont",
-      );
+      expect(reparsed.segment('PID')!.component(5, 1), "D'Hondt^Dupont");
       expect(reparsed.segment('PID')!.component(5, 2), 'Marie-Claire');
     });
 
@@ -233,11 +231,7 @@ void main() {
 
       expect(
         builder
-            .adt(
-              patient: patient,
-              encounter: encounter,
-              movement: admission,
-            )
+            .adt(patient: patient, encounter: encounter, movement: admission)
             .segment('PV1')!
             .field(45),
         isEmpty,
@@ -489,10 +483,7 @@ void main() {
         'PID|1||MRN000002||DUPONT^Marie-Claire||19550314|F',
       );
 
-      expect(
-        () => hl7ToFhir(message),
-        throwsA(isA<Hl7TranslationException>()),
-      );
+      expect(() => hl7ToFhir(message), throwsA(isA<Hl7TranslationException>()));
     });
 
     test('a missing PID is reported, not papered over', () {
@@ -568,11 +559,7 @@ void main() {
         flow,
         messageWith(<String, dynamic>{
           'hl7': builder
-              .adt(
-                patient: patient,
-                encounter: encounter,
-                movement: admission,
-              )
+              .adt(patient: patient, encounter: encounter, movement: admission)
               .toEr7(),
         }),
       );
@@ -584,27 +571,29 @@ void main() {
       expect(result.trace[1].detail, contains('to Encounter'));
     });
 
-    test('a payload that is not HL7 fails at the source with a reason',
-        () async {
-      final engine = FlowEngine(FlowExecutionContext.dryRun());
-      final flow = flowOf(
-        <FlowNode>[
-          node('a', FlowNodeType.hl7Source),
-          node('b', FlowNodeType.logDestination),
-        ],
-        const <FlowConnection>[
-          FlowConnection(id: '1', fromNodeId: 'a', toNodeId: 'b'),
-        ],
-      );
+    test(
+      'a payload that is not HL7 fails at the source with a reason',
+      () async {
+        final engine = FlowEngine(FlowExecutionContext.dryRun());
+        final flow = flowOf(
+          <FlowNode>[
+            node('a', FlowNodeType.hl7Source),
+            node('b', FlowNodeType.logDestination),
+          ],
+          const <FlowConnection>[
+            FlowConnection(id: '1', fromNodeId: 'a', toNodeId: 'b'),
+          ],
+        );
 
-      final result = await engine.run(
-        flow,
-        messageWith(<String, dynamic>{'hl7': 'this is not a message'}),
-      );
+        final result = await engine.run(
+          flow,
+          messageWith(<String, dynamic>{'hl7': 'this is not a message'}),
+        );
 
-      expect(result.status, MessageStatus.failed);
-      expect(result.error, contains('MSH'));
-    });
+        expect(result.status, MessageStatus.failed);
+        expect(result.error, contains('MSH'));
+      },
+    );
 
     test('a filter can route on a parsed v2 field', () async {
       final engine = FlowEngine(FlowExecutionContext.dryRun());
@@ -632,11 +621,7 @@ void main() {
         flow,
         messageWith(<String, dynamic>{
           'hl7': builder
-              .adt(
-                patient: patient,
-                encounter: encounter,
-                movement: admission,
-              )
+              .adt(patient: patient, encounter: encounter, movement: admission)
               .toEr7(),
         }),
       );
@@ -663,90 +648,95 @@ void main() {
       expect(outpatient.status, MessageStatus.filtered);
     });
 
-    test('the destination hands the application the v2 text unchanged',
-        () async {
-      final delivered = <String, Map<String, dynamic>>{};
-      final engine = FlowEngine(
-        FlowExecutionContext(
-          lookupPatient: (_) async => null,
-          writeToFhirStore: (_) async => 'x',
-          deliverToApplication: (app, payload) async =>
-              delivered[app] = payload,
-          postToUrl: (_, __) async {},
-        ),
-      );
-      final original = builder
-          .adt(patient: patient, encounter: encounter, movement: admission)
-          .toEr7();
-
-      final flow = flowOf(
-        <FlowNode>[
-          node('a', FlowNodeType.hl7Source),
-          node(
-            'b',
-            FlowNodeType.hl7Destination,
-            config: const <String, dynamic>{'app': 'EHR'},
+    test(
+      'the destination hands the application the v2 text unchanged',
+      () async {
+        final delivered = <String, Map<String, dynamic>>{};
+        final engine = FlowEngine(
+          FlowExecutionContext(
+            lookupPatient: (_) async => null,
+            writeToFhirStore: (_) async => 'x',
+            deliverToApplication: (app, payload) async =>
+                delivered[app] = payload,
+            postToUrl: (_, __) async {},
           ),
-        ],
-        const <FlowConnection>[
-          FlowConnection(id: '1', fromNodeId: 'a', toNodeId: 'b'),
-        ],
-      );
+        );
+        final original = builder
+            .adt(patient: patient, encounter: encounter, movement: admission)
+            .toEr7();
 
-      final result = await engine.run(
-        flow,
-        messageWith(<String, dynamic>{'hl7': original}),
-      );
+        final flow = flowOf(
+          <FlowNode>[
+            node('a', FlowNodeType.hl7Source),
+            node(
+              'b',
+              FlowNodeType.hl7Destination,
+              config: const <String, dynamic>{'app': 'EHR'},
+            ),
+          ],
+          const <FlowConnection>[
+            FlowConnection(id: '1', fromNodeId: 'a', toNodeId: 'b'),
+          ],
+        );
 
-      expect(result.status, MessageStatus.delivered);
-      expect(delivered['EHR']!['hl7'], original);
-    });
+        final result = await engine.run(
+          flow,
+          messageWith(<String, dynamic>{'hl7': original}),
+        );
 
-    test('the seeded HL7 flow carries a real admission all the way to FHIR',
-        () async {
-      // The other seeded-flow test only checks the graph is well formed. This
-      // one runs a message through it, because a flow the students open on
-      // day one had better work.
-      final stored = <Map<String, dynamic>>[];
-      final delivered = <String, Map<String, dynamic>>{};
-      final engine = FlowEngine(
-        FlowExecutionContext(
-          lookupPatient: (_) async => null,
-          writeToFhirStore: (resource) async {
-            stored.add(resource);
-            return 'Encounter/1';
-          },
-          deliverToApplication: (app, payload) async =>
-              delivered[app] = payload,
-          postToUrl: (_, __) async {},
-        ),
-      );
+        expect(result.status, MessageStatus.delivered);
+        expect(delivered['EHR']!['hl7'], original);
+      },
+    );
 
-      final flow = HospitalSeed.build(now: DateTime.utc(2026, 9, 14)).flows
-          .firstWhere((f) => f.id == 'flow-hl7-adt');
+    test(
+      'the seeded HL7 flow carries a real admission all the way to FHIR',
+      () async {
+        // The other seeded-flow test only checks the graph is well formed. This
+        // one runs a message through it, because a flow the students open on
+        // day one had better work.
+        final stored = <Map<String, dynamic>>[];
+        final delivered = <String, Map<String, dynamic>>{};
+        final engine = FlowEngine(
+          FlowExecutionContext(
+            lookupPatient: (_) async => null,
+            writeToFhirStore: (resource) async {
+              stored.add(resource);
+              return 'Encounter/1';
+            },
+            deliverToApplication: (app, payload) async =>
+                delivered[app] = payload,
+            postToUrl: (_, __) async {},
+          ),
+        );
 
-      final result = await engine.run(
-        flow,
-        messageWith(<String, dynamic>{
-          'hl7': builder
-              .adt(
-                patient: patient,
-                encounter: encounter,
-                movement: admission,
-                wardName: 'Internal medicine',
-              )
-              .toEr7(),
-        }),
-      );
+        final flow = HospitalSeed.build(
+          now: DateTime.utc(2026, 9, 14),
+        ).flows.firstWhere((f) => f.id == 'flow-hl7-adt');
 
-      expect(result.status, MessageStatus.delivered);
-      expect(stored.single['resourceType'], 'Encounter');
-      expect(
-        readPath(stored.single, 'subject.identifier.value'),
-        'MRN000002',
-      );
-      expect(delivered.keys, <String>['EHR']);
-    });
+        final result = await engine.run(
+          flow,
+          messageWith(<String, dynamic>{
+            'hl7': builder
+                .adt(
+                  patient: patient,
+                  encounter: encounter,
+                  movement: admission,
+                  wardName: 'Internal medicine',
+                )
+                .toEr7(),
+          }),
+        );
+
+        expect(result.status, MessageStatus.delivered);
+        expect(stored.single['resourceType'], 'Encounter');
+        expect(
+          readPath(stored.single, 'subject.identifier.value'),
+          'MRN000002',
+        );
+        expect(delivered.keys, <String>['EHR']);
+      },
+    );
 
     test('every node type is still executable', () async {
       // The engine switches exhaustively on FlowNodeType, so a new node

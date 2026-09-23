@@ -202,11 +202,7 @@ enum FlowNodeType {
   ),
   hl7Destination(
     FlowNodeFamily.destination,
-    LocalizedText(
-      en: 'HL7 v2 out',
-      fr: 'Sortie HL7 v2',
-      nl: 'HL7 v2-uitgang',
-    ),
+    LocalizedText(en: 'HL7 v2 out', fr: 'Sortie HL7 v2', nl: 'HL7 v2-uitgang'),
     LocalizedText(
       en: 'Writes the message back out as HL7 v2 and delivers it.',
       fr: 'Réécrit le message en HL7 v2 et le délivre.',

@@ -167,7 +167,10 @@ class FakeMqttTransport implements MqttTransport {
   }
 
   @override
-  void subscribe(String filter, {MqttDelivery delivery = MqttDelivery.atLeastOnce}) {
+  void subscribe(
+    String filter, {
+    MqttDelivery delivery = MqttDelivery.atLeastOnce,
+  }) {
     _subscriptions.add(filter);
     // A real broker replays what it has kept the moment a subscription is
     // made, which is how a screen opened at noon learns about a device that

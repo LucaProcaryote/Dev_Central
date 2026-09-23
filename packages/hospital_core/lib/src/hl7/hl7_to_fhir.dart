@@ -239,10 +239,7 @@ Map<String, dynamic> hl7Encounter(Hl7Message message) {
       // extension rather than being dropped. A receiving system that does not
       // know the extension ignores it, which is the behaviour FHIR intends.
       'extension': <dynamic>[
-        <String, dynamic>{
-          'url': triggerEventExtensionUrl,
-          'valueCode': event,
-        },
+        <String, dynamic>{'url': triggerEventExtensionUrl, 'valueCode': event},
       ],
   });
 }
