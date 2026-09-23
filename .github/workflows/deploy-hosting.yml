@@ -100,6 +100,9 @@ jobs:
           # gets their own in-browser hospital, which is the right default for
           # a page that cannot reach anything on a student's localhost.
           API_BASE: ${{ vars.API_BASE }}
+          MQTT_URL: ${{ vars.MQTT_URL }}
+          MQTT_USERNAME: ${{ vars.MQTT_USERNAME }}
+          MQTT_PASSWORD: ${{ vars.MQTT_PASSWORD }}
 
           # Set these three and the build signs in against Firebase instead of
           # the demo accounts. None is a secret: a web API key identifies the
@@ -143,6 +146,21 @@ jobs:
             --dart-define=AUTH="$auth"
           )
           [ -n "$API_BASE" ] && defines+=(--dart-define=API_BASE="$API_BASE")
+
+          # All three or none. A URL without credentials connects and is
+          # refused by the broker, which reads as an outage rather than as a
+          # missing variable.
+          if [ -n "$MQTT_URL" ] && [ -n "$MQTT_USERNAME" ] \
+             && [ -n "$MQTT_PASSWORD" ]; then
+            defines+=(--dart-define=MQTT_URL="$MQTT_URL")
+            defines+=(--dart-define=MQTT_USERNAME="$MQTT_USERNAME")
+            defines+=(--dart-define=MQTT_PASSWORD="$MQTT_PASSWORD")
+            echo "mqtt: $MQTT_URL"
+          elif [ -n "$MQTT_URL$MQTT_USERNAME$MQTT_PASSWORD" ]; then
+            echo "::warning::Some MQTT_* variables are set but not all three;"
+            echo "::warning::building without a broker. Needed: MQTT_URL,"
+            echo "::warning::MQTT_USERNAME, MQTT_PASSWORD."
+          fi
           for name in FIREBASE_API_KEY FIREBASE_APP_ID \
                       FIREBASE_MESSAGING_SENDER_ID FIREBASE_PROJECT_ID; do
             value="${!name}"

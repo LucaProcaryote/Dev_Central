@@ -30,6 +30,18 @@ export 'src/clinical/safety_checks.dart';
 // FHIR
 export 'src/fhir/fhir_client.dart';
 
+// HL7 v2
+export 'src/hl7/hl7_builder.dart';
+export 'src/hl7/hl7_message.dart';
+export 'src/hl7/hl7_to_fhir.dart';
+
+// MQTT, for the connected devices
+export 'src/mqtt/device_feed.dart';
+export 'src/mqtt/device_reading.dart';
+export 'src/mqtt/mqtt_client_transport.dart';
+export 'src/mqtt/mqtt_topics.dart';
+export 'src/mqtt/mqtt_transport.dart';
+
 // Integration engine
 export 'src/integration/event_publisher.dart';
 export 'src/integration/flow_engine.dart';

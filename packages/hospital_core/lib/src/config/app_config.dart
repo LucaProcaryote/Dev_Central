@@ -64,6 +64,9 @@ class AppConfig {
     required this.apiBaseUrl,
     required this.fhirBaseUrl,
     required this.eaiBaseUrl,
+    this.mqttUrl = '',
+    this.mqttUsername = '',
+    this.mqttPassword = '',
     this.deviceId,
     this.firebaseProjectId = 'my-hospital-2026',
   });
@@ -80,6 +83,20 @@ class AppConfig {
 
   /// Base URL of the EAI integration engine, where applications post events.
   final String eaiBaseUrl;
+
+  /// `wss://...` address of the MQTT broker the connected devices publish to.
+  /// Empty means no broker is configured and the MQTT features stay hidden
+  /// rather than failing when somebody opens them.
+  final String mqttUrl;
+
+  final String mqttUsername;
+
+  /// Compiled into a web build, and therefore readable by anyone who opens
+  /// the page. It is a lock on a teaching broker, not a secret - which is
+  /// exactly what the deployment script says when it prints it.
+  final String mqttPassword;
+
+  bool get usesMqtt => mqttUrl.isNotEmpty;
 
   /// Identity of this device simulator instance (`DEV1`..`DEV10`).
   /// Only meaningful for [HospitalApp.device].
@@ -115,6 +132,9 @@ class AppConfig {
       defaultValue: 'http://localhost:8084',
     );
     const deviceId = String.fromEnvironment('DEVICE_ID', defaultValue: 'DEV1');
+    const mqttUrl = String.fromEnvironment('MQTT_URL');
+    const mqttUsername = String.fromEnvironment('MQTT_USERNAME');
+    const mqttPassword = String.fromEnvironment('MQTT_PASSWORD');
 
     return AppConfig.resolve(
       app: app,
@@ -124,6 +144,9 @@ class AppConfig {
       fhirBase: fhirBase,
       eaiBase: eaiBase,
       deviceId: deviceId,
+      mqttUrl: mqttUrl,
+      mqttUsername: mqttUsername,
+      mqttPassword: mqttPassword,
       query: queryOverrides(),
     );
   }
@@ -148,6 +171,9 @@ class AppConfig {
     required String fhirBase,
     required String eaiBase,
     required String deviceId,
+    String mqttUrl = '',
+    String mqttUsername = '',
+    String mqttPassword = '',
     Map<String, String> query = const <String, String>{},
   }) {
     String pick(String name, String fromDefine) {
@@ -172,6 +198,12 @@ class AppConfig {
           : 'http://localhost:${app.defaultApiPort}',
       fhirBaseUrl: pick('fhir', fhirBase),
       eaiBaseUrl: pick('eai', eaiBase),
+      // The address is overridable so a lecturer can point one build at
+      // another broker; the credentials are not, because a link that carries
+      // them would put them in every browser history in the room.
+      mqttUrl: pick('mqtt', mqttUrl),
+      mqttUsername: mqttUsername,
+      mqttPassword: mqttPassword,
       deviceId: app == HospitalApp.device
           ? pick('device', deviceId).toUpperCase()
           : null,
@@ -183,5 +215,5 @@ class AppConfig {
   @override
   String toString() =>
       'AppConfig(${app.code}, backend: ${backendMode.name}, auth: ${authMode.name}, '
-      'api: $apiBaseUrl, fhir: $fhirBaseUrl)';
+      'api: $apiBaseUrl, fhir: $fhirBaseUrl, mqtt: ${usesMqtt ? mqttUrl : 'off'})';
 }

@@ -33,6 +33,7 @@ class SimulatorController extends ChangeNotifier {
     required this.repository,
     required this.publisher,
     required this.deviceCode,
+    this.feed,
     Uuid? uuid,
   }) : _uuid = uuid ?? const Uuid(),
        _generator = SignalGenerator(scenario: SimulationScenario.stable);
@@ -43,8 +44,25 @@ class SimulatorController extends ChangeNotifier {
   /// to the local repository so the simulator is useful on its own.
   final EventPublisher? publisher;
 
+  /// The broker connection, or null when none is configured.
+  ///
+  /// A real bedside monitor publishes to MQTT and does not know or care who
+  /// is listening. Keeping this beside the HTTP publisher rather than
+  /// replacing it lets a lab compare the two: same reading, same instant, two
+  /// transports, and only one of them tells the ward when the device stops.
+  final DeviceFeed? feed;
+
   /// `DEV1`..`DEV10`, from `--dart-define=DEVICE_ID=`.
   final String deviceCode;
+
+  /// Counts what this device has put on the broker, and the sequence number
+  /// it stamps each reading with. A gap in that number is how a receiver
+  /// learns something was lost - which at-most-once delivery makes possible
+  /// and nothing else reveals.
+  int _published = 0;
+  int get publishedToBroker => _published;
+
+  bool get usesBroker => feed != null;
 
   final Uuid _uuid;
   final SignalGenerator _generator;
@@ -202,10 +220,34 @@ class SimulatorController extends ChangeNotifier {
   Future<PublishedReading> _emit(Observation observation) async {
     await repository.addObservation(observation);
 
+    // On the broker first, because that is the transport a monitor actually
+    // has: fire and forget, no reply, no failure to report. The reading is
+    // gone if the link is down, and the next one is a second away.
+    final broker = feed;
+    if (broker != null) {
+      broker.publishReading(
+        DeviceReading.of(
+          observation,
+          location: DeviceLocation(
+            wardId: _encounter?.wardId,
+            bedId: _encounter?.bedId,
+          ),
+          sequence: ++_published,
+        ),
+      );
+    }
+
     var delivered = false;
     String? error;
     if (publisher != null) {
-      final result = await publisher!.publishObservation(observation);
+      // Fetched for PID: an ORU^R01 identifies its patient by name and
+      // medical record number, not by the internal id the FHIR resource
+      // uses. No patient, no v2 message - the FHIR one still goes.
+      final patient = await repository.findPatient(observation.patientId);
+      final result = await publisher!.publishObservation(
+        observation,
+        patient: patient,
+      );
       delivered = result.delivered;
       error = result.error;
     } else {

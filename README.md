@@ -91,6 +91,50 @@ entirely on its own.
 This is the screen for the projector during a lab session, as ten simulators
 come online one by one.
 
+## MQTT
+
+When a broker is configured, every reading goes out twice: once over HTTP to
+the integration engine, as before, and once on MQTT — which is what a bedside
+monitor actually speaks. Same reading, same instant, two transports, and only
+one of them tells the ward when the device stops.
+
+The topic carries the location:
+
+```
+hospital/ward/ward-icu/bed/bed-221a/device/DEV3/heartRate
+hospital/device/DEV3/status
+```
+
+so a subscriber can ask for exactly what it wants and nothing else:
+
+| Filter | What it gets |
+|---|---|
+| `hospital/ward/ward-icu/#` | everything in intensive care |
+| `hospital/ward/+/bed/+/device/+/heartRate` | every heart rate, anywhere |
+| `hospital/ward/+/bed/bed-221a/#` | one bed, whatever is on it |
+
+`#` takes the rest of the tree; `+` takes exactly one level. That difference is
+worth ten minutes of a lab.
+
+The price of putting the location in the address is that it goes stale: move a
+monitor to another bed and its topic changes, so a subscriber holding the old
+one goes quiet rather than reporting an error. Nothing logs it. Worth showing
+students once, deliberately, before they meet it by accident.
+
+**The last will** is the part with no HTTP equivalent. A device registers, at
+connection time, the message the broker should publish if it stops answering.
+Nothing polls and nothing has to notice: close the tab, and within the
+keepalive every subscriber learns the device went offline. A monitor that has
+gone quiet is not a missing measurement — it is a patient nobody is watching.
+
+Presence is published **retained**, so a screen opened at noon still learns
+about a device that failed at ten. Readings are **not** retained and go at most
+once: a vital sign is a moment, not a state, and handing the next subscriber an
+hour-old heart rate as though it were current is worse than no reading at all.
+
+Deploy the broker with `./infrastructure/cloud/deploy_mqtt.sh`; it prints the
+three values to set as repository Variables.
+
 ## Apple Watch
 
 Readings from an Apple Watch go through the same pipeline. On iOS a HealthKit
@@ -153,6 +197,14 @@ use the in-memory dataset and need nothing at all.
 | `DEVICE_ID` | `DEV1`..`DEV10` | `DEV1` |
 | `BACKEND` | `memory`, `restApi`, `dataConnect` | `memory` |
 | `EAI_BASE` | the integration engine | `http://localhost:8084` |
+| `MQTT_URL` | broker, `wss://…` | empty — no broker, MQTT off |
+| `MQTT_USERNAME` | broker account | empty |
+| `MQTT_PASSWORD` | broker password | empty |
+
+All three MQTT values or none. A URL without credentials connects and is
+refused, which reads as an outage rather than as a missing variable. The
+password is compiled into a web build and therefore readable by anyone who
+opens the page: it is a lock on a teaching broker, not a secret.
 
 ## Tests
 

@@ -1,12 +1,214 @@
 import '../models/integration.dart';
 import '../util/localized_text.dart';
 
-/// Three worked integration flows, ready to open on the canvas.
+/// Five worked integration flows, ready to open on the canvas.
 ///
 /// They are meant to be read before they are run. Between them they cover the
 /// patterns the students will need for their own flows: validate then store,
-/// route on a field, and filter to raise an alert.
+/// route on a field, filter to raise an alert, translate HL7 v2 to FHIR, and
+/// carry a bedside measurement from the broker to the record.
 List<IntegrationFlow> buildSeedFlows(DateTime now) => <IntegrationFlow>[
+  IntegrationFlow(
+    id: 'flow-mqtt-vitals',
+    name: const LocalizedText(
+      en: 'Bedside monitors to the record',
+      fr: 'Moniteurs de chevet vers le dossier',
+      nl: 'Bedmonitoren naar het dossier',
+    ),
+    description: const LocalizedText(
+      en:
+          'The whole chain a hospital actually runs. A monitor publishes a '
+          'measurement on MQTT, the engine decodes the device payload into an '
+          'ORU^R01 - the message a real monitor sends - translates that to a '
+          'FHIR Observation, and files it. Three formats, one reading, and '
+          'every step visible on the trace.',
+      fr:
+          "La chaîne complète telle qu'un hôpital la fait tourner. Un moniteur "
+          'publie une mesure en MQTT, le moteur décode la trame en ORU^R01 - '
+          "le message qu'envoie un vrai moniteur - le traduit en Observation "
+          'FHIR, et le classe. Trois formats, une mesure, et chaque étape '
+          'visible dans la trace.',
+      nl:
+          'De volledige keten zoals een ziekenhuis die draait. Een monitor '
+          'publiceert een meting via MQTT, de motor decodeert het bericht naar '
+          'een ORU^R01 - wat een echte monitor verstuurt - vertaalt dat naar '
+          'een FHIR Observation en slaat het op. Drie formaten, één meting, '
+          'elke stap zichtbaar in het spoor.',
+    ),
+    isEnabled: true,
+    updatedAt: now,
+    messagesProcessed: 5127,
+    messagesFailed: 11,
+    nodes: const <FlowNode>[
+      FlowNode(
+        id: 'n-mqtt-src',
+        type: FlowNodeType.mqttSource,
+        label: 'hospital/ward/#',
+        x: 60,
+        y: 180,
+        // Everything published anywhere in the hospital. A ward screen would
+        // subscribe to hospital/ward/<ward>/# instead, which is the point of
+        // putting the location in the topic rather than in the payload.
+        config: <String, dynamic>{'filter': 'hospital/ward/#'},
+      ),
+      FlowNode(
+        id: 'n-mqtt-oru',
+        type: FlowNodeType.deviceDecoder,
+        label: 'ORU^R01',
+        x: 300,
+        y: 180,
+        config: <String, dynamic>{'format': 'hl7v2'},
+      ),
+      FlowNode(
+        id: 'n-mqtt-fhir',
+        type: FlowNodeType.hl7ToFhir,
+        label: 'v2 → FHIR',
+        x: 540,
+        y: 180,
+        config: <String, dynamic>{'target': 'observation'},
+      ),
+      FlowNode(
+        id: 'n-mqtt-store',
+        type: FlowNodeType.fhirStore,
+        label: 'FHIR server',
+        x: 800,
+        y: 90,
+      ),
+      FlowNode(
+        id: 'n-mqtt-ehr',
+        type: FlowNodeType.applicationDestination,
+        label: 'EHR',
+        x: 800,
+        y: 270,
+        config: <String, dynamic>{'app': 'EHR'},
+      ),
+    ],
+    connections: const <FlowConnection>[
+      FlowConnection(
+        id: 'c-mqtt-1',
+        fromNodeId: 'n-mqtt-src',
+        toNodeId: 'n-mqtt-oru',
+      ),
+      FlowConnection(
+        id: 'c-mqtt-2',
+        fromNodeId: 'n-mqtt-oru',
+        toNodeId: 'n-mqtt-fhir',
+      ),
+      FlowConnection(
+        id: 'c-mqtt-3',
+        fromNodeId: 'n-mqtt-fhir',
+        toNodeId: 'n-mqtt-store',
+      ),
+      FlowConnection(
+        id: 'c-mqtt-4',
+        fromNodeId: 'n-mqtt-fhir',
+        toNodeId: 'n-mqtt-ehr',
+      ),
+    ],
+  ),
+  IntegrationFlow(
+    id: 'flow-hl7-adt',
+    name: const LocalizedText(
+      en: 'HL7 v2 admissions to FHIR',
+      fr: 'Admissions HL7 v2 vers FHIR',
+      nl: 'HL7 v2-opnames naar FHIR',
+    ),
+    description: const LocalizedText(
+      en:
+          'The job an interface engine does all day: an ADT^A01 arrives as a '
+          'pipe-delimited v2 message, its segments are parsed, inpatient '
+          'admissions are kept, and the visit is translated into a FHIR '
+          'Encounter for the record. Open a message and switch between the '
+          'two views to see what each format keeps and what it loses.',
+      fr:
+          "Le travail quotidien d'un moteur d'intégration : un ADT^A01 arrive "
+          'en message v2 à barres verticales, ses segments sont analysés, les '
+          'admissions hospitalières sont retenues, et le séjour est traduit '
+          'en Encounter FHIR pour le dossier. Ouvrez un message et basculez '
+          'entre les deux vues pour voir ce que chaque format conserve et ce '
+          "qu'il perd.",
+      nl:
+          'Het dagelijkse werk van een integratiemotor: een ADT^A01 komt '
+          'binnen als v2-bericht met pipes, de segmenten worden ontleed, '
+          'opnames worden behouden en het verblijf wordt vertaald naar een '
+          'FHIR Encounter voor het dossier. Open een bericht en wissel tussen '
+          'beide weergaven om te zien wat elk formaat bewaart en verliest.',
+    ),
+    isEnabled: true,
+    updatedAt: now.subtract(const Duration(days: 1)),
+    messagesProcessed: 342,
+    messagesFailed: 2,
+    nodes: const <FlowNode>[
+      FlowNode(
+        id: 'n-hl7-src',
+        type: FlowNodeType.hl7Source,
+        label: 'ADT^A01 in',
+        x: 60,
+        y: 180,
+        config: <String, dynamic>{'path': 'hl7'},
+      ),
+      FlowNode(
+        id: 'n-hl7-filter',
+        type: FlowNodeType.filter,
+        label: 'Inpatient only',
+        x: 300,
+        y: 180,
+        // PV1-2 is the patient class: I for inpatient, O for outpatient, E
+        // for emergency. One letter, one position - which is the whole
+        // character of v2 in a single field.
+        config: <String, dynamic>{
+          'path': 'PV1.2',
+          'operator': 'equals',
+          'value': 'I',
+        },
+      ),
+      FlowNode(
+        id: 'n-hl7-fhir',
+        type: FlowNodeType.hl7ToFhir,
+        label: 'v2 → FHIR',
+        x: 540,
+        y: 180,
+        config: <String, dynamic>{'target': 'encounter'},
+      ),
+      FlowNode(
+        id: 'n-hl7-store',
+        type: FlowNodeType.fhirStore,
+        label: 'FHIR server',
+        x: 800,
+        y: 90,
+      ),
+      FlowNode(
+        id: 'n-hl7-ehr',
+        type: FlowNodeType.applicationDestination,
+        label: 'EHR',
+        x: 800,
+        y: 270,
+        config: <String, dynamic>{'app': 'EHR'},
+      ),
+    ],
+    connections: const <FlowConnection>[
+      FlowConnection(
+        id: 'c-hl7-1',
+        fromNodeId: 'n-hl7-src',
+        toNodeId: 'n-hl7-filter',
+      ),
+      FlowConnection(
+        id: 'c-hl7-2',
+        fromNodeId: 'n-hl7-filter',
+        toNodeId: 'n-hl7-fhir',
+      ),
+      FlowConnection(
+        id: 'c-hl7-3',
+        fromNodeId: 'n-hl7-fhir',
+        toNodeId: 'n-hl7-store',
+      ),
+      FlowConnection(
+        id: 'c-hl7-4',
+        fromNodeId: 'n-hl7-fhir',
+        toNodeId: 'n-hl7-ehr',
+      ),
+    ],
+  ),
   IntegrationFlow(
     id: 'flow-vitals',
     name: const LocalizedText(
