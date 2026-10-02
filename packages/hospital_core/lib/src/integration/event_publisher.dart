@@ -3,8 +3,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../config/app_config.dart';
+import '../hl7/hl7_builder.dart';
 import '../models/encounter.dart';
 import '../models/observation.dart';
+import '../models/patient.dart';
 
 /// Result of trying to hand an event to the integration engine.
 class PublishResult {
@@ -70,9 +72,17 @@ class EventPublisher {
 
   /// Publishes an ADT movement, tagged with the HL7 v2 trigger event so the
   /// students see the same `A01`/`A02`/`A03` codes an interface engine would.
+  ///
+  /// When [patient] is supplied the payload also carries the movement written
+  /// out as a real `ADT^A0x` message under `hl7`, so a flow can be built
+  /// either way: on the JSON, as before, or on the v2 segments. Both describe
+  /// the same event, which is the comparison worth making.
   Future<PublishResult> publishMovement({
     required Movement movement,
     required Encounter encounter,
+    Patient? patient,
+    String? wardName,
+    String? bedName,
   }) => publish(
     source: HospitalApp.adt,
     messageType: 'ADT^${movement.type.hl7EventCode}',
@@ -80,19 +90,47 @@ class EventPublisher {
     payload: <String, dynamic>{
       ...movement.toJson(),
       'encounter': encounter.toJson(),
+      if (patient != null)
+        'hl7': _builder
+            .adt(
+              patient: patient,
+              encounter: encounter,
+              movement: movement,
+              wardName: wardName,
+              bedName: bedName,
+            )
+            .toEr7(),
     },
   );
 
   /// Publishes a device reading as a FHIR Observation, which is what the
   /// seeded vitals flow expects to receive.
+  ///
+  /// With [patient], an `ORU^R01` rides along under `hl7` - the message an
+  /// actual bedside monitor would put on the wire for the same reading.
   Future<PublishResult> publishObservation(
     Observation observation, {
     HospitalApp source = HospitalApp.device,
+    Patient? patient,
   }) => publish(
     source: source,
     messageType: 'Observation',
     patientId: observation.patientId,
-    payload: observation.toFhir(),
+    payload: <String, dynamic>{
+      ...observation.toFhir(),
+      if (patient != null)
+        'hl7': _oruBuilder
+            .oru(patient: patient, observations: <Observation>[observation])
+            .toEr7(),
+    },
+  );
+
+  static const Hl7Builder _builder = Hl7Builder();
+
+  /// Same encoding, different MSH-3: a receiving system routes on who sent
+  /// the message, so a device feed must not claim to be the ADT.
+  static const Hl7Builder _oruBuilder = Hl7Builder(
+    sendingApplication: 'MINI-DEV',
   );
 
   void close() => _client.close();
